@@ -206,6 +206,11 @@ button{font:inherit;color:inherit}
 }
 @media (hover:none){.peek{display:none}}
 
+/* ───── playlist ───── */
+.playlist{border-top:1px solid var(--rule)}
+.pl-wrap{padding-bottom:clamp(64px,8vw,110px)}
+.pl-wrap iframe{display:block;width:100%;max-width:100%;border:0;background:var(--ink)}
+
 /* ───── the stack: horizontal pinned chapter ───── */
 .stack-track{position:relative;height:500vh}
 .stack-pin{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;display:grid;grid-template-rows:auto 1fr auto}
@@ -435,6 +440,17 @@ html.lenis,html.lenis body{height:auto}.lenis.lenis-smooth{scroll-behavior:auto!
   </div>
   <div class="rx" id="rx"></div>
   <div class="peek" id="peek" aria-hidden="true"><img alt="" id="peek-img"></div>
+</section>
+
+<!-- ═════ PLAYLIST ═════ -->
+<section class="sec playlist" id="playlist">
+  <div class="sec-top px">
+    <div><span class="lbl">On repeat</span><h2>Our campaigns<br>playlist</h2></div>
+    <p class="side">Every record we've pushed, in one place. Hit play.</p>
+  </div>
+  <div class="pl-wrap px">
+    <iframe data-testid="embed-iframe" title="129 Agency campaigns playlist on Spotify" style="border-radius:12px" src="https://open.spotify.com/embed/playlist/7g1UuN0OymKoy4vH4wfWRK?utm_source=generator&si=04c90ad3ae764f33" width="100%" height="352" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+  </div>
 </section>
 
 <!-- ═════ THE STACK (horizontal) ═════ -->
