@@ -266,9 +266,9 @@ button{font:inherit;color:inherit}
 .book-copy li::before{content:"↗ ";}
 .book-copy .mail{opacity:.8;user-select:all}
 .book-r{padding-block:clamp(32px,4vw,64px);display:grid;align-content:center}
-.cal-mock{display:grid;gap:14px;max-width:640px;width:100%;justify-self:center}
-.cal-top{display:flex;justify-content:space-between;gap:12px}
-.cal-note{color:var(--mute)}
+.cal-box{display:grid;gap:22px;max-width:640px;width:100%;justify-self:center;border:1px solid var(--rule);padding:clamp(24px,3vw,40px);justify-items:start}
+.cal-top{display:flex;justify-content:space-between;gap:12px;width:100%;border-bottom:1px solid var(--rule);padding-bottom:14px}
+.cal-hint{font:700 clamp(28px,3vw,44px)/1 var(--display);text-transform:uppercase;max-width:18ch}
 @media (max-width:860px){.book-grid{grid-template-columns:1fr}}
 
 /* footer with cropped wordmark */
@@ -520,11 +520,13 @@ html.lenis,html.lenis body{height:auto}.lenis.lenis-smooth{scroll-behavior:auto!
       </div>
     </div>
     <div class="book-r px">
-      <!-- LEMCAL EMBED: paste the Lemcal snippet inside #lemcal-embed (its booking form collects name, email, label… → Airtable) -->
-      <div id="lemcal-embed" class="cal-mock" aria-label="Booking calendar (preview)">
+      <div id="lemcal-embed" class="cal-box">
         <div class="cal-top"><span class="lbl">Discovery call · 20 min</span><span class="lbl">Europe/Paris</span></div>
-        <div class="days" id="cal-days"></div>
-        <p class="lbl cal-note">Preview · the Lemcal calendar replaces this block</p>
+        <p class="cal-hint">Pick a time that suits you. You'll get the invite straight away.</p>
+        <!-- Start embed lemcal -->
+        <div class="lemcal-embed-button" data-user="usr_Fsj2cfwna6N92evQf" data-meeting-type="met_WjjTL5yatKxxvJZ5a"></div>
+        <script src="https://cdn.lemcal.com/lemcal-integrations.min.js" defer></script>
+        <!-- End embed lemcal -->
       </div>
     </div>
   </div>
@@ -650,13 +652,6 @@ mo.addEventListener('click',()=>setMenu(true));$('#menu-close').addEventListener
 idx.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();setMenu(false);const t=$(a.getAttribute('href'));
   setTimeout(()=>{window.__lenis?__lenis.scrollTo(t):t.scrollIntoView();},250);}));
 
-/* ── booking preview (replaced by the Lemcal embed) ── */
-const toast=$('#toast');
-function showToast(t){toast.textContent=t;toast.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>toast.classList.remove('show'),2600);}
-(function(){const days=[],x=new Date();x.setHours(12);while(days.length<5){x.setDate(x.getDate()+1);if(x.getDay()%6)days.push(new Date(x));}
-  const T=['10:00','11:30','14:00','16:30'];
-  $('#cal-days').innerHTML=days.map((d,i)=>`<div class="day"><span class="h">${d.toLocaleDateString('en-GB',{weekday:'short'})}<b>${d.getDate()}</b></span>${T.filter((_,j)=>(i+j)%3).map(t=>`<button type="button" class="slot">${t}</button>`).join('')}</div>`).join('');})();
-document.addEventListener('click',e=>{const s=e.target.closest('.slot');if(!s)return;s.closest('.days').querySelectorAll('.slot').forEach(x=>x.classList.remove('sel'));s.classList.add('sel');showToast('Preview · Lemcal asks for your details next');});
 addEventListener('keydown',e=>{if(e.key==='Escape'&&idx.classList.contains('open'))setMenu(false);});
 
 /* ── scroll: lenis, reveals ── */
