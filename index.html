@@ -660,8 +660,19 @@ $('#logos').innerHTML=lg+lg+lg+lg;
 const idx=$('#idx'),mo=$('#menu-open');
 function setMenu(o){idx.classList.toggle('open',o);idx.setAttribute('aria-hidden',!o);mo.setAttribute('aria-expanded',o);if(window.__lenis)o?__lenis.stop():__lenis.start();if(o)setTimeout(()=>$('#menu-close').focus(),300);else mo.focus();}
 mo.addEventListener('click',()=>setMenu(true));$('#menu-close').addEventListener('click',()=>setMenu(false));
-idx.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();setMenu(false);const t=$(a.getAttribute('href'));
-  setTimeout(()=>{window.__lenis?__lenis.scrollTo(t):t.scrollIntoView();},250);}));
+/* on phones, "Book a call" lands straight on the slot picker (the booking box), not the top of the section */
+function goTo(id){
+  const mobile=matchMedia('(max-width:860px)').matches;
+  let t=(id==='#contact'&&mobile)?document.querySelector('.book-r'):$(id); if(!t)return false;
+  const off=(id==='#contact'&&mobile)?-60:0;
+  if(id==='#top'){window.__lenis?__lenis.scrollTo(0):scrollTo({top:0,behavior:'smooth'});return true;}
+  if(window.__lenis)__lenis.scrollTo(t,{offset:off});
+  else scrollTo({top:t.getBoundingClientRect().top+scrollY+off,behavior:reduce?'auto':'smooth'});
+  return true;
+}
+idx.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();setMenu(false);
+  setTimeout(()=>goTo(a.getAttribute('href')),250);}));
+document.querySelectorAll('a[href^="#"]').forEach(a=>{if(a.closest('#idx'))return;a.addEventListener('click',e=>{if(goTo(a.getAttribute('href')))e.preventDefault();});});
 
 addEventListener('keydown',e=>{if(e.key==='Escape'&&idx.classList.contains('open'))setMenu(false);});
 /* ── Book a call: our button opens the Lemcal booking popup (Lemcal widget itself is hidden) ── */
@@ -678,7 +689,7 @@ $('#book-go').addEventListener('click',async()=>{
 
 /* ── scroll: lenis, reveals ── */
 if(window.Lenis&&!reduce){const l=new Lenis({duration:1.15,easing:t=>1-Math.pow(1-t,4)});window.__lenis=l;(function raf(t){l.raf(t);requestAnimationFrame(raf);})(performance.now());
-  document.querySelectorAll('a[href^="#"]').forEach(a=>{if(a.closest('#idx'))return;a.addEventListener('click',e=>{const id=a.getAttribute('href');const t=$(id);if(!t)return;e.preventDefault();l.scrollTo(id==='#top'?0:t);});});}
+}
 const hdr=$('.hdr');let tick=false;addEventListener('scroll',()=>{if(tick)return;tick=true;requestAnimationFrame(()=>{drawStack();hdr.classList.toggle('solid',scrollY>innerHeight*0.6);tick=false;});},{passive:true});
 addEventListener('resize',drawStack);drawStack();
 if('IntersectionObserver' in window&&!reduce){
