@@ -265,9 +265,14 @@ button{font:inherit;color:inherit}
 .book-copy li{padding:12px 0;border-bottom:1px solid rgba(247,247,245,.4)}
 .book-copy li::before{content:"↗ ";}
 .book-copy .mail{opacity:.8;user-select:all}
-.book-r{padding-block:clamp(32px,4vw,64px);display:grid;align-content:center}
-.cal-box{display:grid;gap:22px;max-width:640px;width:100%;justify-self:center;border:1px solid var(--rule);padding:clamp(24px,3vw,40px);justify-items:start}
-.cal-top{display:flex;justify-content:space-between;gap:12px;width:100%;border-bottom:1px solid var(--rule);padding-bottom:14px}
+.book-r{padding-block:clamp(48px,6vw,88px);display:grid;align-content:stretch}
+.cal-box{display:grid;grid-template-rows:auto auto 1fr auto;gap:clamp(20px,2.4vw,32px);width:100%;height:100%}
+.cal-steps{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule);align-self:end}
+.cal-steps li{display:grid;grid-template-columns:56px 1fr;align-items:baseline;padding:16px 0;border-bottom:1px solid var(--rule);font:600 clamp(22px,2vw,28px)/1 var(--display);text-transform:uppercase}
+.cal-steps .lbl{color:var(--blue)}
+.cal-go{width:100%;height:64px;font-size:16px}
+.lemcal-embed-button{position:absolute!important;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.cal-top{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--rule);padding-bottom:14px}
 .cal-hint{font:700 clamp(28px,3vw,44px)/1 var(--display);text-transform:uppercase;max-width:18ch}
 @media (max-width:860px){.book-grid{grid-template-columns:1fr}}
 
@@ -523,7 +528,13 @@ html.lenis,html.lenis body{height:auto}.lenis.lenis-smooth{scroll-behavior:auto!
       <div id="lemcal-embed" class="cal-box">
         <div class="cal-top"><span class="lbl">Discovery call · 20 min</span><span class="lbl">Europe/Paris</span></div>
         <p class="cal-hint">Pick a time that suits you. You'll get the invite straight away.</p>
-        <!-- Start embed lemcal -->
+        <ol class="cal-steps">
+          <li><span class="lbl">01</span>Choose a slot</li>
+          <li><span class="lbl">02</span>Tell us about the record</li>
+          <li><span class="lbl">03</span>Get the invite</li>
+        </ol>
+        <button class="b b-solid cal-go" type="button" id="book-go">Pick a slot <span class="ar">→</span></button>
+        <!-- Start embed lemcal (hidden: opened by #book-go) -->
         <div class="lemcal-embed-button" data-user="usr_Fsj2cfwna6N92evQf" data-meeting-type="met_WjjTL5yatKxxvJZ5a"></div>
         <script src="https://cdn.lemcal.com/lemcal-integrations.min.js" defer></script>
         <!-- End embed lemcal -->
@@ -653,6 +664,17 @@ idx.querySelectorAll('nav a').forEach(a=>a.addEventListener('click',e=>{e.preven
   setTimeout(()=>{window.__lenis?__lenis.scrollTo(t):t.scrollIntoView();},250);}));
 
 addEventListener('keydown',e=>{if(e.key==='Escape'&&idx.classList.contains('open'))setMenu(false);});
+/* ── Book a call: our button opens the Lemcal booking popup (Lemcal widget itself is hidden) ── */
+function lemcalOverlay(){for(const n of document.body.children){const o=n.shadowRoot&&n.shadowRoot.querySelector('[class*=overlaystyles__Container]');if(o)return o;}return null;}
+$('#book-go').addEventListener('click',async()=>{
+  const go=$('#book-go');
+  for(let i=0;i<24;i++){const h=document.querySelector('.lemcal-embed-button');const b=h&&h.shadowRoot&&h.shadowRoot.querySelector('button');
+    if(b){go.firstChild.textContent='Pick a slot ';b.click();
+      if(window.__lenis){__lenis.stop();const t=setInterval(()=>{const o=lemcalOverlay();if(!o||getComputedStyle(o).display==='none'){__lenis.start();clearInterval(t);}},400);}
+      return;}
+    go.firstChild.textContent='Loading… ';await new Promise(r=>setTimeout(r,250));}
+  go.firstChild.textContent='Pick a slot ';
+});
 
 /* ── scroll: lenis, reveals ── */
 if(window.Lenis&&!reduce){const l=new Lenis({duration:1.15,easing:t=>1-Math.pow(1-t,4)});window.__lenis=l;(function raf(t){l.raf(t);requestAnimationFrame(raf);})(performance.now());
