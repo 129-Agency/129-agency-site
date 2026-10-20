@@ -1,11 +1,11 @@
-// POST /api/onboarding-finish   (public — lien client ?k=)
+// POST /api/onboarding-finish   (public — protégé par le jeton de soumission renvoyé par onboarding-start)
 //
 // Clôture la soumission : artwork copié dans Airtable (Track + Campagne, pour la
 // prévisualisation dans le generator), récapitulatif des fichiers reçus dans les notes.
 // Les fichiers maîtres restent sur Drive.
 
 import { T, F, get, update, uploadAttachment } from './_airtable.js';
-import { compteFromKey, readJson, clean } from './_onboarding.js';
+import { readUpload, readJson, clean } from './_onboarding.js';
 
 const IMG = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -16,14 +16,10 @@ export default async function handler(req, res) {
   try { b = await readJson(req, 4_400_000); } catch (e) { return res.status(e.status || 400).json({ error: 'Unreadable request.' }); }
 
   try {
-    const compte = await compteFromKey(b.k);
-    if (!compte) return res.status(403).json({ error: 'Invalid form link.' });
-    if (!/^rec[A-Za-z0-9]{14}$/.test(String(b.campaignId || ''))) return res.status(400).json({ error: 'Unknown campaign.' });
-
-    const campaign = await get(T.campagnes, b.campaignId);
-    if (!(campaign.fields[F.campagne.compte] || []).includes(compte.id)) {
-      return res.status(403).json({ error: 'This campaign does not belong to this client.' });
-    }
+    let p;
+    try { p = readUpload(b.submission); } catch (e) { return res.status(403).json({ error: e.message }); }
+    if (!p.finish || !/^rec[A-Za-z0-9]{14}$/.test(String(p.c || ''))) return res.status(403).json({ error: 'Invalid submission.' });
+    const campaign = await get(T.campagnes, p.c);
     const trackId = (campaign.fields[F.campagne.track] || [])[0];
 
     const warnings = [];

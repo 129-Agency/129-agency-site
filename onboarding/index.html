@@ -31,7 +31,7 @@
   label.f{display:block; font-size:13px; font-weight:500; margin-bottom:5px}
   label.f .opt{color:var(--graphite); font-weight:400}
   .hint{font-size:12px; color:var(--graphite); margin-top:4px}
-  input[type=text],input[type=url],input[type=date],input[type=number],select,textarea{
+  input[type=text],input[type=email],input[type=url],input[type=date],input[type=number],select,textarea{
     width:100%; font:inherit; font-size:15px; padding:9px 10px; border:1px solid var(--rule);
     background:var(--surface); color:var(--ink); border-radius:0; -webkit-appearance:none; appearance:none}
   select{background-image:linear-gradient(45deg,transparent 50%,var(--graphite) 50%),linear-gradient(135deg,var(--graphite) 50%,transparent 50%);
@@ -86,14 +86,20 @@
     <div class="mark">129</div>
     <h1>New campaign</h1>
     <p class="lede">Everything we need to set up your release. Files go straight to our storage; nothing is published until we have reviewed it.</p>
-    <div class="client" id="clientLine"></div>
   </header>
 
-  <div class="blocked" id="blocked">
-    <p><b>This link is incomplete.</b> Use the exact link 129 sent you, or ask us for a new one.</p>
-  </div>
 
   <form id="f" novalidate>
+    <fieldset>
+      <legend>You</legend>
+      <div class="grid">
+        <div><label class="f" for="idName">Your name</label><input type="text" id="idName" autocomplete="name" required></div>
+        <div><label class="f" for="idEmail">Your email</label><input type="email" id="idEmail" autocomplete="email" required></div>
+        <div class="full"><label class="f" for="idCompany">Label / management / company</label><input type="text" id="idCompany" autocomplete="organization" required></div>
+      </div>
+      <div class="hint">Use the email you work with us from: it links this release to your account.</div>
+    </fieldset>
+
     <fieldset>
       <legend>Release</legend>
       <div class="grid">
@@ -184,6 +190,7 @@
 
     <fieldset>
       <legend>Files</legend>
+      <div class="hint" id="driveOff" style="display:none;margin-bottom:12px">Large files: share them with a link below (Google Drive, Dropbox, WeTransfer). Only the artwork is uploaded here.</div>
       <div class="grid">
         <div class="full">
           <label class="drop" data-kind="artwork" tabindex="0"><span class="t">Artwork</span> <span class="hint">— required, square JPG / PNG / WebP</span>
@@ -191,25 +198,27 @@
           <ul class="list" data-list="artwork"></ul>
         </div>
         <div class="full">
-          <label class="drop" data-kind="audio" tabindex="0"><span class="t">Audio</span> <span class="hint">— WAV or MP3, plus any edits you want us to use</span>
+          <div class="up" data-up="audio"><label class="drop" data-kind="audio" tabindex="0"><span class="t">Audio</span> <span class="hint">— WAV or MP3, plus any edits you want us to use</span>
             <input type="file" accept="audio/*,.wav,.mp3,.aiff,.flac" multiple></label>
-          <ul class="list" data-list="audio"></ul>
+          <ul class="list" data-list="audio"></ul></div>
         </div>
         <div class="full">
-          <label class="drop" data-kind="video" tabindex="0"><span class="t">Videos</span> <span class="hint">— clips, visualisers, behind the scenes, vertical preferred</span>
+          <div class="up" data-up="video"><label class="drop" data-kind="video" tabindex="0"><span class="t">Videos</span> <span class="hint">— clips, visualisers, behind the scenes, vertical preferred</span>
             <input type="file" accept="video/*" multiple></label>
-          <ul class="list" data-list="video"></ul>
+          <ul class="list" data-list="video"></ul></div>
         </div>
         <div class="full">
-          <label class="drop" data-kind="visual" tabindex="0"><span class="t">Photos and other visuals</span> <span class="hint">— press shots, live photos</span>
+          <div class="up" data-up="visual"><label class="drop" data-kind="visual" tabindex="0"><span class="t">Photos and other visuals</span> <span class="hint">— press shots, live photos</span>
             <input type="file" accept="image/*" multiple></label>
-          <ul class="list" data-list="visual"></ul>
+          <ul class="list" data-list="visual"></ul></div>
         </div>
       </div>
     </fieldset>
 
     <fieldset>
       <legend>Anything else</legend>
+      <label class="f" for="filesLink">Link to your files <span class="opt">(optional — Drive, Dropbox, WeTransfer)</span></label>
+      <input type="url" id="filesLink" placeholder="https://" style="margin-bottom:14px">
       <label class="f" for="notes">Context we should know <span class="opt">(optional)</span></label>
       <textarea id="notes" placeholder="Story behind the track, references, what worked or did not work before…"></textarea>
     </fieldset>
@@ -237,11 +246,18 @@
 <script>
 const CHUNK = 4 * 1024 * 1024;          // multiple de 256 Ko, sous la limite Vercel de 4,5 Mo
 const MAX_ARTWORK_INLINE = 3 * 1024 * 1024;
-const k = new URLSearchParams(location.search).get('k');
+const k = new URLSearchParams(location.search).get('k');   // lien prérempli optionnel
+let DRIVE = true;
+fetch('/api/onboarding-config').then(r => r.json()).then(c => {
+  DRIVE = Boolean(c.drive);
+  if (!DRIVE) {
+    document.querySelectorAll('[data-up]').forEach(el => el.style.display = 'none');
+    document.getElementById('driveOff').style.display = '';
+  }
+}).catch(() => {});
 const form = document.getElementById('f');
 const files = { artwork: [], audio: [], video: [], visual: [] };
 
-if (!k) { form.style.display = 'none'; document.getElementById('blocked').classList.add('on'); }
 
 const fmt = (n) => n >= 1e9 ? (n/1e9).toFixed(2)+' GB' : n >= 1e6 ? (n/1e6).toFixed(1)+' MB' : Math.max(1, Math.round(n/1e3))+' KB';
 
@@ -275,10 +291,16 @@ const val = (id) => document.getElementById(id).value.trim();
 form.addEventListener('input', e => { e.target.classList.remove('err-field'); document.getElementById('formErr').textContent = ''; });
 
 function validate() {
-  const req = ['artist','title','releaseType','releaseDate','genre','language','budget','objective'];
+  const req = ['idName','idEmail','idCompany','artist','title','releaseType','releaseDate','genre','language','budget','objective'];
   const missing = req.filter(id => !val(id));
   missing.forEach(id => document.getElementById(id).classList.add('err-field'));
-  if (!files.artwork.length) { document.querySelector('[data-kind="artwork"]').classList.add('err-field'); missing.push('artwork'); }
+  if (val('idEmail') && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(val('idEmail'))) { document.getElementById('idEmail').classList.add('err-field'); missing.push('email'); }
+  if (!files.artwork.length && !val('filesLink')) { document.querySelector('[data-kind="artwork"]').classList.add('err-field'); missing.push('artwork'); }
+  if (!DRIVE && files.artwork[0] && files.artwork[0].size > MAX_ARTWORK_INLINE) {
+    document.querySelector('[data-kind="artwork"]').classList.add('err-field');
+    document.getElementById('formErr').textContent = 'Artwork is over 3 MB: compress it, or share it with the link below.';
+    return false;
+  }
   if (val('budget') && !(Number(val('budget')) > 0)) { document.getElementById('budget').classList.add('err-field'); missing.push('budget'); }
   if (missing.length) {
     document.getElementById('formErr').textContent = 'Some required fields are missing (highlighted in red).';
@@ -342,10 +364,12 @@ form.addEventListener('submit', async (e) => {
   btn.disabled = true;
 
   const order = ['artwork', 'audio', 'video', 'visual'];
-  const list = order.flatMap(kind => files[kind].map(f => ({ kind, file: f })));
+  const list = DRIVE ? order.flatMap(kind => files[kind].map(f => ({ kind, file: f }))) : [];
   const page = val('page');
   const payload = {
     k,
+    identity: { name: val('idName'), email: val('idEmail'), company: val('idCompany') },
+    hasArtwork: files.artwork.length > 0,
     track: {
       artist: val('artist'), featuring: val('featuring'), title: val('title'),
       releaseType: val('releaseType'), releaseDate: val('releaseDate'),
@@ -361,6 +385,7 @@ form.addEventListener('submit', async (e) => {
       parallelActions: Array.from(document.querySelectorAll('#actions input:checked')).map(i => i.value),
       pageIgFb: page ? page + (document.getElementById('pageAccess').checked ? ' — accès pub donné à 129' : ' — accès pub NON confirmé') : '',
       notes: val('notes'),
+      filesLink: val('filesLink'),
     },
     files: list.map(x => ({ kind: x.kind, name: x.file.name, size: x.file.size, type: x.file.type })),
   };
@@ -398,7 +423,7 @@ form.addEventListener('submit', async (e) => {
     if (art && art.size <= MAX_ARTWORK_INLINE) {
       artwork = { filename: art.name, contentType: art.type, base64: await readBase64(art) };
     }
-    await postJson('/api/onboarding-finish', { k, campaignId: start.campaignId, artwork, uploaded });
+    await postJson('/api/onboarding-finish', { submission: start.submission, artwork, uploaded });
 
     prog.classList.remove('on');
     document.getElementById('doneTitle').textContent = `${payload.track.artist} — ${payload.track.title}`;

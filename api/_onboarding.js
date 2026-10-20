@@ -1,7 +1,7 @@
 // Briques partagees par les routes publiques d'onboarding client.
 
 import crypto from 'crypto';
-import { T, FN, find, q } from './_airtable.js';
+import { T, F, FN, find, get, q } from './_airtable.js';
 import { signingSecret } from './_meta.js';
 
 const secret = () => signingSecret();
@@ -34,6 +34,23 @@ export async function compteFromKey(k) {
   if (!/^[0-9a-f-]{20,64}$/i.test(String(k || ''))) return null;
   const rows = await find(T.comptes, `${FN.compteToken} = ${q(k)}`, { maxRecords: 2 });
   return rows.length === 1 ? rows[0] : null;
+}
+
+// Lien générique : le client s'identifie par son email. Si l'email appartient à un
+// Contact rattaché à un Compte, la campagne est rattachée à ce Compte. Sinon elle
+// arrive sans Compte, marquée à vérifier. Un lien ?k= (prérempli) reste accepté.
+export async function identify({ k, email }) {
+  if (k) {
+    const compte = await compteFromKey(k);
+    if (compte) return { compte, contact: null, via: 'lien' };
+  }
+  const e = String(email || '').trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return { compte: null, contact: null, via: null };
+  const contacts = await find(T.contacts, `LOWER(${FN.contactEmail}) = ${q(e)}`, { maxRecords: 2 });
+  const contact = contacts[0] || null;
+  const compteId = contact?.fields?.[F.contact.compte]?.[0];
+  const compte = compteId ? await get(T.comptes, compteId) : null;
+  return { compte, contact, via: compte ? 'email' : null };
 }
 
 export function spotifyIdFrom(url) {

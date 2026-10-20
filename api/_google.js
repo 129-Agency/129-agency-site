@@ -59,6 +59,10 @@ async function drive(method, path, { query = {}, body } = {}) {
 
 const esc = (s) => String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
+export function driveConfigured() {
+  return Boolean(process.env.GOOGLE_SERVICE_ACCOUNT_JSON && process.env.DRIVE_PARENT_FOLDER_ID);
+}
+
 export function rootFolderId() {
   const id = process.env.DRIVE_PARENT_FOLDER_ID;
   if (!id) throw new Error('DRIVE_PARENT_FOLDER_ID absent des variables Vercel.');

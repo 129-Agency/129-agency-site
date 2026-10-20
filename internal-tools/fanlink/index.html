@@ -247,7 +247,7 @@ async function loadQueue(){
     ul.innerHTML = '';
     for (const it of items) {
       const li = document.createElement('li');
-      li.innerHTML = `<button type="button"><span class="n">${esc(it.name)}</span><span class="s">${esc(it.compte)}${it.releaseDate ? ' · sortie ' + esc(it.releaseDate) : ''}</span><div>${tagFor(it.fanlinkStatus)}${tagFor('Meta : ' + it.metaStatus)}</div></button>`;
+      li.innerHTML = `<button type="button"><span class="n">${esc(it.name)}</span><span class="s">${it.compte ? esc(it.compte) : '<span class="tag err">Client non reconnu</span>' + esc(it.declared.split(' — ').pop())}${it.releaseDate ? ' · sortie ' + esc(it.releaseDate) : ''}</span><div>${tagFor(it.fanlinkStatus)}${tagFor('Meta : ' + it.metaStatus)}</div></button>`;
       li.querySelector('button').onclick = () => openCampaign(it.id, li.querySelector('button'));
       ul.appendChild(li);
     }
@@ -306,12 +306,13 @@ async function openCampaign(id, btn){
 
   const cur = c.currency || '';
   $('ctx').innerHTML = [
-    ['Client', c.compteName], ['Budget demandé', c.budgetRequested != null ? `${c.budgetRequested} ${cur}` : '—'],
+    ['Client', c.compteName || 'Non reconnu — à rattacher dans Airtable'], ['Déclaré par', c.declaredIdentity || '—'], ['Budget demandé', c.budgetRequested != null ? `${c.budgetRequested} ${cur}` : '—'],
     ['Objectif', c.objective || '—'], ['Territoires', c.territories || '—'],
     ['Actions en parallèle', (c.parallelActions||[]).join(', ') || '—'], ['Page artiste', c.pageIgFb || '—'],
     ['ISRC', t.isrc || '—'], ['Clé track', t.key || '—'],
   ].map(([k,v]) => `<div><div class="k">${esc(k)}</div>${esc(v)}</div>`).join('')
    + (c.driveFolder ? `<div><div class="k">Assets</div><a href="${esc(c.driveFolder)}" target="_blank" rel="noopener">Dossier Drive</a></div>` : '')
+   + (c.clientFilesLink ? `<div><div class="k">Lien du client</div><a href="${esc(c.clientFilesLink)}" target="_blank" rel="noopener">Fichiers partagés</a></div>` : '')
    + (c.notes ? `<div class="notes">${esc(c.notes)}</div>` : '');
 
   for (const [k, v] of Object.entries({ artist:t.artist, featuring:t.featuring, title:t.title, releaseType:t.releaseType, releaseDate:t.releaseDate, genre:t.genre, language:t.language })) $(k).value = v || '';

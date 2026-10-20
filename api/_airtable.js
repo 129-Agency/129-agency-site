@@ -14,6 +14,7 @@ export const T = {
   campagnes: 'tbl3dqIAgInVFTiwM',
   tracks: 'tbl8Zzd82BNwfbKoC',
   adAccounts: 'tblzEKqroa0U39fU3',
+  contacts: 'tblspUGl1hm776Lte',
 };
 
 export const F = {
@@ -82,6 +83,14 @@ export const F = {
     slug: 'fld388hkR2wv31lLL',
     fanlinkStatus: 'fldqGlrFpPBqMf2hF',
     metaStatus: 'fldRWB8c1dWwBD6iA',
+    submittedBy: 'fldLCLKf8IFdN8wVf',
+    declaredIdentity: 'fldzcMlYdQ7w2D91G',
+    clientFilesLink: 'fldaHlg7koK3TWTg9',
+  },
+  contact: {
+    name: 'fldBqZjkgn9SnqBDQ',
+    email: 'fldCZTt0B8MwSw1lT',
+    compte: 'fldzgWevxoo7qQHfk',
   },
   adAccount: {
     name: 'fldYT1TATC3euYTGM',
@@ -105,6 +114,7 @@ export const FN = {
   campFanlinkStatus: '{Statut fanlink}',
   campMetaStatus: '{Statut Meta}',
   compteStatut: '{Statut compte}',
+  contactEmail: '{Email}',
 };
 
 function token() {

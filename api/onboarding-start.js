@@ -1,15 +1,15 @@
-// POST /api/onboarding-start   (public — protégé par le lien client ?k=<Token dashboard>)
+// POST /api/onboarding-start   (public — lien générique /onboarding, ou lien prérempli ?k=)
 //
-// 1. Résout le client par son jeton.
-// 2. Crée le dossier Drive de la campagne (Client / AAAA-MM-JJ Artiste - Titre / Audio, Vidéos, Visuels).
+// 1. Identifie le client : jeton ?k= si présent, sinon email -> Contact -> Compte.
+//    Email inconnu : la campagne est créée sans Compte, marquée « à vérifier ».
+// 2. Crée le dossier Drive de la campagne (si Google est configuré).
 // 3. Crée (ou réutilise, à ISRC égal) la fiche Track, puis la fiche Campagne.
-// 4. Ouvre une session d'upload Drive par fichier et renvoie un jeton signé par fichier.
-//
-// Les fichiers eux-mêmes passent ensuite par /api/onboarding-chunk.
+// 4. Ouvre une session d'upload Drive par fichier et renvoie un jeton signé par fichier,
+//    plus un jeton de soumission pour /api/onboarding-finish.
 
 import { T, F, FN, find, create, q, slugify } from './_airtable.js';
-import { ensureFolder, rootFolderId, startResumable } from './_google.js';
-import { compteFromKey, signUpload, readJson, clean, cleanUrl, spotifyIdFrom } from './_onboarding.js';
+import { ensureFolder, rootFolderId, startResumable, driveConfigured } from './_google.js';
+import { identify, signUpload, readJson, clean, cleanUrl, spotifyIdFrom } from './_onboarding.js';
 
 const RELEASE_TYPES = ['Single', 'EP', 'Album', 'Compilation'];
 const GENRES = ['afro_house', 'afrobeat', 'dance', 'deep_house', 'downtempo', 'house', 'indie_dance',
@@ -29,14 +29,14 @@ export default async function handler(req, res) {
   try { b = await readJson(req); } catch (e) { return res.status(e.status || 400).json({ error: 'Unreadable request.' }); }
 
   try {
-    const compte = await compteFromKey(b.k);
-    if (!compte) return res.status(403).json({ error: 'Invalid form link. Ask 129 for a new one.' });
-    const cf = compte.fields;
-
     // --- Validation -------------------------------------------------------
-    const t = b.track || {}, c = b.campaign || {};
+    const who = b.identity || {}, t = b.track || {}, c = b.campaign || {};
+    const idName = clean(who.name, 120), idEmail = clean(who.email, 200).toLowerCase(), idCompany = clean(who.company, 160);
     const artist = clean(t.artist, 200), title = clean(t.title, 200);
     const errors = [];
+    if (!idName) errors.push('Your name');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(idEmail)) errors.push('Your email');
+    if (!idCompany) errors.push('Label / company');
     if (!artist) errors.push('Artist');
     if (!title) errors.push('Title');
     if (!RELEASE_TYPES.includes(t.releaseType)) errors.push('Release type');
@@ -48,9 +48,12 @@ export default async function handler(req, res) {
     const currency = CURRENCIES.includes(c.currency) ? c.currency : null;
     if (!currency) errors.push('Currency');
 
-    const files = Array.isArray(b.files) ? b.files : [];
+    const drive = driveConfigured();
+    const filesLink = cleanUrl(c.filesLink);
+    // Sans Drive, seuls les métadonnées et l'artwork (inline, copié dans Airtable) passent.
+    const files = drive && Array.isArray(b.files) ? b.files : [];
     if (files.length > MAX_FILES) errors.push(`Maximum ${MAX_FILES} files`);
-    if (!files.some(f => f.kind === 'artwork')) errors.push('Artwork');
+    if (!b.hasArtwork && !filesLink) errors.push('Artwork (or a link to your files)');
     for (const f of files) {
       if (!KIND_FOLDER[f.kind] || !clean(f.name) || !(Number(f.size) > 0) || Number(f.size) > MAX_FILE_BYTES) {
         errors.push(`Invalid file: ${clean(f.name, 80) || '(no name)'}`);
@@ -58,21 +61,30 @@ export default async function handler(req, res) {
     }
     if (errors.length) return res.status(400).json({ error: 'Missing or invalid: ' + errors.join(', ') + '.' });
 
+    // --- Identification --------------------------------------------------------
+    const { compte, contact } = await identify({ k: b.k, email: idEmail });
+    const cf = compte?.fields || {};
+    const declared = `${idName} — ${idEmail} — ${idCompany}`;
+
     // --- Clé track ---------------------------------------------------------
-    const clientSlug = slugify(cf[F.compte.slug] || cf[F.compte.name]);
+    const clientSlug = slugify(cf[F.compte.slug] || cf[F.compte.name] || idCompany) || 'client';
     const trackKey = `${clientSlug}/${slugify(`${artist} ${title}`)}`;
 
     // --- Drive ---------------------------------------------------------------
-    const clientFolder = await ensureFolder(clean(cf[F.compte.name], 120) || clientSlug, rootFolderId());
-    const today = new Date().toISOString().slice(0, 10);
-    const campaignFolder = await ensureFolder(`${today} ${artist} - ${title}`, clientFolder.id);
+    let campaignFolder = null;
     const sub = {};
-    for (const kind of new Set(files.map(f => f.kind))) {
-      const name = KIND_FOLDER[kind];
-      sub[name] = sub[name] || await ensureFolder(name, campaignFolder.id);
+    if (drive) {
+      const clientFolderName = compte ? (clean(cf[F.compte.name], 120) || clientSlug) : `À vérifier — ${idCompany}`;
+      const clientFolder = await ensureFolder(clientFolderName, rootFolderId());
+      const today = new Date().toISOString().slice(0, 10);
+      campaignFolder = await ensureFolder(`${today} ${artist} - ${title}`, clientFolder.id);
+      for (const kind of new Set(files.map(f => f.kind))) {
+        const name = KIND_FOLDER[kind];
+        sub[name] = sub[name] || await ensureFolder(name, campaignFolder.id);
+      }
     }
 
-    // --- Track (réutilisée si même ISRC chez ce client) ------------------------
+    // --- Track (réutilisée si même ISRC) ------------------------------------------
     const isrc = clean(t.isrc, 15).toUpperCase().replace(/[^A-Z0-9]/g, '');
     let trackRec = null;
     if (isrc) {
@@ -84,7 +96,6 @@ export default async function handler(req, res) {
       const tf = {
         [F.track.title]: title,
         [F.track.artist]: artist,
-        [F.track.compte]: [compte.id],
         [F.track.releaseType]: t.releaseType,
         [F.track.releaseDate]: t.releaseDate,
         [F.track.genre]: t.genre,
@@ -93,6 +104,7 @@ export default async function handler(req, res) {
         [F.track.dspStatus]: 'En attente',
         [F.track.discoveryMode]: t.discoveryMode === 'oui',
       };
+      if (compte) tf[F.track.compte] = [compte.id];
       const opt = {
         [F.track.featuring]: clean(t.featuring, 200),
         [F.track.isrc]: isrc,
@@ -111,34 +123,40 @@ export default async function handler(req, res) {
 
     // --- Campagne ----------------------------------------------------------------
     const actions = (Array.isArray(c.parallelActions) ? c.parallelActions : []).filter(a => ACTIONS.includes(a));
-    const isCatalogue = t.releaseDate < today;
+    const today = new Date().toISOString().slice(0, 10);
+    const warn = compte ? '' : '⚠ Client non reconnu (email absent des Contacts) : rattacher cette campagne et sa Track à un Compte avant de lancer.\n\n';
     const cfields = {
       [F.campagne.name]: `${artist} - ${title}`,
-      [F.campagne.compte]: [compte.id],
       [F.campagne.track]: [trackRec.id],
       [F.campagne.status]: 'Brief',
-      [F.campagne.context]: 'Client existant',
-      [F.campagne.type]: isCatalogue ? 'Catalogue' : 'Release',
+      [F.campagne.context]: compte ? 'Client existant' : 'Nouveau client',
+      [F.campagne.type]: t.releaseDate < today ? 'Catalogue' : 'Release',
       [F.campagne.artist]: artist,
       [F.campagne.trackName]: title,
       [F.campagne.releaseDate]: t.releaseDate,
       [F.campagne.currency]: currency,
       [F.campagne.budgetRequested]: budget,
-      [F.campagne.driveFolder]: campaignFolder.webViewLink,
       [F.campagne.fanlinkStatus]: 'À générer',
       [F.campagne.metaStatus]: 'À créer',
+      [F.campagne.declaredIdentity]: declared,
     };
     const copt = {
+      [F.campagne.driveFolder]: campaignFolder?.webViewLink,
+      [F.campagne.clientFilesLink]: filesLink,
       [F.campagne.spotifyUrl]: spotifyUrl,
       [F.campagne.objective]: clean(c.objective, 200),
       [F.campagne.territories]: clean(c.territories, 1000),
       [F.campagne.pageIgFb]: clean(c.pageIgFb, 300),
-      [F.campagne.notes]: clean(c.notes, 4000),
+      [F.campagne.notes]: (warn + clean(c.notes, 4000)).trim(),
       [F.campagne.startDate]: /^\d{4}-\d{2}-\d{2}$/.test(String(c.startDate || '')) ? c.startDate : null,
       [F.campagne.parallelActions]: actions.length ? actions : null,
     };
     for (const [k, v] of Object.entries(copt)) if (v) cfields[k] = v;
-    if (cf[F.compte.defaultAdAccount]?.length) cfields[F.campagne.adAccount] = cf[F.compte.defaultAdAccount];
+    if (compte) {
+      cfields[F.campagne.compte] = [compte.id];
+      if (cf[F.compte.defaultAdAccount]?.length) cfields[F.campagne.adAccount] = cf[F.compte.defaultAdAccount];
+    }
+    if (contact) cfields[F.campagne.submittedBy] = [contact.id];
     const campaign = await create(T.campagnes, cfields);
 
     // --- Sessions d'upload ---------------------------------------------------------
@@ -151,7 +169,14 @@ export default async function handler(req, res) {
       uploads.push({ index: i, token: signUpload({ u: session, c: campaign.id, s: Number(f.size) }) });
     }
 
-    return res.status(200).json({ ok: true, campaignId: campaign.id, trackKey, uploads });
+    return res.status(200).json({
+      ok: true,
+      campaignId: campaign.id,
+      submission: signUpload({ c: campaign.id, finish: true }, 24 * 3600),
+      drive,
+      recognized: Boolean(compte),
+      uploads,
+    });
   } catch (e) {
     console.error('[onboarding-start]', e);
     return res.status(500).json({ error: 'Server error. Try again in a few minutes; if it persists, let 129 know.', detail: e.message });
