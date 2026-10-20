@@ -149,19 +149,19 @@
 </aside>
 
 <script>
-const S = { key: sessionStorage.getItem('adminKey') || '', source:'all', preset:'last_30d',
+const S = { key: localStorage.getItem('adminKey') || '', source:'all', preset:'last_30d',
             data:null, sources:{}, showOff:false };
 
 function askKey(){
   const k = prompt('Clé d’accès 129');
-  if (k) { S.key = k.trim(); sessionStorage.setItem('adminKey', S.key); }
+  if (k) { S.key = k.trim(); localStorage.setItem('adminKey', S.key); }
   return S.key;
 }
 
 async function api(path){
   if (!S.key && !askKey()) throw new Error('Clé requise.');
   const r = await fetch(path, { headers:{ Authorization:'Bearer ' + S.key } });
-  if (r.status === 403){ sessionStorage.removeItem('adminKey'); S.key=''; throw new Error('Clé refusée. Recharge la page pour la ressaisir.'); }
+  if (r.status === 403){ localStorage.removeItem('adminKey'); S.key=''; throw new Error('Clé refusée. Recharge la page pour la ressaisir.'); }
   const d = await r.json().catch(()=>({}));
   if (!r.ok) throw new Error(d.error || 'Erreur de chargement.');
   return d;

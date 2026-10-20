@@ -187,17 +187,17 @@ const DSPS = [
   { key:'youtube', name:'YouTube', geo:'Reste du monde', never:true },
   { key:'beatport', name:'Beatport', geo:'Store', never:true },
 ];
-const S = { key: sessionStorage.getItem('adminKey') || '', data: null, current: null };
+const S = { key: localStorage.getItem('adminKey') || '', data: null, current: null };
 
 function ensureKey(){
   if (S.key) return;
   const k = prompt('Clé d’accès 129');
-  if (k) { S.key = k.trim(); sessionStorage.setItem('adminKey', S.key); }
+  if (k) { S.key = k.trim(); localStorage.setItem('adminKey', S.key); }
 }
 async function api(path, opts = {}){
   ensureKey();
   const r = await fetch(path, { ...opts, headers: { ...(opts.headers||{}), Authorization: 'Bearer ' + S.key, 'Content-Type':'application/json' } });
-  if (r.status === 403){ sessionStorage.removeItem('adminKey'); S.key=''; throw new Error('Clé refusée. Recharge la page pour la ressaisir.'); }
+  if (r.status === 403){ localStorage.removeItem('adminKey'); S.key=''; throw new Error('Clé refusée. Recharge la page pour la ressaisir.'); }
   const d = await r.json().catch(() => ({}));
   if (!r.ok) { const e = new Error(d.error || ('Erreur ' + r.status)); e.data = d; throw e; }
   return d;
