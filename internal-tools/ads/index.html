@@ -149,7 +149,7 @@
 </aside>
 
 <script>
-const S = { key: localStorage.getItem('adminKey') || '', source:'all', preset:'last_30d',
+const S = { key: (() => { const u = new URL(location.href); const k = u.searchParams.get('key'); if (k) { localStorage.setItem('adminKey', k.trim()); u.searchParams.delete('key'); history.replaceState(null, '', u.pathname + u.search + u.hash); } return localStorage.getItem('adminKey') || ''; })(), source:'all', preset:'last_30d',
             data:null, sources:{}, showOff:false };
 
 function askKey(){

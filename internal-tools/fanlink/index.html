@@ -187,7 +187,7 @@ const DSPS = [
   { key:'youtube', name:'YouTube', geo:'Reste du monde', never:true },
   { key:'beatport', name:'Beatport', geo:'Store', never:true },
 ];
-const S = { key: localStorage.getItem('adminKey') || '', data: null, current: null };
+const S = { key: (() => { const u = new URL(location.href); const k = u.searchParams.get('key'); if (k) { localStorage.setItem('adminKey', k.trim()); u.searchParams.delete('key'); history.replaceState(null, '', u.pathname + u.search + u.hash); } return localStorage.getItem('adminKey') || ''; })(), data: null, current: null };
 
 function ensureKey(){
   if (S.key) return;
