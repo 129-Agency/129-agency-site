@@ -1,6 +1,6 @@
 // GET  /api/client-links            -> clients et leur lien de formulaire
 // POST /api/client-links {id}       -> génère le jeton du client s'il n'en a pas, renvoie le lien
-// Header requis : Authorization: Bearer <ADMIN_SECRET>
+// Header requis : Authorization: Bearer <TOOLS_PASSWORD>
 //
 // Le lien porte le « Token dashboard » du compte (UUID aléatoire, jamais le Record ID).
 // PUBLIC_FORM_BASE (optionnel) : URL publique du formulaire, ex. https://129agency.com/onboarding.

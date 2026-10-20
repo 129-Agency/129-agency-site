@@ -1,6 +1,6 @@
 // GET /api/campaign?source=cr2&id=<campaign_id>&preset=last_30d
 // Vue detail interne d'une campagne, creas comprises.
-// Header requis : Authorization: Bearer <ADMIN_SECRET>
+// Header requis : Authorization: Bearer <TOOLS_PASSWORD>
 
 import { graph, resolveSource, requireAdmin, extractResults, primaryResult } from './_meta.js';
 import { windows, PRESETS } from './_windows.js';

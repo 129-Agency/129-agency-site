@@ -1,4 +1,4 @@
-// GET /api/health  (header Authorization: Bearer <ADMIN_SECRET>)
+// GET /api/health  (header Authorization: Bearer <TOOLS_PASSWORD>)
 // Diagnostic complet : dit lequel des trois problemes possibles tu as,
 // au lieu de te laisser deviner entre "token mort" et "compte desactive".
 

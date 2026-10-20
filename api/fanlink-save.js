@@ -1,4 +1,4 @@
-// POST /api/fanlink-save   (header Authorization: Bearer <ADMIN_SECRET>)
+// POST /api/fanlink-save   (header Authorization: Bearer <TOOLS_PASSWORD>)
 //
 // Le bouton du formulaire privé. En un clic :
 //   1. valide et construit l'entrée fanlink + le prompt Lovable ;

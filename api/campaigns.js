@@ -1,5 +1,5 @@
 // GET /api/campaigns?source=cr2|129|all&preset=last_30d
-// Overview interne. Header requis : Authorization: Bearer <ADMIN_SECRET>
+// Overview interne. Header requis : Authorization: Bearer <TOOLS_PASSWORD>
 //
 // Renvoie, par campagne : les metriques de la periode, celles de la periode
 // precedente de meme longueur, et deux signaux (derive du cout par resultat,

@@ -1,6 +1,6 @@
 // GET /api/fanlink-campaign            -> file des campagnes à traiter
 // GET /api/fanlink-campaign?id=recXXX  -> une campagne + sa track + les ad accounts, pour préremplir le generator
-// Header requis : Authorization: Bearer <ADMIN_SECRET>
+// Header requis : Authorization: Bearer <TOOLS_PASSWORD>
 
 import { requireAdmin } from './_meta.js';
 import { T, F, FN, find, get, q } from './_airtable.js';

@@ -1,5 +1,5 @@
 // GET /api/sign?c=<ids>&t=<titre>&source=<cle>
-// Genere le lien client signe. Header requis : Authorization: Bearer <ADMIN_SECRET>
+// Genere le lien client signe. Header requis : Authorization: Bearer <TOOLS_PASSWORD>
 // Le secret ne transite jamais en query string, contrairement a la v1 ERA.
 
 import { requireAdmin, sign, resolveSource } from './_meta.js';
