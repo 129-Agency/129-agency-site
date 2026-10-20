@@ -7,8 +7,8 @@
 // 4. Ouvre une session d'upload Drive par fichier et renvoie un jeton signé par fichier,
 //    plus un jeton de soumission pour /api/onboarding-finish.
 
-import { T, F, FN, find, create, q, slugify } from './_airtable.js';
-import { ensureFolder, rootFolderId, startResumable, driveConfigured } from './_google.js';
+import { T, F, FN, find, create, update, q, slugify } from './_airtable.js';
+import { ensureFolder, rootFolderId, startResumable, putChunk, driveConfigured } from './_google.js';
 import { identify, signUpload, readJson, clean, cleanUrl, spotifyIdFrom } from './_onboarding.js';
 
 const RELEASE_TYPES = ['Single', 'EP', 'Album', 'Compilation'];
@@ -18,8 +18,22 @@ const LANGS = ['en', 'fr', 'es', 'pt', 'de', 'it', 'instrumental'];
 const CURRENCIES = ['EUR', 'USD', 'GBP'];
 const ACTIONS = ['Radio', 'Pitch playlist éditorial', 'Playlists tierces', 'TikTok / UGC', 'Influence',
   'Presse', 'Autre agence ads', 'Aucune'];
-const KIND_FOLDER = { audio: 'Audio', video: 'Vidéos', visual: 'Visuels', artwork: 'Visuels' };
+const KIND_FOLDER = { audio: 'Audio', video: 'Vidéos', visual: 'Visuels', artwork: 'Visuels', other: 'Autres' };
 const MAX_FILES = 40;
+const PAGE_ACCESS = {
+  in_place: 'Déjà en place',
+  done: 'Donné par le client',
+  request: 'Demande à envoyer par 129',
+  help: "Besoin d'aide",
+};
+// Pochettes trouvées par /api/onboarding-lookup : seuls les CDN des plateformes sont acceptés.
+const ARTWORK_HOSTS = /(^|\.)(scdn\.co|mzstatic\.com|dzcdn\.net)$/i;
+function artworkUrlFrom(v) {
+  const s = cleanUrl(v);
+  if (!s) return null;
+  const u = new URL(s);
+  return u.protocol === 'https:' && ARTWORK_HOSTS.test(u.hostname) ? s : null;
+}
 const MAX_FILE_BYTES = 5 * 1024 ** 3;
 
 export default async function handler(req, res) {
@@ -31,12 +45,18 @@ export default async function handler(req, res) {
   try {
     // --- Validation -------------------------------------------------------
     const who = b.identity || {}, t = b.track || {}, c = b.campaign || {};
-    const idName = clean(who.name, 120), idEmail = clean(who.email, 200).toLowerCase(), idCompany = clean(who.company, 160);
+    const idEmail = clean(who.email, 200).toLowerCase();
     const artist = clean(t.artist, 200), title = clean(t.title, 200);
     const errors = [];
-    if (!idName) errors.push('Your name');
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(idEmail)) errors.push('Your email');
-    if (!idCompany) errors.push('Label / company');
+
+    // Client reconnu (email dans les Contacts, ou lien ?k=) : nom et société viennent d'Airtable.
+    const { compte, contact } = errors.length ? { compte: null, contact: null } : await identify({ k: b.k, email: idEmail });
+    const cf = compte?.fields || {};
+    const idName = clean(who.name, 120) || clean(contact?.fields?.[F.contact.name], 120);
+    const idCompany = clean(who.company, 160) || clean(cf[F.compte.name], 160);
+    if (!compte && !idName) errors.push('Your name');
+    if (!compte && !idCompany) errors.push('Label / company');
     if (!artist) errors.push('Artist');
     if (!title) errors.push('Title');
     if (!RELEASE_TYPES.includes(t.releaseType)) errors.push('Release type');
@@ -50,10 +70,11 @@ export default async function handler(req, res) {
 
     const drive = driveConfigured();
     const filesLink = cleanUrl(c.filesLink);
+    const artworkUrl = b.hasArtwork ? null : artworkUrlFrom(t.artworkUrl);
     // Sans Drive, seuls les métadonnées et l'artwork (inline, copié dans Airtable) passent.
     const files = drive && Array.isArray(b.files) ? b.files : [];
     if (files.length > MAX_FILES) errors.push(`Maximum ${MAX_FILES} files`);
-    if (!b.hasArtwork && !filesLink) errors.push('Artwork (or a link to your files)');
+    if (!b.hasArtwork && !artworkUrl && !filesLink) errors.push('Artwork (or a link to your files)');
     for (const f of files) {
       if (!KIND_FOLDER[f.kind] || !clean(f.name) || !(Number(f.size) > 0) || Number(f.size) > MAX_FILE_BYTES) {
         errors.push(`Invalid file: ${clean(f.name, 80) || '(no name)'}`);
@@ -61,9 +82,7 @@ export default async function handler(req, res) {
     }
     if (errors.length) return res.status(400).json({ error: 'Missing or invalid: ' + errors.join(', ') + '.' });
 
-    // --- Identification --------------------------------------------------------
-    const { compte, contact } = await identify({ k: b.k, email: idEmail });
-    const cf = compte?.fields || {};
+    // --- Identité déclarée ---------------------------------------------------------
     const declared = `${idName} — ${idEmail} — ${idCompany}`;
 
     // --- Clé track ---------------------------------------------------------
@@ -78,7 +97,9 @@ export default async function handler(req, res) {
       const clientFolder = await ensureFolder(clientFolderName, rootFolderId());
       const today = new Date().toISOString().slice(0, 10);
       campaignFolder = await ensureFolder(`${today} ${artist} - ${title}`, clientFolder.id);
-      for (const kind of new Set(files.map(f => f.kind))) {
+      const kinds = new Set(files.map(f => f.kind));
+      if (artworkUrl) kinds.add('artwork');
+      for (const kind of kinds) {
         const name = KIND_FOLDER[kind];
         sub[name] = sub[name] || await ensureFolder(name, campaignFolder.id);
       }
@@ -125,6 +146,10 @@ export default async function handler(req, res) {
     const actions = (Array.isArray(c.parallelActions) ? c.parallelActions : []).filter(a => ACTIONS.includes(a));
     const today = new Date().toISOString().slice(0, 10);
     const warn = compte ? '' : '⚠ Client non reconnu (email absent des Contacts) : rattacher cette campagne et sa Track à un Compte avant de lancer.\n\n';
+    const access = PAGE_ACCESS[c.pageAccess] || null;
+    const ig = clean(c.instagram, 120).replace(/^https?:\/\/(www\.)?instagram\.com\//i, '@').replace(/\/$/, '');
+    const fb = clean(c.facebook, 300);
+    const pageIgFb = [ig && `IG: ${ig.startsWith('@') ? ig : '@' + ig}`, fb && `FB: ${fb}`].filter(Boolean).join(' · ') || clean(c.pageIgFb, 300);
     const cfields = {
       [F.campagne.name]: `${artist} - ${title}`,
       [F.campagne.track]: [trackRec.id],
@@ -146,7 +171,9 @@ export default async function handler(req, res) {
       [F.campagne.spotifyUrl]: spotifyUrl,
       [F.campagne.objective]: clean(c.objective, 200),
       [F.campagne.territories]: clean(c.territories, 1000),
-      [F.campagne.pageIgFb]: clean(c.pageIgFb, 300),
+      [F.campagne.pageIgFb]: pageIgFb,
+      [F.campagne.pageAccess]: access,
+      [F.campagne.artwork]: artworkUrl ? [{ url: artworkUrl, filename: `${slugify(`${artist} ${title}`)}-cover.jpg` }] : null,
       [F.campagne.notes]: (warn + clean(c.notes, 4000)).trim(),
       [F.campagne.startDate]: /^\d{4}-\d{2}-\d{2}$/.test(String(c.startDate || '')) ? c.startDate : null,
       [F.campagne.parallelActions]: actions.length ? actions : null,
@@ -158,6 +185,28 @@ export default async function handler(req, res) {
     }
     if (contact) cfields[F.campagne.submittedBy] = [contact.id];
     const campaign = await create(T.campagnes, cfields);
+
+    // Pochette trouvée en ligne : copiée sur la Track (Airtable la télécharge) et sur Drive.
+    const notesExtra = [];
+    if (artworkUrl) {
+      if (!trackRec.fields?.[F.track.artwork]?.length) {
+        try { await update(T.tracks, trackRec.id, { [F.track.artwork]: [{ url: artworkUrl }] }); } catch (e) { notesExtra.push('artwork Track : ' + e.message); }
+      }
+      if (sub.Visuels) {
+        try { await copyToDrive(artworkUrl, `ARTWORK (plateforme) - ${artist} - ${title}.jpg`, sub.Visuels.id); }
+        catch (e) { notesExtra.push('artwork Drive : ' + e.message); }
+      }
+    }
+    if (notesExtra.length) {
+      const prev = cfields[F.campagne.notes] || '';
+      await update(T.campagnes, campaign.id, { [F.campagne.notes]: (prev + '\n' + notesExtra.map(n => '⚠ ' + n).join('\n')).trim() }).catch(() => {});
+    }
+
+    // Statut d'onboarding du compte : on ne fait qu'avancer un compte encore en début de parcours.
+    if (compte && ['', 'Non démarré', 'Formulaire envoyé'].includes(cf[F.compte.onboardingStatus] || '')) {
+      const next = access === 'Déjà en place' || access === 'Donné par le client' ? 'Formulaire reçu' : 'Accès Meta en attente';
+      await update(T.comptes, compte.id, { [F.compte.onboardingStatus]: next }).catch(() => {});
+    }
 
     // --- Sessions d'upload ---------------------------------------------------------
     const uploads = [];
@@ -181,4 +230,14 @@ export default async function handler(req, res) {
     console.error('[onboarding-start]', e);
     return res.status(500).json({ error: 'Server error. Try again in a few minutes; if it persists, let 129 know.', detail: e.message });
   }
+}
+
+async function copyToDrive(url, name, parentId) {
+  const r = await fetch(url, { signal: AbortSignal.timeout(6000) });
+  if (!r.ok) throw new Error(`téléchargement ${r.status}`);
+  const buf = Buffer.from(await r.arrayBuffer());
+  if (!buf.length || buf.length > 8 * 1024 * 1024) throw new Error('taille inattendue');
+  const mimeType = r.headers.get('content-type') || 'image/jpeg';
+  const session = await startResumable({ name, mimeType, size: buf.length, parentId });
+  await putChunk(session, buf, `bytes 0-${buf.length - 1}/${buf.length}`);
 }

@@ -53,6 +53,51 @@ export async function identify({ k, email }) {
   return { compte, contact, via: compte ? 'email' : null };
 }
 
+// Ce que le formulaire peut afficher d'un client reconnu : prénom, nom du compte,
+// devise habituelle, et ses artistes récents avec la dernière page IG/FB connue.
+// Rien d'autre (pas de budget, pas de fee, pas de notes) : la route est publique.
+const CURRENCIES = ['EUR', 'USD', 'GBP'];
+
+export async function publicProfile({ compte, contact }) {
+  if (!compte) return { known: false };
+  const cf = compte.fields || {};
+  const firstName = clean(contact?.fields?.[F.contact.name], 120).split(/\s+/)[0] || '';
+  const company = clean(cf[F.compte.name], 120);
+
+  let currency = CURRENCIES.includes(cf[F.compte.currency]) ? cf[F.compte.currency] : null;
+  const adAccountId = (cf[F.compte.defaultAdAccount] || [])[0];
+  if (!currency && adAccountId) {
+    try {
+      const aa = await get(T.adAccounts, adAccountId);
+      const c = aa.fields?.[F.adAccount.currency];
+      if (CURRENCIES.includes(c)) currency = c;
+    } catch { /* devise facultative */ }
+  }
+
+  // Artistes : les 30 dernières campagnes du compte, dédoublonnées, plus récentes d'abord.
+  const artists = [];
+  const ids = (cf[F.compte.campagnes] || []).slice(-30);
+  if (ids.length) {
+    try {
+      const rows = await find(T.campagnes, `OR(${ids.map(id => `RECORD_ID() = ${q(id)}`).join(', ')})`, {
+        maxRecords: 30, fields: [F.campagne.artist, F.campagne.pageIgFb],
+      });
+      const byId = new Map(rows.map(r => [r.id, r.fields || {}]));
+      const seen = new Set();
+      for (const id of ids.slice().reverse()) {
+        const f = byId.get(id);
+        const name = clean(f?.[F.campagne.artist], 120);
+        if (!name || seen.has(name.toLowerCase())) continue;
+        seen.add(name.toLowerCase());
+        artists.push({ name, page: clean(f[F.campagne.pageIgFb], 300) });
+        if (artists.length >= 8) break;
+      }
+    } catch { /* liste facultative */ }
+  }
+
+  return { known: true, firstName, company, currency, artists, returning: ids.length > 0 };
+}
+
 export function spotifyIdFrom(url) {
   const m = String(url || '').match(/(?:track[/:])([A-Za-z0-9]{22})/);
   return m ? m[1] : null;

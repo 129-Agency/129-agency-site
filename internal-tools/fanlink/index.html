@@ -308,7 +308,7 @@ async function openCampaign(id, btn){
   $('ctx').innerHTML = [
     ['Client', c.compteName || 'Non reconnu — à rattacher dans Airtable'], ['Déclaré par', c.declaredIdentity || '—'], ['Budget demandé', c.budgetRequested != null ? `${c.budgetRequested} ${cur}` : '—'],
     ['Objectif', c.objective || '—'], ['Territoires', c.territories || '—'],
-    ['Actions en parallèle', (c.parallelActions||[]).join(', ') || '—'], ['Page artiste', c.pageIgFb || '—'],
+    ['Actions en parallèle', (c.parallelActions||[]).join(', ') || '—'], ['Page artiste', c.pageIgFb || '—'], ['Accès Page / IG', c.pageAccess || '—'],
     ['ISRC', t.isrc || '—'], ['Clé track', t.key || '—'],
   ].map(([k,v]) => `<div><div class="k">${esc(k)}</div>${esc(v)}</div>`).join('')
    + (c.driveFolder ? `<div><div class="k">Assets</div><a href="${esc(c.driveFolder)}" target="_blank" rel="noopener">Dossier Drive</a></div>` : '')

@@ -38,7 +38,9 @@ export default async function handler(req, res) {
     const failed = (b.uploaded || []).filter(f => !f.ok).length;
     const stamp = new Date().toISOString().slice(0, 16).replace('T', ' ');
     const prev = campaign.fields[F.campagne.notes] || '';
-    const recap = `\n\n[Formulaire ${stamp} UTC] ${received.length} fichier(s) envoyé(s)${failed ? `, ${failed} en échec` : ''} :\n${received.join('\n')}`
+    const recap = `\n\n[Formulaire ${stamp} UTC] ` + (received.length
+      ? `${received.length} fichier(s) envoyé(s)${failed ? `, ${failed} en échec` : ''} :\n${received.join('\n')}`
+      : 'aucun fichier envoyé par le formulaire (voir lien client / pochette en ligne).')
       + (warnings.length ? `\n${warnings.map(w => '⚠ ' + w).join('\n')}` : '');
     await update(T.campagnes, campaign.id, { [F.campagne.notes]: (prev + recap).trim().slice(0, 90000) });
 

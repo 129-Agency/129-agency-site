@@ -102,6 +102,31 @@ const RESULT_ORDER = [
   ['post_engagement', 'Interactions'],
 ];
 
+// Regroupe le tableau `actions` de Meta par famille de resultat.
+// (Cette fonction manquait depuis la fusion des repos : /api/campaign et /api/report
+// plantaient a l'import.)
+export function extractResults(actions) {
+  const out = { content_views: 0, landing_page_views: 0, link_clicks: 0, post_engagement: 0 };
+  const key = {
+    offsite_content_view: 'content_views',
+    onsite_web_view_content: 'content_views',
+    'offsite_conversion.fb_pixel_view_content': 'content_views',
+    landing_page_view: 'landing_page_views',
+    link_click: 'link_clicks',
+    post_engagement: 'post_engagement',
+  };
+  const seenContent = new Set();
+  for (const a of Array.isArray(actions) ? actions : []) {
+    const k = key[a.action_type];
+    if (!k) continue;
+    // Meta peut renvoyer la meme vue de contenu sous deux noms : on garde le plus grand.
+    if (k === 'content_views') { seenContent.add(Number(a.value || 0)); continue; }
+    out[k] += Number(a.value || 0);
+  }
+  out.content_views = seenContent.size ? Math.max(...seenContent) : 0;
+  return out;
+}
+
 // Resultat principal d'une campagne : on prend le signal le plus proche de
 // l'intention (ecoute / visite) disponible, dans cet ordre.
 export function primaryResult(r) {

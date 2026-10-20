@@ -3,24 +3,45 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "functions": {
-    "api/*.js": { "maxDuration": 30 }
+    "api/*.js": {
+      "maxDuration": 30
+    }
   },
   "redirects": [
-    { "source": "/internal", "destination": "/internal-tools/ads", "permanent": false }
+    {
+      "source": "/internal",
+      "destination": "/internal-tools/ads",
+      "permanent": false
+    }
   ],
   "headers": [
     {
       "source": "/api/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store" },
-        { "key": "X-Robots-Tag", "value": "noindex" }
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
       ]
     },
     {
       "source": "/(internal-tools|onboarding|client-report)(.*)",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
       ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/onboarding",
+      "destination": "/internal-tools/onboarding/index.html"
     }
   ]
 }

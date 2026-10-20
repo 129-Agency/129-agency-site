@@ -84,6 +84,7 @@ export default async function handler(req, res) {
         notes: cf[C.notes] || '',
         driveFolder: cf[C.driveFolder] || '',
         clientFilesLink: cf[C.clientFilesLink] || '',
+        pageAccess: cf[C.pageAccess] || '',
         declaredIdentity: cf[C.declaredIdentity] || '',
         startDate: cf[C.startDate] || null,
         adAccountId: one(cf[C.adAccount]) || null,

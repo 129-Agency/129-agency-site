@@ -26,6 +26,7 @@ export const F = {
     onboardingStatus: 'fldy82WNBKB10eHxy',
     feeDefault: 'fldYrE5IGhbQVnf8T',
     currency: 'fld6uAJVSVz7UOAWY',
+    campagnes: 'fldGvhNTOTNwbdq2p',     // lien inverse vers Campagnes
   },
   track: {
     title: 'fldI8DeuYSNfnk1UR',
@@ -86,6 +87,7 @@ export const F = {
     submittedBy: 'fldLCLKf8IFdN8wVf',
     declaredIdentity: 'fldzcMlYdQ7w2D91G',
     clientFilesLink: 'fldaHlg7koK3TWTg9',
+    pageAccess: 'fldj3MnqQDsLwKzvj',     // Accès Page / IG
   },
   contact: {
     name: 'fldBqZjkgn9SnqBDQ',

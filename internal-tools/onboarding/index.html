@@ -1,0 +1,1355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0000FA">
+<title>Release onboarding — 129 Agency</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* 129 brand: Beautiful White, Blue, Mystic Black + secondary greys. Typeface Geist. */
+  :root{
+    --paper:#F7F7F5; --blue:#0000FA; --blue-hover:#1F1FFF; --ink:#020416;
+    --graphite:#6E7180; --space:#9DA2B3; --steel:#BCBFCC; --smoke:#D3D6E0; --cloud:#EDEFF7;
+    --white:#FFFFFF; --error:#C4161C;
+    --r-card:22px; --r-field:14px; --ease-out:cubic-bezier(.2,.8,.2,1);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--paper); color:var(--ink); font-family:Geist,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility}
+  button,input,textarea{font:inherit; color:inherit}
+  a{color:var(--blue)}
+  [hidden]{display:none !important}
+  .sr{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+  :focus-visible{outline:2px solid var(--blue); outline-offset:3px}
+
+  /* ---------- Layout: paper column for the conversation, blue panel for the release ---------- */
+  .app{display:grid; grid-template-columns:minmax(0,1.2fr) minmax(400px,1fr); min-height:100dvh}
+  .left{display:flex; flex-direction:column; min-width:0; padding:28px clamp(20px,5vw,80px) 28px}
+  .right{position:sticky; top:0; height:100dvh; background:var(--blue); color:var(--white); overflow:hidden;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px}
+
+  .top{display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:40px}
+  .logo{display:block; width:88px; height:auto; color:var(--blue)}
+  .count{font-size:14px; color:var(--graphite); font-variant-numeric:tabular-nums}
+
+  .bar{display:grid; grid-template-columns:repeat(8,1fr); gap:6px; margin:22px 0 0}
+  .bar i{display:block; height:3px; border-radius:3px; background:var(--smoke); transition:background .3s}
+  .bar i.on{background:var(--blue)}
+  .bar.off{visibility:hidden}
+
+  main{flex:1; display:flex; align-items:center; padding:clamp(32px,7vh,72px) 0 24px}
+  .step{width:100%; max-width:620px}
+  .step.enter{animation:stepIn .42s var(--ease-out) both}
+  @keyframes stepIn{from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:none}}
+
+  h1.q{font-size:clamp(34px,4.4vw,54px); font-weight:500; letter-spacing:-.035em; line-height:1.02; margin:0; max-width:15ch}
+  h1.q:focus{outline:none}
+  .sub{font-size:18px; color:var(--graphite); margin:16px 0 0; max-width:50ch}
+  .stack{display:grid; gap:22px; margin-top:36px}
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:22px}
+
+  /* ---------- Fields ---------- */
+  .fld{display:grid; gap:8px; min-width:0}
+  .fld > label, .lbl{font-size:14px; font-weight:500}
+  .opt{font-weight:400; color:var(--graphite)}
+  .help{font-size:14px; color:var(--graphite); margin:0}
+  .in{width:100%; height:56px; padding:0 18px; border-radius:var(--r-field); border:1px solid var(--smoke); background:var(--white);
+    font-size:17px; transition:border-color .15s, box-shadow .15s; -webkit-appearance:none; appearance:none}
+  textarea.in{height:auto; min-height:110px; padding:14px 18px; resize:vertical; line-height:1.45}
+  .in::placeholder{color:var(--space)}
+  .in:hover{border-color:var(--steel)}
+  .in:focus{outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(0,0,250,.16)}
+  .in[aria-invalid="true"]{border-color:var(--error)}
+  input[type=date].in{padding-right:12px}
+  .err{display:flex; gap:8px; align-items:flex-start; color:var(--error); font-size:14px; margin:0}
+  .err:empty{display:none}
+  .err::before{content:"!"; flex:none; width:18px; height:18px; border-radius:50%; background:var(--error); color:#fff;
+    font-size:12px; font-weight:600; display:grid; place-items:center; margin-top:1px}
+
+  .money{position:relative}
+  .money .sym{position:absolute; left:20px; top:50%; transform:translateY(-50%); font-size:26px; font-weight:500; color:var(--graphite); pointer-events:none}
+  .money .in{height:72px; font-size:30px; font-weight:500; padding-left:48px; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+
+  /* Chips (radio / checkbox) */
+  .chips{display:flex; flex-wrap:wrap; gap:8px}
+  .chip{position:relative}
+  .chip input{position:absolute; opacity:0; inset:0; margin:0; cursor:pointer}
+  .chip span{display:inline-flex; align-items:center; min-height:44px; padding:0 18px; border-radius:999px; border:1px solid var(--smoke);
+    background:var(--white); font-size:15px; transition:background .15s, border-color .15s, color .15s; user-select:none}
+  .chip:hover span{border-color:var(--steel)}
+  .chip input:checked + span{background:var(--blue); border-color:var(--blue); color:var(--white)}
+  .chip input:focus-visible + span{outline:2px solid var(--blue); outline-offset:3px}
+  button.chip[aria-pressed="true"] span{background:var(--ink); border-color:var(--ink); color:var(--white)}
+  button.chip{border:0; padding:0; background:none; cursor:pointer}
+
+  /* Buttons */
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:10px; height:56px; padding:0 30px; border-radius:999px;
+    border:1px solid transparent; font-size:16px; font-weight:500; cursor:pointer; transition:background .15s, border-color .15s, transform .1s;
+    touch-action:manipulation; white-space:nowrap}
+  .btn:active{transform:scale(.98)}
+  .btn.primary{background:var(--blue); color:var(--white)}
+  .btn.primary:hover{background:var(--blue-hover)}
+  .btn.primary[disabled]{background:var(--steel); cursor:default}
+  .btn.ghost{background:transparent; border-color:var(--smoke); color:var(--ink)}
+  .btn.ghost:hover{border-color:var(--ink)}
+  .btn.small{height:40px; padding:0 16px; font-size:14px}
+  .link{background:none; border:0; padding:0; color:var(--blue); font-size:inherit; cursor:pointer; text-decoration:underline; text-underline-offset:3px}
+  .spin{width:16px; height:16px; border-radius:50%; border:2px solid currentColor; border-right-color:transparent; animation:spin .7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .nav{display:flex; align-items:center; gap:14px; padding-top:8px}
+  .nav .hint{font-size:14px; color:var(--graphite)}
+  .nav .hint kbd{font-family:inherit; font-size:13px; border:1px solid var(--smoke); border-radius:6px; padding:1px 6px; background:var(--white)}
+
+  /* ---------- Welcome ---------- */
+  .need{list-style:none; padding:0; margin:34px 0 0; display:grid; gap:12px; max-width:480px}
+  .need li{display:flex; gap:14px; align-items:baseline; font-size:16px}
+  .need li::before{content:""; flex:none; width:12px; height:2px; background:var(--blue); transform:translateY(-4px) rotate(-56.5deg)}
+  .welcome-cta{display:flex; align-items:center; gap:18px; margin-top:40px}
+  .welcome-cta .help{max-width:28ch}
+
+  /* ---------- Identity ---------- */
+  .hello{display:flex; gap:16px; align-items:center; padding:18px 20px; border-radius:var(--r-card); background:var(--white); border:1px solid var(--smoke)}
+  .hello .mark{flex:none; width:44px; height:44px; border-radius:50%; background:var(--blue); color:#fff; display:grid; place-items:center; font-weight:600; font-size:18px}
+  .hello p{margin:0}
+  .hello .who{font-weight:500}
+
+  /* ---------- Magic link ---------- */
+  .magic{position:relative}
+  .magic .in{padding-right:52px}
+  .magic .state{position:absolute; right:18px; top:50%; transform:translateY(-50%); color:var(--blue); display:flex}
+  .found{display:flex; gap:12px; align-items:center; font-size:14px; color:var(--ink); margin:0}
+  .found img{width:36px; height:36px; border-radius:6px; object-fit:cover}
+  details.more{border-top:1px solid var(--smoke); padding-top:16px}
+  details.more summary{cursor:pointer; font-size:15px; font-weight:500; color:var(--ink); list-style:none; display:flex; gap:10px; align-items:center}
+  details.more summary::-webkit-details-marker{display:none}
+  details.more summary::before{content:"+"; width:22px; height:22px; border-radius:50%; border:1px solid var(--steel); display:grid; place-items:center; font-weight:400; line-height:1}
+  details.more[open] summary::before{content:"–"}
+  details.more .stack{margin-top:20px}
+
+  /* ---------- Links ---------- */
+  .dsp{display:grid; grid-template-columns:132px 1fr; align-items:center; gap:14px}
+  .dsp label{font-size:15px; font-weight:500}
+  .note{padding:14px 18px; border-radius:var(--r-field); background:var(--cloud); font-size:15px; margin:0}
+
+  /* ---------- Files ---------- */
+  .cover{display:grid; grid-template-columns:132px 1fr; gap:20px; align-items:center}
+  .cover .art{position:relative; width:132px; aspect-ratio:1; border-radius:12px; overflow:hidden; background:var(--cloud);
+    border:1px dashed var(--steel); display:grid; place-items:center; cursor:pointer; color:var(--graphite); font-size:14px; text-align:center; padding:10px}
+  .cover .art img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+  .cover .art.has{border-style:solid; border-color:transparent}
+  .cover .art.over, .drop.over{border-color:var(--blue); background:#E6E6FF}
+  .drop{display:grid; place-items:center; gap:6px; text-align:center; min-height:150px; padding:24px; border-radius:var(--r-card);
+    border:1.5px dashed var(--steel); background:var(--white); cursor:pointer; transition:border-color .15s, background .15s}
+  .drop strong{font-weight:500; font-size:17px}
+  .drop:hover{border-color:var(--graphite)}
+  .files{list-style:none; padding:0; margin:0; display:grid; gap:8px}
+  .files li{display:grid; grid-template-columns:auto 1fr auto auto; gap:12px; align-items:center; padding:10px 12px 10px 14px; border-radius:12px; background:var(--white); border:1px solid var(--smoke); font-size:14px}
+  .files .kind{font-size:12px; font-weight:500; padding:3px 10px; border-radius:999px; background:var(--cloud)}
+  .files .name{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .files .size{color:var(--graphite); font-variant-numeric:tabular-nums}
+  .files button{border:0; background:none; cursor:pointer; color:var(--graphite); width:32px; height:32px; border-radius:50%; font-size:18px; line-height:1}
+  .files button:hover{background:var(--cloud); color:var(--ink)}
+
+  /* ---------- Access ---------- */
+  .choices{display:grid; gap:10px}
+  .choice{position:relative; display:block}
+  .choice input{position:absolute; opacity:0; inset:0; margin:0; cursor:pointer}
+  .choice .box{display:grid; grid-template-columns:22px 1fr; gap:14px; padding:16px 18px; border-radius:16px; border:1px solid var(--smoke); background:var(--white); transition:border-color .15s, box-shadow .15s}
+  .choice .box::before{content:""; width:20px; height:20px; border-radius:50%; border:1.5px solid var(--steel); margin-top:2px; transition:border .15s}
+  .choice input:checked + .box{border-color:var(--blue); box-shadow:0 0 0 1px var(--blue)}
+  .choice input:checked + .box::before{border-color:var(--blue); background:var(--blue); box-shadow:inset 0 0 0 4px var(--white)}
+  .choice input:focus-visible + .box{outline:2px solid var(--blue); outline-offset:3px}
+  .choice .t{font-weight:500; display:block}
+  .choice .d{font-size:14px; color:var(--graphite); display:block; margin-top:2px}
+  .guide{margin:4px 0 0; padding:22px 22px 22px 22px; border-radius:var(--r-card); background:var(--ink); color:var(--paper)}
+  .guide h2{font-size:17px; font-weight:500; margin:0 0 16px; letter-spacing:-.01em}
+  .guide ol{list-style:none; counter-reset:g; margin:0; padding:0; display:grid; gap:16px}
+  .guide li{counter-increment:g; display:grid; grid-template-columns:30px 1fr; gap:12px; font-size:15px; line-height:1.45}
+  .guide li::before{content:counter(g); width:28px; height:28px; border-radius:50%; background:var(--blue); color:#fff; display:grid; place-items:center; font-size:13px; font-weight:600}
+  .guide b{font-weight:500; color:var(--white)}
+  .guide a{color:var(--white)}
+  .guide .muted{color:var(--space); font-size:14px; margin:18px 0 0}
+  .bid{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px}
+  .bid code{font-family:inherit; font-size:20px; font-weight:500; letter-spacing:.02em; font-variant-numeric:tabular-nums; color:var(--white)}
+  .bid .btn{height:36px; padding:0 14px; font-size:14px; background:var(--white); color:var(--ink)}
+
+  /* ---------- Review ---------- */
+  .review{display:grid; gap:12px; margin-top:32px}
+  .rv{padding:16px 20px; border-radius:16px; background:var(--white); border:1px solid var(--smoke)}
+  .rv header{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
+  .rv h2{font-size:15px; font-weight:500; margin:0}
+  .rv dl{display:grid; grid-template-columns:150px 1fr; gap:6px 16px; margin:0; font-size:15px}
+  .rv dt{color:var(--graphite)}
+  .rv dd{margin:0; overflow-wrap:anywhere}
+
+  /* ---------- Sending / done ---------- */
+  .meter{height:6px; border-radius:6px; background:var(--smoke); overflow:hidden; margin-top:32px}
+  .meter i{display:block; height:100%; width:0; background:var(--blue); transition:width .3s linear}
+  .meter-label{display:flex; justify-content:space-between; gap:16px; font-size:14px; color:var(--graphite); margin-top:12px; font-variant-numeric:tabular-nums}
+  .next{list-style:none; counter-reset:n; padding:0; margin:36px 0 0; display:grid; gap:18px; max-width:520px}
+  .next li{counter-increment:n; display:grid; grid-template-columns:36px 1fr; gap:14px}
+  .next li::before{content:counter(n); width:32px; height:32px; border-radius:50%; border:1px solid var(--steel); display:grid; place-items:center; font-size:14px; font-weight:500}
+  .next li:first-child::before{background:var(--blue); border-color:var(--blue); color:#fff}
+  .next b{font-weight:500; display:block}
+  .next span{color:var(--graphite); font-size:15px}
+  .warn{padding:14px 18px; border-radius:var(--r-field); background:#FDECEC; color:#8A0F13; font-size:15px; margin:24px 0 0}
+
+  .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); width:max-content; max-width:calc(100% - 32px); background:var(--ink); color:var(--paper); padding:12px 14px 12px 20px;
+    border-radius:999px; font-size:14px; display:flex; gap:14px; align-items:center; box-shadow:0 20px 40px -16px rgba(2,4,22,.5); z-index:20}
+  .toast .link{color:var(--white)}
+
+  /* ---------- Blue panel and the live release card ---------- */
+  .lines{position:absolute; inset:0; width:100%; height:100%; pointer-events:none}
+  .lines line{stroke:#fff; stroke-opacity:.09; stroke-width:1}
+  .lines.draw line{stroke-dasharray:1100; stroke-dashoffset:1100; animation:draw 1.6s var(--ease-out) forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .right{--cw:clamp(280px, calc(100dvh - 560px), 400px)}
+  .panel-cap{position:relative; width:min(var(--cw),100%); font-size:15px; font-weight:500; margin:0 0 14px; display:flex; justify-content:space-between}
+  .panel-cap span{color:#C9C9FF; font-weight:400}
+
+  .card{position:relative; width:min(var(--cw),100%); background:var(--ink); color:var(--paper); border-radius:var(--r-card); padding:16px 16px 20px;
+    box-shadow:0 50px 90px -40px rgba(2,4,22,.75), 0 0 0 1px rgba(255,255,255,.06)}
+  .card.arrive{animation:arrive .9s var(--ease-out) .25s both}
+  @keyframes arrive{from{opacity:0; transform:translateY(26px) rotate(-1.5deg)} to{opacity:1; transform:none}}
+  .card .sleeve{position:relative; aspect-ratio:1; border-radius:12px; overflow:hidden; background:var(--blue); display:grid; place-items:center}
+  .card .sleeve svg{width:44%; color:#fff}
+  .card .sleeve.has{background:var(--ink)}
+  .card .sleeve.has svg{display:none}
+  .card .sleeve img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; animation:fade .5s ease both}
+  @keyframes fade{from{opacity:0}}
+  .card .stamp{position:absolute; top:12px; left:12px; display:flex; gap:8px; align-items:center; background:var(--white); color:var(--ink);
+    padding:7px 14px 7px 10px; border-radius:999px; font-size:14px; font-weight:500; z-index:2}
+  .card .stamp svg{width:18px; height:18px; color:var(--blue)}
+  .card .stamp path{stroke-dasharray:30; stroke-dashoffset:30; animation:tick .6s var(--ease-out) .3s forwards}
+  @keyframes tick{to{stroke-dashoffset:0}}
+  .card .id{padding:18px 6px 4px}
+  .card .artist{font-size:24px; font-weight:500; letter-spacing:-.02em; line-height:1.15; margin:0; overflow-wrap:anywhere}
+  .card .title{font-size:17px; color:var(--space); margin:4px 0 0; overflow-wrap:anywhere}
+  .card .placeholder{color:#4A4E66}
+  .card .rows{display:grid; margin:14px 6px 0}
+  .card .row{display:grid; grid-template-columns:96px 1fr; gap:12px; padding:9px 0; border-top:1px solid rgba(255,255,255,.08); font-size:14px; border-radius:6px}
+  .card .row dt{color:var(--space)}
+  .card .row dd{margin:0; overflow-wrap:anywhere}
+  .card .row.pulse{animation:pulse .7s ease}
+  @keyframes pulse{0%{background:rgba(255,255,255,.12)} 100%{background:transparent}}
+  .card .plats{display:flex; flex-wrap:wrap; gap:6px}
+  .card .plats span{font-size:12px; padding:3px 9px; border-radius:999px; border:1px solid rgba(255,255,255,.18); color:var(--space)}
+  .card .plats span.on{background:var(--paper); border-color:var(--paper); color:var(--ink)}
+  .panel-foot{position:relative; width:min(var(--cw),100%); margin:16px 0 0; font-size:14px; color:#C9C9FF}
+
+  @media (max-width:980px){
+    .app{grid-template-columns:1fr}
+    .right{order:-1; position:sticky; top:0; z-index:5; height:auto; padding:10px 16px; flex-direction:row; justify-content:flex-start}
+    .panel-cap,.panel-foot{display:none}
+    .card{width:100%; display:grid; grid-template-columns:52px 1fr; gap:12px; align-items:center; padding:8px 10px 8px 8px; border-radius:16px; box-shadow:none}
+    .card .sleeve{border-radius:8px}
+    .card .stamp{top:auto; bottom:6px; left:auto; right:8px; padding:4px 10px 4px 6px; font-size:12px}
+    .card .stamp svg{width:14px; height:14px}
+    .card .id{padding:0}
+    .card .artist{font-size:16px} .card .title{font-size:14px; margin:0}
+    .card .rows{display:none}
+    .left{padding:20px 16px 24px}
+    .logo{width:56px}
+    .bar{margin-top:16px}
+    main{align-items:flex-start; padding-top:28px}
+  }
+  @media (max-width:560px){
+    .two{grid-template-columns:1fr}
+    .dsp{grid-template-columns:1fr; gap:6px}
+    .cover{grid-template-columns:96px 1fr; gap:16px} .cover .art{width:96px}
+    .rv dl{grid-template-columns:1fr; gap:2px 0} .rv dd{margin-bottom:8px}
+    .nav .hint{display:none}
+    .nav .btn.primary{flex:1}
+    .welcome-cta{flex-direction:column; align-items:stretch}
+    .files li{grid-template-columns:1fr auto auto}
+    .files .kind{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms !important; animation-delay:0s !important; transition-duration:.01ms !important}
+    .lines.draw line{stroke-dashoffset:0}
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="684 346 512 418">
+    <polygon points="689.39 562.26 689.39 664.65 778.22 664.65 778.22 429.2 689.39 562.26"/><polygon points="689.39 350.82 689.39 429.2 778.22 429.2 728.02 350.82 689.39 350.82"/><polygon points="984.16 586.26 984.16 664.64 828.42 664.64 778.23 586.26 778.21 586.26 829.77 507.59 932.74 507.59 880.23 586.26 984.16 586.26"/>
+    <path d="M1038.22,349.61l-28.62,42.87-.32.48h0s-24.69,36.99-24.69,36.99l-.41-.74-50.2-78.38h-.91s-154.830,0-154.830,0v78.38h104.64l49.88,78.39,25.13-37.64h0s-.21.31-.21.31l51.1,78.37h102.59l-77.36,115.87h104.04l54.03-80.96v-155.8h0v-78.14h-153.85ZM1111.38,548.59l-52.21-79.6h0s26.39-41.24,26.39-41.24h106.52l-80.68,120.85Z"/>
+    <path d="M694.28,709.93h-8.41v49.82h9.23v-12.86h.05l.03-8.61h-.08v-11.91h.12l22.89,33.39h11.17l-35-49.82Z"/><path d="M972.4,709.93h-8.41v49.82h9.23v-12.86h.05l.03-8.61h-.08v-11.91h.12l22.89,33.39h11.17l-35-49.82Z"/>
+    <path d="M801.12,734.36v8.63h16.25c-2.89,5.71-8.55,9.150-14.74,9.15-11.24,0-17.57-9.03-17.57-17.24,0-9.49,7.47-17.36,17.1-17.36,5.19,0,10.44,2.62,13.34,7h11.04c-3.58-9.76-14.61-15.61-24.18-15.61-14.46,0-26.51,11.71-26.51,25.91,0,15.29,12.92,25.91,26.78,25.91,6.52,0,13.2-2.41,18.45-7.34,5.31-4.97,7.94-11.57,7.94-18.24v-.81h-27.910Z"/>
+    <path d="M910.12,718.55v-8.63h-31.39v49.82h31.39v-8.63h-22.18v-11.77h21.44v-8.61h-21.44v-12.19h22.18Z"/>
+    <path d="M1084.8,752.14c-9.16,0-16.56-8.41-16.56-17.36s7.2-17.24,16.22-17.24c5.59,0,9.76,2.49,13.32,6.6h10.5c-4.1-9.5-13.6-15.21-23.48-15.21-14.2,0-25.79,11.85-25.79,25.71s12.13,26.11,25.990,26.11c9.690,0,19.19-5.91,23.02-14.87h-10.7c-4.11,4.57-7.89,6.26-12.52,6.26Z"/>
+    <rect x="998.04" y="709.93" width="9.35" height="49.82"/><rect x="1182.91" y="709.93" width="9.15" height="49.81"/><polygon points="1182.91 742.39 1173 742.39 1150.07 709.93 1159.98 709.93 1182.91 742.39"/>
+  </symbol>
+  <symbol id="emblem" viewBox="0 0 1878.19 1177.1">
+    <polygon points="0 794.55 0 1177.1 331.88 1177.1 331.88 297.4 0 794.55"/><polygon points="0 4.52 0 297.4 331.88 297.4 144.32 4.52 0 4.52"/>
+    <polygon points="1101.38 884.22 1101.38 1177.08 519.46 1177.08 331.93 884.22 331.88 884.22 524.51 590.28 909.26 590.28 713.05 884.22 1101.38 884.22"/>
+    <path fill-rule="evenodd" d="M1303.36,0l-106.94,160.19-1.19,1.78-.03-.05-92.26,138.25-1.55-2.76L913.82,4.52h-3.41s-578.5,0-578.5,0v292.88h390.97l186.37,292.9,93.9-140.65h0s-.78,1.16-.78,1.16l190.93,292.83h383.3l-289.04,432.94h388.74l201.88-302.48V0h-574.83ZM1576.72,743.48l-195.09-297.43-.04-.06,98.59-154.05h397.98l-301.45,451.53Z"/>
+  </symbol>
+</svg>
+
+<div class="app">
+  <div class="left">
+    <div class="top">
+      <svg class="logo" role="img" aria-label="129 Agency"><use href="#logo" fill="currentColor"/></svg>
+      <span class="count" id="count" aria-live="polite"></span>
+    </div>
+    <div class="bar off" id="bar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+
+    <main>
+      <!-- 0 · Welcome -->
+      <section class="step" data-step="welcome">
+        <h1 class="q" tabindex="-1">Let’s get your release moving.</h1>
+        <p class="sub">One short form and everything lands with the 129 team: the track, your files, and access to run the ads. About four minutes.</p>
+        <ul class="need">
+          <li>Cover art, and any videos or visuals you’d like in the ads</li>
+          <li>Release date, or a streaming link if it’s already out</li>
+          <li>Admin access to the artist’s Facebook Page and Instagram</li>
+        </ul>
+        <div class="welcome-cta">
+          <button class="btn primary" type="button" data-go="next">Start</button>
+          <p class="help">Your progress is kept on this device if you need to step away.</p>
+        </div>
+      </section>
+
+      <!-- 1 · You -->
+      <section class="step" data-step="you" hidden>
+        <h1 class="q" tabindex="-1" id="youQ">First, what’s your email?</h1>
+        <p class="sub" id="youSub">If we’ve worked together before, we’ll pick up from there.</p>
+        <div class="stack">
+          <div class="fld">
+            <label for="email">Email</label>
+            <input class="in" id="email" data-k="email" type="email" autocomplete="email" inputmode="email" placeholder="you@label.com" aria-describedby="err-email">
+            <p class="err" id="err-email" role="alert"></p>
+          </div>
+          <div class="hello" id="hello" hidden>
+            <div class="mark" id="helloMark" aria-hidden="true"></div>
+            <div><p class="who" id="helloWho"></p><p class="help" id="helloSub"></p></div>
+          </div>
+          <div class="two" id="newcomer" hidden>
+            <div class="fld">
+              <label for="name">Your name</label>
+              <input class="in" id="name" data-k="name" autocomplete="name" aria-describedby="err-name">
+              <p class="err" id="err-name" role="alert"></p>
+            </div>
+            <div class="fld">
+              <label for="company">Label, management or artist</label>
+              <input class="in" id="company" data-k="company" autocomplete="organization" aria-describedby="err-company">
+              <p class="err" id="err-company" role="alert"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2 · Track -->
+      <section class="step" data-step="track" hidden>
+        <h1 class="q" tabindex="-1">Which track are we pushing?</h1>
+        <p class="sub">Already out? Paste a streaming link and we’ll fill in what we can.</p>
+        <div class="stack">
+          <div class="fld">
+            <label for="magic">Streaming link <span class="opt">Optional</span></label>
+            <div class="magic">
+              <input class="in" id="magic" type="url" inputmode="url" autocomplete="off" placeholder="open.spotify.com/track/…" aria-describedby="magicMsg">
+              <span class="state" id="magicState" aria-hidden="true"></span>
+            </div>
+            <p class="help" id="magicMsg" aria-live="polite"></p>
+          </div>
+          <div class="fld" id="artistPick" hidden>
+            <span class="lbl" id="artistPickLbl">Your artists</span>
+            <div class="chips" id="artistChips" role="group" aria-labelledby="artistPickLbl"></div>
+          </div>
+          <div class="two">
+            <div class="fld">
+              <label for="artist">Artist</label>
+              <input class="in" id="artist" data-k="artist" autocomplete="off" aria-describedby="err-artist">
+              <p class="err" id="err-artist" role="alert"></p>
+            </div>
+            <div class="fld">
+              <label for="featuring">Featuring <span class="opt">Optional</span></label>
+              <input class="in" id="featuring" data-k="featuring" autocomplete="off">
+            </div>
+          </div>
+          <div class="fld">
+            <label for="title">Track title</label>
+            <input class="in" id="title" data-k="title" autocomplete="off" aria-describedby="err-title">
+            <p class="err" id="err-title" role="alert"></p>
+          </div>
+          <div class="fld">
+            <span class="lbl" id="typeLbl">Release type</span>
+            <div class="chips" role="radiogroup" aria-labelledby="typeLbl">
+              <label class="chip"><input type="radio" name="releaseType" data-k="releaseType" value="Single" checked><span>Single</span></label>
+              <label class="chip"><input type="radio" name="releaseType" data-k="releaseType" value="EP"><span>EP</span></label>
+              <label class="chip"><input type="radio" name="releaseType" data-k="releaseType" value="Album"><span>Album</span></label>
+              <label class="chip"><input type="radio" name="releaseType" data-k="releaseType" value="Compilation"><span>Compilation</span></label>
+            </div>
+          </div>
+          <div class="fld">
+            <label for="releaseDate">Release date</label>
+            <input class="in" id="releaseDate" data-k="releaseDate" type="date" aria-describedby="err-releaseDate dateHint" style="max-width:260px">
+            <p class="help" id="dateHint" aria-live="polite"></p>
+            <p class="err" id="err-releaseDate" role="alert"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3 · Sound -->
+      <section class="step" data-step="sound" hidden>
+        <h1 class="q" tabindex="-1">How does it sound?</h1>
+        <p class="sub">This shapes who sees the ads and which past campaigns we learn from.</p>
+        <div class="stack">
+          <div class="fld">
+            <span class="lbl" id="genreLbl">Main genre</span>
+            <div class="chips" role="radiogroup" aria-labelledby="genreLbl" aria-describedby="err-genre" id="genreChips"></div>
+            <p class="err" id="err-genre" role="alert"></p>
+          </div>
+          <div class="fld">
+            <span class="lbl" id="langLbl">Vocals</span>
+            <div class="chips" role="radiogroup" aria-labelledby="langLbl" aria-describedby="err-language" id="langChips"></div>
+            <p class="err" id="err-language" role="alert"></p>
+          </div>
+          <div class="fld">
+            <span class="lbl" id="dmLbl">Spotify Discovery Mode on this track?</span>
+            <div class="chips" role="radiogroup" aria-labelledby="dmLbl">
+              <label class="chip"><input type="radio" name="dm" data-k="discoveryMode" value="oui"><span>Yes</span></label>
+              <label class="chip"><input type="radio" name="dm" data-k="discoveryMode" value="non"><span>No</span></label>
+              <label class="chip"><input type="radio" name="dm" data-k="discoveryMode" value="nsp" checked><span>Not sure</span></label>
+            </div>
+            <p class="help">Your distributor switches it on in Spotify for Artists.</p>
+          </div>
+          <details class="more" id="moreDetails">
+            <summary>ISRC, UPC and distributor</summary>
+            <div class="stack">
+              <div class="two">
+                <div class="fld"><label for="isrc">ISRC <span class="opt">Helps us match streams</span></label><input class="in" id="isrc" data-k="isrc" autocomplete="off" placeholder="GB-ABC-26-00001"></div>
+                <div class="fld"><label for="upc">UPC <span class="opt">Optional</span></label><input class="in" id="upc" data-k="upc" inputmode="numeric" autocomplete="off"></div>
+              </div>
+              <div class="fld"><label for="distributor">Distributor <span class="opt">Optional</span></label><input class="in" id="distributor" data-k="distributor" autocomplete="off" placeholder="e.g. Believe, The Orchard, DistroKid"></div>
+            </div>
+          </details>
+        </div>
+      </section>
+
+      <!-- 4 · Links -->
+      <section class="step" data-step="links" hidden>
+        <h1 class="q" tabindex="-1">Where will people listen?</h1>
+        <p class="sub" id="linksSub">These go on the fanlink, the page every ad points to.</p>
+        <div class="stack">
+          <p class="note" id="preNote" hidden>Not out yet, so leave any of these empty. We add the links on release day.</p>
+          <div class="dsp"><label for="l-spotify">Spotify</label><input class="in" id="l-spotify" data-k="links.spotify" type="url" inputmode="url" placeholder="open.spotify.com/track/…" aria-describedby="err-links"></div>
+          <div class="dsp"><label for="l-apple">Apple Music</label><input class="in" id="l-apple" data-k="links.apple" type="url" inputmode="url" placeholder="music.apple.com/…"></div>
+          <div class="dsp"><label for="l-deezer">Deezer</label><input class="in" id="l-deezer" data-k="links.deezer" type="url" inputmode="url" placeholder="deezer.com/track/…"></div>
+          <div class="dsp"><label for="l-amazon">Amazon Music</label><input class="in" id="l-amazon" data-k="links.amazon" type="url" inputmode="url" placeholder="music.amazon.com/…"></div>
+          <div class="dsp"><label for="l-youtube">YouTube</label><input class="in" id="l-youtube" data-k="links.youtube" type="url" inputmode="url" placeholder="youtube.com/watch?v=…"></div>
+          <p class="err" id="err-links" role="alert"></p>
+        </div>
+      </section>
+
+      <!-- 5 · Campaign -->
+      <section class="step" data-step="campaign" hidden>
+        <h1 class="q" tabindex="-1">Tell us about the campaign.</h1>
+        <p class="sub">Ad spend only. Our fee is separate.</p>
+        <div class="stack">
+          <div class="fld">
+            <label for="budget">Ad budget</label>
+            <div class="money"><span class="sym" id="sym">€</span><input class="in" id="budget" data-k="budget" inputmode="decimal" autocomplete="off" placeholder="3,000" aria-describedby="err-budget"></div>
+            <div class="chips" role="radiogroup" aria-label="Currency">
+              <label class="chip"><input type="radio" name="currency" data-k="currency" value="EUR" checked><span>EUR</span></label>
+              <label class="chip"><input type="radio" name="currency" data-k="currency" value="USD"><span>USD</span></label>
+              <label class="chip"><input type="radio" name="currency" data-k="currency" value="GBP"><span>GBP</span></label>
+            </div>
+            <p class="err" id="err-budget" role="alert"></p>
+          </div>
+          <div class="fld">
+            <span class="lbl" id="goalLbl">What matters most?</span>
+            <div class="chips" role="radiogroup" aria-labelledby="goalLbl" aria-describedby="err-objective">
+              <label class="chip"><input type="radio" name="objective" data-k="objective" value="Streams"><span>Streams</span></label>
+              <label class="chip"><input type="radio" name="objective" data-k="objective" value="Saves and playlist adds"><span>Saves and playlist adds</span></label>
+              <label class="chip"><input type="radio" name="objective" data-k="objective" value="Catalogue revival"><span>Catalogue revival</span></label>
+              <label class="chip"><input type="radio" name="objective" data-k="objective" value="Awareness around a release"><span>Awareness around a release</span></label>
+            </div>
+            <p class="err" id="err-objective" role="alert"></p>
+          </div>
+          <div class="two">
+            <div class="fld"><label for="startDate">Preferred start <span class="opt">Optional</span></label><input class="in" id="startDate" data-k="startDate" type="date"></div>
+            <div class="fld"><label for="territories">Priority countries <span class="opt">Optional</span></label><input class="in" id="territories" data-k="territories" autocomplete="off" placeholder="UK, Germany, Netherlands"></div>
+          </div>
+          <div class="fld">
+            <span class="lbl" id="actLbl">Anything else running alongside? <span class="opt">Optional</span></span>
+            <div class="chips" role="group" aria-labelledby="actLbl" id="actChips"></div>
+            <p class="help">It helps us read the results: a spike from radio isn’t an ad result.</p>
+          </div>
+          <div class="fld"><label for="notes">Anything we should know? <span class="opt">Optional</span></label><textarea class="in" id="notes" data-k="notes" rows="3" placeholder="Story behind the track, key dates, tone you’re after…"></textarea></div>
+        </div>
+      </section>
+
+      <!-- 6 · Files -->
+      <section class="step" data-step="files" hidden>
+        <h1 class="q" tabindex="-1">Send us the files.</h1>
+        <p class="sub" id="filesSub">They go straight into a folder for this release.</p>
+        <div class="stack">
+          <div class="cover">
+            <label class="art" id="artTile" tabindex="0" aria-describedby="err-artwork artHelp">
+              <span id="artEmpty">Add cover art</span>
+              <input type="file" id="artInput" accept="image/jpeg,image/png,image/webp" class="sr">
+            </label>
+            <div class="fld">
+              <span class="lbl">Cover art</span>
+              <p class="help" id="artHelp">Square JPG, PNG or WebP, ideally 3000 × 3000.</p>
+              <div style="display:flex; gap:16px"><button type="button" class="link" id="artPick">Choose a file</button><button type="button" class="link" id="artClear" hidden>Remove</button></div>
+            </div>
+          </div>
+          <p class="err" id="err-artwork" role="alert"></p>
+          <div id="dropWrap">
+            <label class="drop" id="drop" tabindex="0">
+              <strong>Videos, visuals, audio</strong>
+              <span class="help">Drop everything here, or click to browse. We sort it into folders.</span>
+              <input type="file" id="dropInput" multiple class="sr">
+            </label>
+          </div>
+          <ul class="files" id="fileList"></ul>
+          <div class="fld">
+            <label for="filesLink" id="filesLinkLbl">Prefer a link? <span class="opt">Dropbox, WeTransfer, Google Drive</span></label>
+            <input class="in" id="filesLink" data-k="filesLink" type="url" inputmode="url" placeholder="https://" aria-describedby="err-filesLink">
+            <p class="err" id="err-filesLink" role="alert"></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7 · Access -->
+      <section class="step" data-step="access" hidden>
+        <h1 class="q" tabindex="-1">Give us access to run the ads.</h1>
+        <p class="sub">Ads run as the artist, so our business account needs access to their Facebook Page and Instagram. You stay the owner and can remove us anytime.</p>
+        <div class="stack">
+          <div class="two">
+            <div class="fld"><label for="instagram">Instagram</label><input class="in" id="instagram" data-k="instagram" autocomplete="off" placeholder="@artist" aria-describedby="err-instagram"><p class="err" id="err-instagram" role="alert"></p></div>
+            <div class="fld"><label for="facebook">Facebook Page</label><input class="in" id="facebook" data-k="facebook" autocomplete="off" placeholder="Page name or link"></div>
+          </div>
+          <div class="fld">
+            <span class="lbl" id="accLbl">Where are you at?</span>
+            <div class="choices" role="radiogroup" aria-labelledby="accLbl" aria-describedby="err-pageAccess">
+              <label class="choice" id="choiceInPlace" hidden><input type="radio" name="pageAccess" data-k="pageAccess" value="in_place"><span class="box"><span><span class="t">Already set up</span><span class="d">Same pages as before, nothing to do.</span></span></span></label>
+              <label class="choice"><input type="radio" name="pageAccess" data-k="pageAccess" value="done"><span class="box"><span><span class="t">I’ll share access now</span><span class="d">Two minutes in Meta’s settings. Steps below.</span></span></span></label>
+              <label class="choice"><input type="radio" name="pageAccess" data-k="pageAccess" value="request"><span class="box"><span><span class="t">Send me a request</span><span class="d">We send it to the Page admin, they approve it in one click.</span></span></span></label>
+              <label class="choice"><input type="radio" name="pageAccess" data-k="pageAccess" value="help"><span class="box"><span><span class="t">I need a hand</span><span class="d">We’ll get in touch and set it up together.</span></span></span></label>
+            </div>
+            <p class="err" id="err-pageAccess" role="alert"></p>
+          </div>
+          <div class="guide" id="guide" hidden>
+            <h2>How to give 129 access</h2>
+            <ol>
+              <li><span>Open <a href="https://business.facebook.com/settings" target="_blank" rel="noopener">Meta business settings</a> with the account that manages the artist’s Page.</span></li>
+              <li><span>Go to <b>Users</b>, then <b>Partners</b>. Click <b>Add</b> and choose <b>Give a partner access to your assets</b>.</span></li>
+              <li><span>Enter our business ID:
+                <span class="bid"><code id="bizId">2931318437227206</code><button type="button" class="btn" id="copyBiz">Copy</button></span></span></li>
+              <li><span>Select the artist’s <b>Facebook Page</b> and <b>Instagram account</b>. Switch on access to <b>ads</b> for each. We don’t need full control.</span></li>
+              <li><span>Save. That’s it, we see it on our side.</span></li>
+            </ol>
+            <p class="muted">No business portfolio for the artist yet, or the Page sits on a personal profile? Pick “I need a hand” and we’ll sort it with you.</p>
+          </div>
+          <p class="note" id="requestNote" hidden>We’ll send the request from <b>129 Agency</b>. The Page admin gets a notification in Meta Business Suite: one click on Approve and we’re in.</p>
+        </div>
+      </section>
+
+      <!-- 8 · Review -->
+      <section class="step" data-step="review" hidden>
+        <h1 class="q" tabindex="-1">Everything look right?</h1>
+        <p class="sub">Check it over, then send it to the team.</p>
+        <div class="review" id="review"></div>
+        <p class="err" id="err-send" role="alert" style="margin-top:16px"></p>
+      </section>
+
+      <!-- 9 · Sending -->
+      <section class="step" data-step="sending" hidden>
+        <h1 class="q" tabindex="-1" id="sendQ">Sending it over.</h1>
+        <p class="sub" id="sendSub">Keep this tab open while your files upload.</p>
+        <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+        <div class="meter-label"><span id="meterLbl" aria-live="polite">Creating your release</span><span id="meterVal"></span></div>
+      </section>
+
+      <!-- 10 · Done -->
+      <section class="step" data-step="done" hidden>
+        <h1 class="q" tabindex="-1" id="doneQ">It’s with us.</h1>
+        <p class="sub" id="doneSub">Thanks. The team has everything it needs to start.</p>
+        <ol class="next">
+          <li><div><b>We build the fanlink and the campaign</b><span>Your files, links and access are already in place on our side.</span></div></li>
+          <li><div><b>You get a preview before launch</b><span>We check the creatives and targeting with you first.</span></div></li>
+          <li><div><b>Once live, you follow the results</b><span>A private report link, updated daily.</span></div></li>
+        </ol>
+        <p class="warn" id="doneWarn" hidden></p>
+        <div class="welcome-cta"><button class="btn ghost" type="button" id="another">Send another release</button></div>
+      </section>
+    </main>
+
+    <div class="nav" id="nav" hidden>
+      <button class="btn ghost" type="button" id="back">Back</button>
+      <button class="btn primary" type="button" id="next">Continue</button>
+      <span class="hint" id="hint">or press <kbd>Enter</kbd></span>
+    </div>
+  </div>
+
+  <aside class="right" aria-label="Your release, as we’ll receive it">
+    <svg class="lines" id="lines" viewBox="0 0 600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true"></svg>
+    <p class="panel-cap">Your release <span id="capState">fills in as you go</span></p>
+    <div class="card arrive" id="card">
+      <div class="sleeve" id="sleeve"><svg viewBox="0 0 1878.19 1177.1" aria-hidden="true"><use href="#emblem" fill="currentColor"/></svg></div>
+      <div class="id">
+        <p class="artist" id="cArtist"><span class="placeholder">Artist</span></p>
+        <p class="title" id="cTitle"><span class="placeholder">Track title</span></p>
+      </div>
+      <dl class="rows">
+        <div class="row" data-row="from" hidden><dt>From</dt><dd id="cFrom"></dd></div>
+        <div class="row" data-row="date" hidden><dt>Release</dt><dd id="cDate"></dd></div>
+        <div class="row" data-row="sound" hidden><dt>Sound</dt><dd id="cSound"></dd></div>
+        <div class="row" data-row="links"><dt>Platforms</dt><dd class="plats" id="cPlats"></dd></div>
+        <div class="row" data-row="budget" hidden><dt>Ad budget</dt><dd id="cBudget"></dd></div>
+        <div class="row" data-row="files" hidden><dt>Files</dt><dd id="cFiles"></dd></div>
+        <div class="row" data-row="access" hidden><dt>Access</dt><dd id="cAccess"></dd></div>
+      </dl>
+    </div>
+    <p class="panel-foot" id="panelFoot">This is what lands with the 129 team.</p>
+  </aside>
+</div>
+
+<div class="toast" id="toast" role="status" hidden><span id="toastMsg"></span><button type="button" class="link" id="toastAct"></button></div>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const CHUNK = 4 * 1024 * 1024;              // multiple de 256 Ko, sous la limite Vercel (4,5 Mo)
+const MAX_FILES = 40, MAX_FILE = 5 * 1024 ** 3;
+const DRAFT_KEY = '129-onboarding-draft-v2', EMAIL_KEY = '129-onboarding-email';
+const params = new URLSearchParams(location.search);
+const K = params.get('k') || '';
+
+const GENRES = [['afro_house','Afro house'],['afrobeat','Afrobeat'],['dance','Dance'],['deep_house','Deep house'],['downtempo','Downtempo'],
+  ['house','House'],['indie_dance','Indie dance'],['melodic_techno','Melodic techno'],['organic_house','Organic house'],['pop','Pop'],
+  ['progressive','Progressive'],['slap_house','Slap house']];
+const LANGS = [['en','English'],['fr','French'],['es','Spanish'],['pt','Portuguese'],['de','German'],['it','Italian'],['instrumental','Instrumental']];
+const ACTIONS = [['Radio','Radio'],['Pitch playlist éditorial','Editorial playlist pitch'],['Playlists tierces','Third-party playlists'],
+  ['TikTok / UGC','TikTok / UGC'],['Influence','Influencers'],['Presse','Press'],['Autre agence ads','Another ads agency']];
+const PLATS = [['spotify','Spotify'],['apple','Apple Music'],['deezer','Deezer'],['amazon','Amazon'],['youtube','YouTube']];
+const ACCESS_LABEL = { in_place: 'Already set up', done: 'Shared by you', request: 'Request to send', help: 'We’ll help' };
+const KIND_LABEL = { artwork: 'Cover', audio: 'Audio', video: 'Video', visual: 'Visual', other: 'File' };
+
+const STEPS = ['welcome','you','track','sound','links','campaign','files','access','review','sending','done'];
+const COUNTED = ['you','track','sound','links','campaign','files','access','review'];
+
+let S = blank();
+function blank(keepIdentity) {
+  const base = { releaseType: 'Single', discoveryMode: 'nsp', currency: 'EUR', actions: [], links: {} };
+  if (keepIdentity && S) for (const k of ['email','name','company']) base[k] = S[k];
+  return base;
+}
+let profile = null;            // réponse /api/onboarding-identify
+let identifiedFor = '';        // email pour lequel profile est valable
+let files = { artwork: null, other: [] };
+let found = null;              // dernière réponse /api/onboarding-lookup
+let CONFIG = { drive: false, maxArtworkInlineBytes: 3 * 1024 * 1024, businessId: '2931318437227206' };
+let cur = 0, returnToReview = false, busy = false;
+
+/* ---------- Petites aides ---------- */
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} },
+};
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const fmtBytes = (n) => n < 1024 ** 2 ? Math.max(1, Math.round(n / 1024)) + ' KB' : n < 1024 ** 3 ? (n / 1024 ** 2).toFixed(1) + ' MB' : (n / 1024 ** 3).toFixed(2) + ' GB';
+const money = (n, c) => { try { return new Intl.NumberFormat('en-GB', { style: 'currency', currency: c, maximumFractionDigits: 0 }).format(n); } catch { return n + ' ' + c; } };
+const budgetNum = () => Number(String(S.budget || '').replace(/[\s,']/g, '').replace(/[^\d.]/g, ''));
+const isEmail = (v) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(v || '').trim());
+const isUrl = (v) => { try { const u = new URL(String(v).trim()); return /^https?:$/.test(u.protocol); } catch { return false; } };
+const withScheme = (v) => { const s = String(v || '').trim(); return s && !/^[a-z]+:/i.test(s) ? 'https://' + s : s; };
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function daysUntil(iso) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso || '')) return null;
+  const d = new Date(iso + 'T00:00:00'), t = new Date(); t.setHours(0, 0, 0, 0);
+  return Math.round((d - t) / 86400000);
+}
+function dateLine(iso) {
+  const n = daysUntil(iso);
+  if (n === null) return '';
+  const nice = new Date(iso + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  if (n > 1) return `${nice}, in ${n} days`;
+  if (n === 1) return `${nice}, tomorrow`;
+  if (n === 0) return `${nice}, out today`;
+  const ago = -n < 14 ? `${-n} day${-n > 1 ? 's' : ''} ago` : -n < 60 ? `${Math.round(-n / 7)} weeks ago` : -n < 730 ? `${Math.round(-n / 30)} months ago` : `${Math.round(-n / 365)} years ago`;
+  return `${nice}, out ${ago}`;
+}
+
+/* ---------- Champs : génération des chips, liaison au state ---------- */
+function chips(container, name, list, multi) {
+  container.innerHTML = list.map(([v, l]) =>
+    `<label class="chip"><input type="${multi ? 'checkbox' : 'radio'}" name="${name}" data-k="${name}" value="${esc(v)}"><span>${esc(l)}</span></label>`).join('');
+}
+chips($('#genreChips'), 'genre', GENRES);
+chips($('#langChips'), 'language', LANGS);
+chips($('#actChips'), 'actions', ACTIONS, true);
+
+function setDeep(key, v) {
+  if (key.startsWith('links.')) S.links[key.slice(6)] = v; else S[key] = v;
+}
+function getDeep(key) { return key.startsWith('links.') ? S.links[key.slice(6)] : S[key]; }
+
+document.addEventListener('input', onField);
+document.addEventListener('change', onField);
+function onField(e) {
+  const el = e.target;
+  const key = el.dataset && el.dataset.k;
+  if (!key) return;
+  if (el.type === 'checkbox') S[key] = $$(`input[data-k="${key}"]:checked`).map(i => i.value);
+  else if (el.type === 'radio') { if (el.checked) setDeep(key, el.value); }
+  else setDeep(key, el.value);
+  clearErr(key.startsWith('links.') ? 'links' : key);
+  if (key === 'email' && identifiedFor && el.value.trim().toLowerCase() !== identifiedFor) resetIdentity();
+  if (key === 'releaseDate') dateHint();
+  if (key === 'currency') $('#sym').textContent = { EUR: '€', USD: '$', GBP: '£' }[S.currency] || '';
+  if (key === 'pageAccess') accessUi();
+  if (key === 'filesLink') clearErr('artwork');
+  renderCard(key);
+  saveDraft();
+}
+
+function fillInputs() {
+  $$('[data-k]').forEach(el => {
+    const key = el.dataset.k, v = getDeep(key);
+    if (el.type === 'checkbox') el.checked = (S[key] || []).includes(el.value);
+    else if (el.type === 'radio') el.checked = v === el.value;
+    else el.value = v ?? '';
+  });
+  $('#sym').textContent = { EUR: '€', USD: '$', GBP: '£' }[S.currency] || '€';
+  dateHint(); accessUi();
+}
+
+/* ---------- Erreurs ---------- */
+function setErr(key, msg) {
+  const p = $('#err-' + key); if (p) p.textContent = msg;
+  const input = $('#' + key) || $(`[data-k="${key}"]`);
+  if (input && input.classList.contains('in')) input.setAttribute('aria-invalid', 'true');
+}
+function clearErr(key) {
+  const p = $('#err-' + key); if (p) p.textContent = '';
+  const input = $('#' + key);
+  if (input) input.removeAttribute('aria-invalid');
+}
+function clearAllErr(section) { $$('.err', section).forEach(p => p.textContent = ''); $$('[aria-invalid]', section).forEach(i => i.removeAttribute('aria-invalid')); }
+
+/* ---------- Brouillon local ---------- */
+let draftT;
+function saveDraft() {
+  clearTimeout(draftT);
+  draftT = setTimeout(() => store.set(DRAFT_KEY, JSON.stringify({ S, step: STEPS[cur], at: Date.now() })), 250);
+}
+function loadDraft() {
+  try {
+    const d = JSON.parse(store.get(DRAFT_KEY) || 'null');
+    if (!d || !d.S || Date.now() - d.at > 14 * 86400000) return null;
+    return d;
+  } catch { return null; }
+}
+
+/* ---------- Carte « Your release » ---------- */
+function pulse(name) {
+  if (reduced) return;
+  const r = $(`[data-row="${name}"]`); if (!r || r.hidden) return;
+  r.classList.remove('pulse'); void r.offsetWidth; r.classList.add('pulse');
+  r.addEventListener('animationend', () => r.classList.remove('pulse'), { once: true });
+}
+function showRow(name, on) { const r = $(`[data-row="${name}"]`); if (r) r.hidden = !on; }
+let artURL = null;
+function renderCard(changed) {
+  const a = (S.artist || '').trim(), t = (S.title || '').trim(), ft = (S.featuring || '').trim();
+  $('#cArtist').innerHTML = a ? esc(a) + (ft ? `<span style="color:var(--space)"> feat. ${esc(ft)}</span>` : '') : '<span class="placeholder">Artist</span>';
+  $('#cTitle').innerHTML = t ? esc(t) + (S.releaseType && S.releaseType !== 'Single' ? ` <span style="color:#4A4E66">${esc(S.releaseType)}</span>` : '') : '<span class="placeholder">Track title</span>';
+
+  const from = profile?.known ? profile.company : (S.company || '').trim();
+  $('#cFrom').textContent = from; showRow('from', !!from);
+
+  $('#cDate').textContent = dateLine(S.releaseDate); showRow('date', !!S.releaseDate);
+
+  const g = GENRES.find(x => x[0] === S.genre)?.[1], l = LANGS.find(x => x[0] === S.language)?.[1];
+  $('#cSound').textContent = [g, l === 'Instrumental' ? 'instrumental' : l ? l + ' vocals' : null].filter(Boolean).join(', ');
+  showRow('sound', !!(g || l));
+
+  $('#cPlats').innerHTML = PLATS.map(([k, n]) => `<span class="${isUrl(withScheme(S.links[k])) ? 'on' : ''}">${n}</span>`).join('');
+
+  const b = budgetNum();
+  $('#cBudget').textContent = b > 0 ? money(b, S.currency) : ''; showRow('budget', b > 0);
+
+  const n = (files.artwork ? 1 : 0) + files.other.length;
+  const size = (files.artwork?.size || 0) + files.other.reduce((s, f) => s + f.size, 0);
+  const parts = [];
+  if (n) parts.push(`${n} file${n > 1 ? 's' : ''}, ${fmtBytes(size)}`);
+  else if (S.artworkUrl) parts.push('Cover from ' + (found?.coverFrom || 'streaming'));
+  if (isUrl(withScheme(S.filesLink))) parts.push('plus a shared link');
+  $('#cFiles').textContent = parts.join(', '); showRow('files', parts.length > 0);
+
+  $('#cAccess').textContent = ACCESS_LABEL[S.pageAccess] || ''; showRow('access', !!S.pageAccess);
+
+  // Pochette : fichier choisi, sinon pochette trouvée en ligne, sinon l'emblème 129.
+  const sleeve = $('#sleeve');
+  const src = files.artwork ? artURL : S.artworkUrl || null;
+  const img = sleeve.querySelector('img');
+  sleeve.classList.toggle('has', !!src);
+  if (profile?.known) markArtist();
+  if (src && (!img || img.getAttribute('src') !== src)) {
+    if (img) img.remove();
+    const im = new Image(); im.alt = ''; im.src = src; sleeve.appendChild(im);
+  } else if (!src && img) img.remove();
+
+  const map = { releaseDate: 'date', genre: 'sound', language: 'sound', budget: 'budget', currency: 'budget', pageAccess: 'access', company: 'from', filesLink: 'files' };
+  if (changed && changed.startsWith('links.')) pulse('links');
+  else if (changed && map[changed]) pulse(map[changed]);
+}
+
+/* ---------- Navigation ---------- */
+const section = (id) => $(`.step[data-step="${id}"]`);
+function go(i, { focus = true } = {}) {
+  const prev = section(STEPS[cur]);
+  cur = Math.max(0, Math.min(STEPS.length - 1, i));
+  const id = STEPS[cur], sec = section(id);
+  if (prev && prev !== sec) prev.hidden = true;
+  sec.hidden = false;
+  sec.classList.remove('enter'); void sec.offsetWidth; sec.classList.add('enter');
+
+  const ci = COUNTED.indexOf(id);
+  $('#bar').classList.toggle('off', ci < 0);
+  $$('#bar i').forEach((b, j) => b.classList.toggle('on', j <= ci));
+  $('#count').textContent = ci >= 0 ? `${ci + 1} of ${COUNTED.length}` : '';
+
+  const navOn = ci >= 0;
+  $('#nav').hidden = !navOn;
+  $('#back').hidden = id === 'you' && !returnToReview;
+  $('#next').textContent = id === 'review' ? 'Send to 129' : returnToReview ? 'Back to review' : 'Continue';
+  $('#hint').hidden = id === 'review';
+
+  if (id === 'links') { const pre = (daysUntil(S.releaseDate) ?? -1) > 0; $('#preNote').hidden = !pre; }
+  if (id === 'files') filesUi();
+  if (id === 'access') accessUi();
+  if (id === 'review') buildReview();
+  if (id !== 'welcome' && id !== 'sending' && id !== 'done') saveDraft();
+
+  window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+  if (focus) {
+    const first = sec.querySelector('input.in:not([type=file]), textarea.in');
+    const target = (id === 'you' || id === 'track' || id === 'campaign') && first && !first.value ? first : sec.querySelector('h1.q');
+    setTimeout(() => target && target.focus({ preventScroll: true }), reduced ? 0 : 60);
+  }
+}
+
+$('[data-go="next"]').addEventListener('click', () => go(cur + 1));
+$('#back').addEventListener('click', () => {
+  if (returnToReview) { returnToReview = false; return go(STEPS.indexOf('review')); }
+  go(cur - 1);
+});
+$('#next').addEventListener('click', next);
+
+async function next() {
+  if (busy) return;
+  const id = STEPS[cur];
+  const ok = await validate(id);
+  if (!ok) return;
+  if (id === 'review') return send();
+  if (returnToReview) { returnToReview = false; return go(STEPS.indexOf('review')); }
+  go(cur + 1);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter' || e.shiftKey || e.isComposing) return;
+  const t = e.target;
+  if (t.tagName === 'TEXTAREA' || t.tagName === 'BUTTON' || t.tagName === 'A' || t.tagName === 'SUMMARY') return;
+  if (t.id === 'magic') { e.preventDefault(); lookup(); return; }
+  if (t.closest && t.closest('.drop, .art')) return;
+  const id = STEPS[cur];
+  if (id === 'welcome') { e.preventDefault(); go(1); return; }
+  if (COUNTED.includes(id) && id !== 'review') { e.preventDefault(); next(); }
+});
+
+/* ---------- Validation par étape ---------- */
+async function validate(id) {
+  const sec = section(id); clearAllErr(sec);
+  const errs = [];
+  const need = (key, msg) => { if (!String(getDeep(key) ?? '').trim()) errs.push([key, msg]); };
+
+  if (id === 'you') {
+    if (!isEmail(S.email)) errs.push(['email', 'Enter your email, like name@label.com.']);
+    else if (identifiedFor !== S.email.trim().toLowerCase()) {
+      await identifyNow();
+      return false;              // on montre l'accueil (ou les deux champs) avant d'avancer
+    } else if (!profile?.known) {
+      need('name', 'Tell us your name.');
+      need('company', 'Tell us who you work with, or the artist name.');
+    }
+  }
+  if (id === 'track') {
+    need('artist', 'Add the artist name.');
+    need('title', 'Add the track title.');
+    if (!S.releaseDate) errs.push(['releaseDate', 'Pick the release date, even if it’s approximate.']);
+  }
+  if (id === 'sound') {
+    if (!S.genre) errs.push(['genre', 'Pick the closest genre.']);
+    if (!S.language) errs.push(['language', 'Pick the vocals language, or instrumental.']);
+  }
+  if (id === 'links') {
+    const bad = PLATS.filter(([k]) => S.links[k] && !isUrl(withScheme(S.links[k]))).map(x => x[1]);
+    if (bad.length) errs.push(['links', `Check the ${bad.join(' and ')} link: it should start with https://`]);
+  }
+  if (id === 'campaign') {
+    if (!(budgetNum() > 0)) errs.push(['budget', 'Enter the ad budget as a number, like 3000.']);
+    if (!S.objective) errs.push(['objective', 'Pick what matters most for this one.']);
+  }
+  if (id === 'files') {
+    if (S.filesLink && !isUrl(withScheme(S.filesLink))) errs.push(['filesLink', 'This link should start with https://']);
+    if (!files.artwork && !S.artworkUrl && !S.filesLink) errs.push(['artwork', 'Add the cover art, or a link where we can find it.']);
+    if (files.artwork && !CONFIG.drive && files.artwork.size > CONFIG.maxArtworkInlineBytes)
+      errs.push(['artwork', 'This cover is over 3 MB. Export a lighter JPG, or share it with a link below.']);
+  }
+  if (id === 'access') {
+    if (!S.pageAccess) errs.push(['pageAccess', 'Pick where you’re at, even if it’s “I need a hand”.']);
+    if (S.pageAccess !== 'in_place' && !String(S.instagram || '').trim() && !String(S.facebook || '').trim())
+      errs.push(['instagram', 'Add the artist’s Instagram or Facebook Page so we know which one to use.']);
+  }
+  errs.forEach(([k, m]) => setErr(k, m));
+  if (errs.length) {
+    const firstKey = errs[0][0];
+    const el = $('#' + firstKey) || $(`[data-k="${firstKey}"]`) || $('#err-' + firstKey);
+    el && el.focus && el.focus({ preventScroll: false });
+  }
+  return !errs.length;
+}
+
+/* ---------- Identification ---------- */
+function initials(s) { return String(s || '?').trim().charAt(0).toUpperCase() || '?'; }
+function resetIdentity() {
+  profile = null; identifiedFor = '';
+  $('#hello').hidden = true; $('#newcomer').hidden = true;
+  $('#youQ').textContent = 'First, what’s your email?';
+  $('#youSub').textContent = 'If we’ve worked together before, we’ll pick up from there.';
+  $('#choiceInPlace').hidden = true;
+  renderArtists(); renderCard();
+}
+async function identifyNow({ silent = false } = {}) {
+  const email = (S.email || '').trim().toLowerCase();
+  if (!isEmail(email) && !K) return;
+  const btn = $('#next');
+  if (!silent) { busy = true; btn.disabled = true; btn.innerHTML = '<span class="spin" aria-hidden="true"></span>Checking'; }
+  try {
+    const r = await fetch('/api/onboarding-identify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, k: K }) });
+    profile = r.ok ? await r.json() : { known: false };
+  } catch { profile = { known: false }; }
+  identifiedFor = email;
+  store.set(EMAIL_KEY, email);
+  if (!silent) { busy = false; btn.disabled = false; btn.textContent = 'Continue'; }
+  applyProfile();
+}
+function applyProfile() {
+  if (profile?.known) {
+    const first = profile.firstName;
+    $('#youQ').textContent = first ? `Welcome back, ${first}.` : `Welcome back.`;
+    $('#youSub').textContent = profile.returning ? 'Good to have you again. Let’s go straight to the track.' : 'Good to have you. Let’s go straight to the track.';
+    $('#helloMark').textContent = initials(profile.company);
+    $('#helloWho').textContent = profile.company;
+    $('#helloSub').textContent = 'We’ll file this release under your account.';
+    $('#hello').hidden = false; $('#newcomer').hidden = true;
+    S.name = ''; S.company = '';
+    if (profile.currency && !S._currencyTouched) { S.currency = profile.currency; fillInputs(); }
+    $('#choiceInPlace').hidden = !profile.returning;
+    if (profile.returning && !S.pageAccess) { S.pageAccess = 'in_place'; }
+  } else {
+    $('#youQ').textContent = 'Nice to meet you.';
+    $('#youSub').textContent = 'Two quick details so we know who we’re working with.';
+    $('#hello').hidden = true; $('#newcomer').hidden = false;
+    $('#choiceInPlace').hidden = true;
+    if (S.pageAccess === 'in_place') S.pageAccess = '';
+    setTimeout(() => $('#name').focus(), 50);
+  }
+  fillInputs(); renderArtists(); renderCard('company'); saveDraft();
+}
+function renderArtists() {
+  const list = profile?.known ? profile.artists || [] : [];
+  $('#artistPick').hidden = !list.length;
+  $('#artistChips').innerHTML = list.map((a, i) => `<button type="button" class="chip" data-artist="${i}" aria-pressed="false"><span>${esc(a.name)}</span></button>`).join('');
+  markArtist();
+}
+function markArtist() {
+  const cur = String(S.artist || '').trim().toLowerCase();
+  const list = profile?.artists || [];
+  $$('#artistChips [data-artist]').forEach(b => b.setAttribute('aria-pressed', String((list[Number(b.dataset.artist)]?.name || '').toLowerCase() === cur)));
+}
+$('#artistChips').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-artist]'); if (!b) return;
+  const a = profile.artists[Number(b.dataset.artist)];
+  S.artist = a.name;
+  const page = a.page || '';
+  const ig = (page.match(/IG:\s*@?([\w.]+)/i) || page.match(/instagram\.com\/([\w.]+)/i) || [])[1];
+  const fb = (page.match(/FB:\s*([^·]+?)\s*(?:·|$)/i) || page.match(/(https?:\/\/(?:www\.)?facebook\.com\/[^\s·]+)/i) || [])[1];
+  if (ig && !S.instagram) S.instagram = '@' + ig;
+  if (fb && !S.facebook) S.facebook = fb.trim();
+  fillInputs(); renderCard('artist'); saveDraft();
+  $('#title').focus();
+});
+
+/* ---------- Lien magique ---------- */
+let lookedUp = '';
+$('#magic').addEventListener('paste', () => setTimeout(lookup, 0));
+$('#magic').addEventListener('blur', () => lookup());
+async function lookup() {
+  const raw = $('#magic').value.trim();
+  if (!raw || raw === lookedUp) return;
+  const url = /^spotify:/.test(raw) ? raw : withScheme(raw);
+  if (!/^spotify:/.test(url) && !isUrl(url)) { $('#magicMsg').textContent = 'That doesn’t look like a link. You can fill in the details below instead.'; return; }
+  lookedUp = raw;
+  $('#magicState').innerHTML = '<span class="spin"></span>';
+  $('#magicMsg').textContent = 'Looking it up…';
+  try {
+    const r = await fetch('/api/onboarding-lookup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'lookup');
+    found = d;
+    const filled = [];
+    const put = (key, v) => { if (v && !String(S[key] || '').trim()) { S[key] = v; filled.push(key); } };
+    put('artist', d.artist); put('title', d.title); put('releaseDate', d.releaseDate); put('isrc', d.isrc);
+    for (const [p, l] of Object.entries(d.links || {})) if (l && !S.links[p]) { S.links[p] = l; filled.push('links'); }
+    if (d.artworkUrl && !files.artwork) {
+      S.artworkUrl = d.artworkUrl;
+      d.coverFrom = /dzcdn/.test(d.artworkUrl) ? 'Deezer' : /mzstatic/.test(d.artworkUrl) ? 'Apple Music' : /scdn/.test(d.artworkUrl) ? 'Spotify' : 'streaming';
+    }
+    fillInputs(); renderCard('links'); saveDraft();
+    const nLinks = Object.keys(d.links || {}).length;
+    if (d.found) {
+      $('#magicState').innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+      $('#magicMsg').innerHTML = `Found <b>${esc(d.title || 'the track')}</b>${d.artist ? ' by ' + esc(d.artist) : ''}${nLinks > 1 ? `, with ${nLinks} platform links` : ''}. We filled in the gaps below.`;
+    } else {
+      $('#magicState').innerHTML = '';
+      $('#magicMsg').textContent = 'We couldn’t read that one. Fill in the details below, it only takes a moment.';
+    }
+  } catch {
+    $('#magicState').innerHTML = '';
+    $('#magicMsg').textContent = 'We couldn’t read that link. Fill in the details below, it only takes a moment.';
+  }
+}
+
+function dateHint() {
+  const n = daysUntil(S.releaseDate);
+  $('#dateHint').textContent = n === null ? '' : n > 0 ? `Out in ${n} day${n > 1 ? 's' : ''}.` : n === 0 ? 'Out today.' : 'Already out, so we’ll run it as a catalogue campaign.';
+}
+
+/* ---------- Fichiers ---------- */
+const kindOf = (f) =>
+  /^audio\//.test(f.type) || /\.(wav|aiff?|mp3|flac|m4a|ogg)$/i.test(f.name) ? 'audio' :
+  /^video\//.test(f.type) || /\.(mp4|mov|m4v|webm|avi|mkv)$/i.test(f.name) ? 'video' :
+  /^image\//.test(f.type) || /\.(jpe?g|png|webp|gif|tiff?|psd|heic|svg)$/i.test(f.name) ? 'visual' : 'other';
+
+function filesUi() {
+  $('#dropWrap').hidden = !CONFIG.drive;
+  $('#filesSub').textContent = CONFIG.drive ? 'They go straight into a folder for this release.' : 'Add the cover here. For videos and other files, share a link below.';
+  $('#filesLinkLbl').innerHTML = CONFIG.drive ? 'Prefer a link? <span class="opt">Dropbox, WeTransfer, Google Drive</span>' : 'Link to your videos and visuals <span class="opt">Dropbox, WeTransfer, Google Drive</span>';
+  renderArt(); renderFiles();
+}
+function renderArt() {
+  const tile = $('#artTile');
+  tile.querySelector('img')?.remove();
+  const src = files.artwork ? artURL : S.artworkUrl;
+  tile.classList.toggle('has', !!src);
+  $('#artEmpty').hidden = !!src;
+  if (src) { const im = new Image(); im.alt = 'Cover art preview'; im.src = src; tile.appendChild(im); }
+  $('#artClear').hidden = !src;
+  $('#artPick').textContent = src ? 'Replace' : 'Choose a file';
+  $('#artHelp').textContent = files.artwork ? `${files.artwork.name}, ${fmtBytes(files.artwork.size)}`
+    : S.artworkUrl ? `Found on ${found?.coverFrom || 'streaming'}. Upload the full-size file if you have it.`
+    : 'Square JPG, PNG or WebP, ideally 3000 × 3000.';
+}
+function setArtwork(f) {
+  if (!f) return;
+  if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { setErr('artwork', 'Cover art should be a JPG, PNG or WebP image.'); return; }
+  if (artURL) URL.revokeObjectURL(artURL);
+  files.artwork = f; artURL = URL.createObjectURL(f);
+  clearErr('artwork'); renderArt(); renderCard('filesLink');
+}
+$('#artInput').addEventListener('change', (e) => { setArtwork(e.target.files[0]); e.target.value = ''; });
+$('#artPick').addEventListener('click', () => $('#artInput').click());
+$('#artClear').addEventListener('click', () => {
+  if (files.artwork) { files.artwork = null; if (artURL) URL.revokeObjectURL(artURL); artURL = null; }
+  else S.artworkUrl = '';
+  renderArt(); renderCard('filesLink'); saveDraft();
+});
+$('#artTile').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#artInput').click(); } });
+function dz(el, onFiles) {
+  ['dragenter','dragover'].forEach(ev => el.addEventListener(ev, e => { e.preventDefault(); el.classList.add('over'); }));
+  ['dragleave','drop'].forEach(ev => el.addEventListener(ev, e => { e.preventDefault(); el.classList.remove('over'); }));
+  el.addEventListener('drop', e => onFiles(Array.from(e.dataTransfer.files || [])));
+}
+dz($('#artTile'), (fs) => setArtwork(fs.find(f => /^image\//.test(f.type))));
+dz($('#drop'), addFiles);
+$('#dropInput').addEventListener('change', (e) => { addFiles(Array.from(e.target.files)); e.target.value = ''; });
+$('#drop').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#dropInput').click(); } });
+function addFiles(list) {
+  const msgs = [];
+  for (const f of list) {
+    if (f.size > MAX_FILE) { msgs.push(`${f.name} is over 5 GB, share it with a link.`); continue; }
+    if (files.other.length + 1 > MAX_FILES - 1) { msgs.push(`Up to ${MAX_FILES - 1} files here. Share the rest with a link.`); break; }
+    if (files.other.some(x => x.name === f.name && x.size === f.size)) continue;
+    // Une image carrée glissée ici alors qu'il manque la pochette : on la propose comme pochette.
+    files.other.push(f);
+  }
+  if (msgs.length) setErr('filesLink', msgs.join(' '));
+  renderFiles(); renderCard('filesLink');
+}
+function renderFiles() {
+  $('#fileList').innerHTML = files.other.map((f, i) => `<li><span class="kind">${KIND_LABEL[kindOf(f)]}</span><span class="name" title="${esc(f.name)}">${esc(f.name)}</span><span class="size">${fmtBytes(f.size)}</span><button type="button" data-rm="${i}" aria-label="Remove ${esc(f.name)}">×</button></li>`).join('');
+}
+$('#fileList').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-rm]'); if (!b) return;
+  files.other.splice(Number(b.dataset.rm), 1); renderFiles(); renderCard('filesLink');
+});
+
+/* ---------- Accès ---------- */
+function accessUi() {
+  $('#guide').hidden = S.pageAccess !== 'done';
+  $('#requestNote').hidden = S.pageAccess !== 'request';
+}
+$('#bizId').textContent = CONFIG.businessId;
+$('#copyBiz').addEventListener('click', async () => {
+  const id = $('#bizId').textContent.trim();
+  try { await navigator.clipboard.writeText(id); }
+  catch { const r = document.createRange(); r.selectNodeContents($('#bizId')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+  $('#copyBiz').textContent = 'Copied'; setTimeout(() => $('#copyBiz').textContent = 'Copy', 1800);
+});
+
+/* ---------- Récapitulatif ---------- */
+function buildReview() {
+  const who = profile?.known ? `${profile.company}${S.email ? ', ' + S.email : ''}` : [S.name, S.company, S.email].filter(Boolean).join(', ');
+  const plats = PLATS.filter(([k]) => S.links[k]).map(x => x[1]);
+  const fileList = [files.artwork ? 'Cover: ' + files.artwork.name : S.artworkUrl ? `Cover from ${found?.coverFrom || 'streaming'}` : null,
+    files.other.length ? `${files.other.length} other file${files.other.length > 1 ? 's' : ''}, ${fmtBytes(files.other.reduce((s, f) => s + f.size, 0))}` : null,
+    S.filesLink ? 'Link: ' + S.filesLink : null].filter(Boolean);
+  const blocks = [
+    ['You', 'you', [['From', who]]],
+    ['Track', 'track', [['Artist', S.artist + (S.featuring ? ' feat. ' + S.featuring : '')], ['Title', S.title], ['Type', S.releaseType], ['Release', dateLine(S.releaseDate)]]],
+    ['Sound', 'sound', [['Genre', GENRES.find(x => x[0] === S.genre)?.[1]], ['Vocals', LANGS.find(x => x[0] === S.language)?.[1]],
+      ['Discovery Mode', { oui: 'Yes', non: 'No', nsp: 'Not sure' }[S.discoveryMode]], ['ISRC', S.isrc], ['UPC', S.upc], ['Distributor', S.distributor]]],
+    ['Links', 'links', [['Platforms', plats.length ? plats.join(', ') : 'None yet, we’ll add them on release day']]],
+    ['Campaign', 'campaign', [['Ad budget', money(budgetNum(), S.currency)], ['Focus', S.objective], ['Start', S.startDate ? dateLine(S.startDate).split(',').slice(0, 2).join(',') : null],
+      ['Countries', S.territories], ['Alongside', (S.actions || []).map(v => ACTIONS.find(a => a[0] === v)?.[1] || v).join(', ')], ['Notes', S.notes]]],
+    ['Files', 'files', [['Sending', fileList.join('; ')]]],
+    ['Access', 'access', [['Instagram', S.instagram], ['Facebook', S.facebook], ['Status', ACCESS_LABEL[S.pageAccess]]]],
+  ];
+  $('#review').innerHTML = blocks.map(([h, step, rows]) => `<section class="rv"><header><h2>${h}</h2><button type="button" class="link" data-edit="${step}">Edit</button></header><dl>${
+    rows.filter(r => r[1]).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl></section>`).join('');
+}
+$('#review').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-edit]'); if (!b) return;
+  returnToReview = true; go(STEPS.indexOf(b.dataset.edit));
+});
+
+/* ---------- Envoi ---------- */
+async function postJson(url, body) {
+  const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || ('Error ' + r.status));
+  return d;
+}
+async function uploadFile(file, token, onBytes) {
+  let start = 0;
+  while (start < file.size) {
+    const end = Math.min(start + CHUNK, file.size);
+    let attempt = 0, out;
+    for (;;) {
+      try {
+        const r = await fetch('/api/onboarding-chunk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/octet-stream', 'X-Upload-Token': token, 'X-Chunk-Start': String(start), 'X-Total-Size': String(file.size) },
+          body: file.slice(start, end),
+        });
+        out = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(out.error || ('Error ' + r.status));
+        break;
+      } catch (e) {
+        if (++attempt > 4) throw e;
+        await sleep(1500 * attempt);
+      }
+    }
+    if (out.done) { onBytes(file.size); return true; }
+    start = Number.isFinite(out.next) && out.next > start ? out.next : end;
+    onBytes(start);
+  }
+  return true;
+}
+function readBase64(file) {
+  return new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = () => rej(fr.error); fr.readAsDataURL(file); });
+}
+const leaveGuard = (e) => { e.preventDefault(); e.returnValue = ''; };
+
+async function send() {
+  busy = true;
+  const btn = $('#next'); btn.disabled = true; btn.innerHTML = '<span class="spin" aria-hidden="true"></span>Sending';
+  $('#err-send').textContent = '';
+  const list = CONFIG.drive ? [...(files.artwork ? [{ kind: 'artwork', file: files.artwork }] : []), ...files.other.map(f => ({ kind: kindOf(f), file: f }))] : [];
+  const ig = String(S.instagram || '').trim();
+  const payload = {
+    k: K,
+    identity: { email: (S.email || '').trim(), name: profile?.known ? '' : S.name, company: profile?.known ? '' : S.company },
+    hasArtwork: !!files.artwork,
+    track: {
+      artist: S.artist, featuring: S.featuring, title: S.title, releaseType: S.releaseType, releaseDate: S.releaseDate,
+      isrc: S.isrc, upc: S.upc, distributor: S.distributor, genre: S.genre, language: S.language, discoveryMode: S.discoveryMode,
+      spotifyUrl: withScheme(S.links.spotify), appleUrl: withScheme(S.links.apple), deezerUrl: withScheme(S.links.deezer),
+      amazonUrl: withScheme(S.links.amazon), youtubeUrl: withScheme(S.links.youtube),
+      artworkUrl: files.artwork ? '' : (S.artworkUrl || ''),
+    },
+    campaign: {
+      budget: budgetNum(), currency: S.currency, startDate: S.startDate, objective: S.objective, territories: S.territories,
+      parallelActions: S.actions || [], notes: S.notes, filesLink: withScheme(S.filesLink),
+      instagram: ig, facebook: S.facebook, pageAccess: S.pageAccess,
+    },
+    files: list.map(x => ({ kind: x.kind, name: x.file.name, size: x.file.size, type: x.file.type })),
+  };
+
+  let started = false;
+  try {
+    const start = await postJson('/api/onboarding-start', payload);
+    started = true;
+    store.del(DRAFT_KEY);
+    addEventListener('beforeunload', leaveGuard);
+    go(STEPS.indexOf('sending'));
+    $('#capState').textContent = 'sending';
+
+    const total = list.reduce((s, x) => s + x.file.size, 0);
+    const sent = new Array(list.length).fill(0);
+    const uploaded = [];
+    const meter = $('#meter'), lbl = $('#meterLbl'), val = $('#meterVal');
+    if (!list.length) { meter.style.width = '70%'; lbl.textContent = 'Saving your release'; }
+    for (let i = 0; i < list.length; i++) {
+      const { file } = list[i];
+      lbl.textContent = list.length > 1 ? `Uploading ${i + 1} of ${list.length}: ${file.name}` : `Uploading ${file.name}`;
+      try {
+        await uploadFile(file, start.uploads[i].token, (bytes) => {
+          sent[i] = bytes;
+          const done = sent.reduce((a, b) => a + b, 0);
+          meter.style.width = (100 * done / (total || 1)).toFixed(1) + '%';
+          val.textContent = `${fmtBytes(done)} of ${fmtBytes(total)}`;
+        });
+        uploaded.push({ name: file.name, ok: true });
+      } catch { uploaded.push({ name: file.name, ok: false }); }
+    }
+
+    lbl.textContent = 'Finishing up'; val.textContent = '';
+    let artwork = null;
+    const art = files.artwork;
+    if (art && art.size <= CONFIG.maxArtworkInlineBytes) artwork = { filename: art.name, contentType: art.type, base64: await readBase64(art) };
+    await postJson('/api/onboarding-finish', { submission: start.submission, artwork, uploaded });
+    meter.style.width = '100%';
+    removeEventListener('beforeunload', leaveGuard);
+
+    const failed = uploaded.filter(u => !u.ok).map(u => u.name);
+    finish(failed);
+  } catch (err) {
+    removeEventListener('beforeunload', leaveGuard);
+    if (started) {
+      // La fiche existe déjà chez 129 : surtout ne pas renvoyer le formulaire (doublon).
+      $('#sendQ').textContent = 'We have your release.';
+      $('#sendSub').textContent = 'The details reached us, but the last step stalled. Please don’t send the form again: reply to your 129 contact with the track title and we’ll take it from there.';
+      $('#meterLbl').textContent = err.message;
+      busy = false;
+      return;
+    }
+    $('#err-send').textContent = err.message || 'Something went wrong. Check your connection and try again.';
+    btn.disabled = false; btn.textContent = 'Send to 129'; busy = false;
+  }
+}
+
+function finish(failed) {
+  busy = false;
+  const first = profile?.known ? profile.firstName : String(S.name || '').trim().split(/\s+/)[0];
+  $('#doneQ').textContent = first ? `It’s with us, ${first}.` : 'It’s with us.';
+  $('#doneSub').textContent = `Thanks. ${S.artist}, “${S.title}” is now in the 129 workflow.`;
+  if (failed.length) {
+    $('#doneWarn').hidden = false;
+    $('#doneWarn').textContent = `${failed.length === 1 ? 'One file' : failed.length + ' files'} didn’t make it: ${failed.join(', ')}. Send ${failed.length === 1 ? 'it' : 'them'} to us with a link and we’ll add ${failed.length === 1 ? 'it' : 'them'} to the folder.`;
+  }
+  // Le seul moment « orchestré » : la carte reçoit son tampon.
+  const stamp = document.createElement('div');
+  stamp.className = 'stamp';
+  stamp.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>Received';
+  $('#card').appendChild(stamp);
+  $('#capState').textContent = 'received';
+  $('#panelFoot').textContent = 'Filed with the 129 team.';
+  go(STEPS.indexOf('done'));
+}
+
+$('#another').addEventListener('click', () => {
+  S = blank(true); found = null; lookedUp = '';
+  files = { artwork: null, other: [] }; if (artURL) URL.revokeObjectURL(artURL); artURL = null;
+  if (profile?.returning || profile?.known) { S.pageAccess = profile.returning ? 'in_place' : ''; if (profile.currency) S.currency = profile.currency; }
+  $('#card .stamp')?.remove(); $('#doneWarn').hidden = true;
+  $('#magic').value = ''; $('#magicMsg').textContent = ''; $('#magicState').innerHTML = '';
+  $('#capState').textContent = 'fills in as you go'; $('#panelFoot').textContent = 'This is what lands with the 129 team.';
+  $('#next').disabled = false;
+  fillInputs(); renderCard(); renderFiles();
+  go(STEPS.indexOf('track'));
+});
+
+/* ---------- Toast ---------- */
+function toast(msg, act, fn) {
+  $('#toastMsg').textContent = msg; $('#toastAct').textContent = act || ''; $('#toastAct').hidden = !act;
+  $('#toast').hidden = false;
+  $('#toastAct').onclick = () => { $('#toast').hidden = true; fn && fn(); };
+  setTimeout(() => { $('#toast').hidden = true; }, 7000);
+}
+
+/* ---------- Panneau : lignes à l'angle des coupes du logo ---------- */
+(function lines() {
+  const svg = $('#lines'), H = 900, dx = H / Math.tan(56.5 * Math.PI / 180);
+  let out = '';
+  for (let i = -9; i < 12; i++) out += `<line x1="${i * 64}" y1="${H}" x2="${(i * 64 + dx).toFixed(0)}" y2="0"/>`;
+  for (let i = 7; i < 13; i++) out += `<line x1="${i * 64}" y1="${H}" x2="${(i * 64 - dx).toFixed(0)}" y2="0" style="stroke-opacity:.05"/>`;
+  svg.innerHTML = out;
+  if (!reduced) {
+    svg.classList.add('draw');
+    $$('line', svg).forEach((l, i) => l.style.animationDelay = (i * 35) + 'ms');
+  }
+})();
+
+/* ---------- Démarrage ---------- */
+document.addEventListener('change', (e) => { if (e.target.dataset?.k === 'currency') S._currencyTouched = true; });
+
+(async function boot() {
+  try { const r = await fetch('/api/onboarding-config'); if (r.ok) CONFIG = { ...CONFIG, ...(await r.json()) }; } catch {}
+  $('#bizId').textContent = CONFIG.businessId;
+
+  const draft = loadDraft();
+  const rememberedEmail = store.get(EMAIL_KEY) || '';
+  if (draft && (draft.S.artist || draft.S.title || draft.S.email)) {
+    S = { ...blank(), ...draft.S, links: { ...(draft.S.links || {}) } };
+  } else if (rememberedEmail) {
+    S.email = rememberedEmail;
+  }
+  fillInputs(); renderCard(); renderArtists();
+
+  // Email connu sur cet appareil (ou lien ?k=) : on reconnaît la personne sans attendre.
+  if (isEmail(S.email) || K) {
+    await identifyNow({ silent: true });
+  }
+
+  if (draft && (draft.S.artist || draft.S.title)) {
+    const step = STEPS.indexOf(draft.step);
+    go(step > 0 && step < STEPS.indexOf('sending') ? step : 1, { focus: true });
+    toast(step > STEPS.indexOf('files') ? 'We kept your progress. Add your files again before sending.' : 'We kept your progress.', 'Start over', () => { store.del(DRAFT_KEY); S = blank(true); files = { artwork: null, other: [] }; artURL = null; fillInputs(); renderCard(); go(1); });
+  } else {
+    go(0, { focus: false });
+  }
+})();
+})();
+</script>
+</body>
+</html>
