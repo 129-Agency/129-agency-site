@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Fanlink Generator — 129</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{ --bone:#EDEDE7; --ink:#16181A; --graphite:#6B6F73; --rule:#D3D3CB;
+    --ultramarine:#2B3BE8; --rust:#A32C1F; --surface:#F6F6F2; --ok:#1F6B3A; }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bone); color:var(--ink); font-family:Archivo,-apple-system,system-ui,sans-serif;
+    font-size:15px; line-height:1.45; -webkit-font-smoothing:antialiased}
+  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace; font-variant-numeric:tabular-nums}
+  .wrap{max-width:1240px; margin:0 auto; padding:0 16px}
+  header{border-bottom:1px solid var(--rule); background:var(--bone); position:sticky; top:0; z-index:20}
+  .head{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; padding:20px 0 14px}
+  h1{font-size:22px; font-weight:700; letter-spacing:-.02em; margin:0}
+  .stamp{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--graphite)}
+  .head .nav{margin-left:auto; font-size:13px}
+  .head .nav a{color:var(--ultramarine)}
+  .layout{display:grid; grid-template-columns:300px 1fr; gap:28px; padding:22px 0 80px}
+  .lbl{font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--graphite); font-weight:500; margin:0 0 10px}
+  .queue{list-style:none; margin:0 0 24px; padding:0; border-top:1px solid var(--rule)}
+  .queue li{border-bottom:1px solid var(--rule)}
+  .queue button{all:unset; display:block; width:100%; box-sizing:border-box; padding:10px 6px; cursor:pointer}
+  .queue button:hover,.queue button[aria-current="true"]{background:var(--surface)}
+  .queue button:focus-visible{outline:2px solid var(--ultramarine); outline-offset:-2px}
+  .queue .n{font-weight:500; display:block}
+  .queue .s{font-size:12px; color:var(--graphite)}
+  .tag{display:inline-block; font-size:10px; letter-spacing:.07em; text-transform:uppercase; padding:1px 5px; border:1px solid var(--graphite); color:var(--graphite); margin-right:4px}
+  .tag.err{border-color:var(--rust); color:var(--rust)}
+  .tag.ok{border-color:var(--ok); color:var(--ok)}
+  details.box{border:1px solid var(--rule); background:var(--surface); padding:10px 12px; margin-bottom:16px}
+  details.box summary{cursor:pointer; font-size:13px; font-weight:500}
+  .links{list-style:none; padding:0; margin:10px 0 0; font-size:13px}
+  .links li{display:flex; justify-content:space-between; align-items:center; gap:8px; padding:6px 0; border-top:1px solid var(--rule)}
+  .empty{color:var(--graphite); padding:40px 0}
+  section.card{border-top:1px solid var(--rule); padding:20px 0}
+  section.card h2{font-size:13px; letter-spacing:.1em; text-transform:uppercase; color:var(--graphite); font-weight:500; margin:0 0 14px}
+  .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:12px 16px}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px 16px}
+  .full{grid-column:1/-1}
+  label.f{display:block; font-size:12px; font-weight:500; margin-bottom:4px}
+  input[type=text],input[type=url],input[type=date],input[type=number],select,textarea{
+    width:100%; font:inherit; font-size:14px; padding:8px 9px; border:1px solid var(--rule); background:var(--surface);
+    color:var(--ink); border-radius:0}
+  textarea{min-height:260px; font-family:'IBM Plex Mono',monospace; font-size:12px; line-height:1.5}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--ultramarine); outline-offset:-1px}
+  .ctx{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px 18px; font-size:13px}
+  .ctx .k{font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--graphite)}
+  .ctx .notes{grid-column:1/-1; white-space:pre-wrap; background:var(--surface); border:1px solid var(--rule); padding:8px; max-height:160px; overflow:auto}
+  .chips{display:flex; flex-wrap:wrap; gap:6px}
+  .chips label{display:flex; gap:6px; align-items:center; font-size:13px; border:1px solid var(--rule); background:var(--surface); padding:5px 9px; cursor:pointer}
+  .chips input{accent-color:var(--ultramarine)}
+  .dsp{display:grid; grid-template-columns:24px 120px 1fr 150px; gap:8px 10px; align-items:center; padding:7px 0; border-bottom:1px solid var(--rule)}
+  .dsp .geo{font-size:11px; color:var(--graphite)}
+  .acc{font-size:12px; color:var(--graphite); margin-top:5px}
+  .warn{color:var(--rust); font-size:13px; margin-top:6px}
+  .art{display:flex; gap:14px; align-items:center}
+  .art img{width:96px; height:96px; object-fit:cover; background:var(--rule); border:1px solid var(--rule)}
+  .btn{font:inherit; font-size:14px; font-weight:600; padding:10px 18px; border:1px solid var(--ink); background:var(--ink); color:var(--bone); cursor:pointer}
+  .btn.ghost{background:none; color:var(--ink); font-weight:500; padding:6px 10px; font-size:12px}
+  .btn:disabled{opacity:.45; cursor:default}
+  .btn:focus-visible{outline:2px solid var(--ultramarine); outline-offset:2px}
+  .bar{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+  .err{color:var(--rust); font-size:14px}
+  .result ul{margin:8px 0; padding-left:18px; font-size:13px}
+  .switch{display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer}
+  .switch input{accent-color:var(--ultramarine); width:16px; height:16px}
+  @media (max-width:900px){ .layout{grid-template-columns:1fr} .dsp{grid-template-columns:24px 1fr; } .dsp .geo,.dsp .trk{grid-column:2} .grid,.grid3{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+<header><div class="wrap"><div class="head">
+  <h1>Fanlink Generator</h1><span class="stamp">V2 · 129</span>
+  <span class="nav"><a href="/internal-tools">Internal Tools</a> · <a href="/internal-tools/ads">Ads Dashboard</a></span>
+</div></div></header>
+
+<div class="wrap layout">
+  <aside>
+    <p class="lbl">À traiter</p>
+    <ul class="queue" id="queue"><li class="empty">Chargement…</li></ul>
+    <details class="box" id="linksBox">
+      <summary>Liens formulaire client</summary>
+      <ul class="links" id="links"></ul>
+    </details>
+  </aside>
+
+  <main id="main"><p class="empty">Choisis une campagne dans la liste.</p></main>
+</div>
+
+<template id="tpl">
+  <section class="card">
+    <h2>Contexte client</h2>
+    <div class="ctx" id="ctx"></div>
+  </section>
+
+  <section class="card">
+    <h2>Release</h2>
+    <div class="grid">
+      <div><label class="f" for="artist">Artiste</label><input type="text" id="artist"></div>
+      <div><label class="f" for="featuring">Featuring</label><input type="text" id="featuring"></div>
+      <div class="full"><label class="f" for="title">Titre</label><input type="text" id="title"></div>
+    </div>
+    <div class="grid3" style="margin-top:12px">
+      <div><label class="f" for="releaseType">Type</label><select id="releaseType"><option>Single</option><option>EP</option><option>Album</option><option>Compilation</option></select></div>
+      <div><label class="f" for="releaseDate">Date de sortie</label><input type="date" id="releaseDate"></div>
+      <div><label class="f" for="genre">Genre</label><select id="genre">
+        <option value="">—</option><option>afro_house</option><option>afrobeat</option><option>dance</option><option>deep_house</option>
+        <option>downtempo</option><option>house</option><option>indie_dance</option><option>melodic_techno</option>
+        <option>organic_house</option><option>pop</option><option>progressive</option><option>slap_house</option></select></div>
+      <div><label class="f" for="language">Langue</label><select id="language">
+        <option value="">—</option><option>en</option><option>fr</option><option>es</option><option>pt</option><option>de</option><option>it</option><option>instrumental</option></select></div>
+    </div>
+    <div style="margin-top:14px"><label class="f">Mood tags</label><div class="chips" id="moods"></div></div>
+  </section>
+
+  <section class="card">
+    <h2>Diffusion</h2>
+    <div class="grid">
+      <div><label class="f" for="adAccount">Ad account</label><select id="adAccount"></select><div class="acc" id="accInfo"></div></div>
+      <div><label class="f" for="slug">Slug du fanlink</label><input type="text" id="slug" class="mono"><div class="acc" id="slugInfo"></div></div>
+    </div>
+    <div class="art" style="margin-top:14px">
+      <img id="artImg" alt="">
+      <div>
+        <label class="f" for="artExt">Format du fichier artwork</label>
+        <select id="artExt" style="width:120px"><option>webp</option><option>jpg</option><option>png</option></select>
+        <div class="acc"><a id="artDl" target="_blank" rel="noopener">Télécharger l'artwork</a> — à joindre au message Lovable.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>DSP</h2>
+    <label class="switch" style="margin-bottom:10px"><input type="checkbox" id="trackingMeta" checked> Envoyer les clics à Meta (pixel + CAPI)</label>
+    <div id="dsps"></div>
+  </section>
+
+  <section class="card">
+    <h2>Campagnes Meta</h2>
+    <label class="switch"><input type="checkbox" id="metaCreate"> Créer EXPLORE + SCALE en pause (campagne + ad set)</label>
+    <div class="grid3" style="margin-top:12px">
+      <div><label class="f" for="bExplore">Budget EXPLORE / jour</label><input type="number" id="bExplore" min="1" step="1"></div>
+      <div><label class="f" for="bScale">Budget SCALE / jour</label><input type="number" id="bScale" min="1" step="1"></div>
+      <div><label class="f" for="costCap">Cost cap SCALE (CPR cible)</label><input type="number" id="costCap" min="0.01" step="0.01"></div>
+    </div>
+    <div class="acc" id="metaInfo"></div>
+  </section>
+
+  <section class="card">
+    <div class="bar">
+      <button class="btn" id="go">Générer le prompt et enregistrer</button>
+      <span class="err" id="err" role="alert"></span>
+    </div>
+  </section>
+
+  <section class="card result" id="out" hidden>
+    <h2>Prompt Lovable</h2>
+    <div class="bar" style="margin-bottom:8px">
+      <button class="btn ghost" id="copy">Copier le prompt</button>
+      <span class="acc" id="outUrl"></span>
+    </div>
+    <textarea id="prompt" readonly></textarea>
+    <div id="metaOut"></div>
+    <details class="box" style="margin-top:16px">
+      <summary>Installation de l'ad account sur les fanlinks (une seule fois par ad account)</summary>
+      <p class="acc">À passer dans Lovable avant le premier fanlink de cet ad account. Sans ça, ses pages envoient leurs événements au pixel ERA Music.</p>
+      <div class="bar" style="margin:8px 0"><button class="btn ghost" id="copySetup">Copier</button></div>
+      <textarea id="setup" readonly style="min-height:200px"></textarea>
+    </details>
+  </section>
+</template>
+
+<script>
+const MOODS = ['chill','drive','focus','late_night','party','running','sport','sunset','training'];
+const DSPS = [
+  { key:'spotify', name:'Spotify', geo:'Partout' },
+  { key:'apple_music', name:'Apple Music', geo:'Partout · lien geo' },
+  { key:'deezer', name:'Deezer', geo:'France uniquement' },
+  { key:'amazon_music', name:'Amazon Music', geo:'Hors Europe' },
+  { key:'youtube', name:'YouTube', geo:'Reste du monde', never:true },
+  { key:'beatport', name:'Beatport', geo:'Store', never:true },
+];
+const S = { key: sessionStorage.getItem('adminKey') || '', data: null, current: null };
+
+function ensureKey(){
+  if (S.key) return;
+  const k = prompt('Clé d’accès 129');
+  if (k) { S.key = k.trim(); sessionStorage.setItem('adminKey', S.key); }
+}
+async function api(path, opts = {}){
+  ensureKey();
+  const r = await fetch(path, { ...opts, headers: { ...(opts.headers||{}), Authorization: 'Bearer ' + S.key, 'Content-Type':'application/json' } });
+  if (r.status === 403){ sessionStorage.removeItem('adminKey'); S.key=''; throw new Error('Clé refusée. Recharge la page pour la ressaisir.'); }
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(d.error || ('Erreur ' + r.status)); e.data = d; throw e; }
+  return d;
+}
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const slugify = (s) => String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase()
+  .replace(/&/g,' and ').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80);
+
+function tagFor(s){
+  if (!s) return '';
+  const cls = /Erreur/.test(s) ? 'err' : /(En ligne|Créée|Live)/.test(s) ? 'ok' : '';
+  return `<span class="tag ${cls}">${esc(s)}</span>`;
+}
+
+async function loadQueue(){
+  const ul = $('queue');
+  try {
+    const { items } = await api('/api/fanlink-campaign');
+    if (!items.length) { ul.innerHTML = '<li class="empty">Rien à traiter.</li>'; return; }
+    ul.innerHTML = '';
+    for (const it of items) {
+      const li = document.createElement('li');
+      li.innerHTML = `<button type="button"><span class="n">${esc(it.name)}</span><span class="s">${esc(it.compte)}${it.releaseDate ? ' · sortie ' + esc(it.releaseDate) : ''}</span><div>${tagFor(it.fanlinkStatus)}${tagFor('Meta : ' + it.metaStatus)}</div></button>`;
+      li.querySelector('button').onclick = () => openCampaign(it.id, li.querySelector('button'));
+      ul.appendChild(li);
+    }
+  } catch (e) { ul.innerHTML = `<li class="empty err">${esc(e.message)}</li>`; }
+}
+
+async function loadLinks(){
+  const ul = $('links');
+  try {
+    const { items } = await api('/api/client-links');
+    ul.innerHTML = '';
+    for (const c of items) {
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${esc(c.name)}${c.hasAdAccount ? '' : ' <span class="tag err">sans ad account</span>'}</span><button class="btn ghost" type="button">${c.link ? 'Copier le lien' : 'Créer le lien'}</button>`;
+      li.querySelector('button').onclick = async (ev) => {
+        try {
+          const d = c.link ? { link: c.link } : await api('/api/client-links', { method:'POST', body: JSON.stringify({ id: c.id }) });
+          c.link = d.link; await navigator.clipboard.writeText(d.link);
+          ev.target.textContent = 'Lien copié';
+        } catch (e) { ev.target.textContent = e.message; }
+      };
+      ul.appendChild(li);
+    }
+  } catch (e) { ul.innerHTML = `<li class="err">${esc(e.message)}</li>`; }
+}
+
+function accById(id){ return S.data.adAccounts.find(a => a.id === id); }
+
+function refreshAcc(){
+  const a = accById($('adAccount').value);
+  const info = $('accInfo');
+  if (!a) { info.textContent = ''; return; }
+  const miss = [!a.metaId && 'ID compte', !a.pixelId && 'pixel', !a.prefix && 'préfixe'].filter(Boolean);
+  info.innerHTML = `act_${esc(a.metaId || '?')} · pixel ${esc(a.pixelId || '?')} · préfixe « ${esc(a.prefix || '?')} » · ${esc(a.currency)}`
+    + (miss.length ? `<div class="warn">Incomplet dans Airtable : ${miss.join(', ')}.</div>` : '');
+  const slug = $('slug');
+  const tail = slug.value.includes('/') ? slug.value.split('/').slice(1).join('-') : slugify(`${$('artist').value} ${$('title').value}`);
+  if (a.prefix) slug.value = `${a.prefix}/${tail}`;
+  $('metaInfo').textContent = `Montants en ${a.currency || 'devise du compte'}. Tout est créé en pause : rien ne diffuse sans activation dans Ads Manager.`;
+  refreshSlugInfo();
+}
+function refreshSlugInfo(){ $('slugInfo').textContent = 'https://fanlinkhub.com/' + $('slug').value; }
+
+async function openCampaign(id, btn){
+  document.querySelectorAll('.queue button').forEach(b => b.removeAttribute('aria-current'));
+  if (btn) btn.setAttribute('aria-current', 'true');
+  const main = $('main');
+  main.innerHTML = '<p class="empty">Chargement…</p>';
+  try {
+    S.data = await api('/api/fanlink-campaign?id=' + encodeURIComponent(id));
+  } catch (e) { main.innerHTML = `<p class="empty err">${esc(e.message)}</p>`; return; }
+  S.current = id;
+  const { campaign: c, track: t, adAccounts, metaDefaults, metaTokenVar } = S.data;
+  main.innerHTML = '';
+  main.appendChild($('tpl').content.cloneNode(true));
+
+  const cur = c.currency || '';
+  $('ctx').innerHTML = [
+    ['Client', c.compteName], ['Budget demandé', c.budgetRequested != null ? `${c.budgetRequested} ${cur}` : '—'],
+    ['Objectif', c.objective || '—'], ['Territoires', c.territories || '—'],
+    ['Actions en parallèle', (c.parallelActions||[]).join(', ') || '—'], ['Page artiste', c.pageIgFb || '—'],
+    ['ISRC', t.isrc || '—'], ['Clé track', t.key || '—'],
+  ].map(([k,v]) => `<div><div class="k">${esc(k)}</div>${esc(v)}</div>`).join('')
+   + (c.driveFolder ? `<div><div class="k">Assets</div><a href="${esc(c.driveFolder)}" target="_blank" rel="noopener">Dossier Drive</a></div>` : '')
+   + (c.notes ? `<div class="notes">${esc(c.notes)}</div>` : '');
+
+  for (const [k, v] of Object.entries({ artist:t.artist, featuring:t.featuring, title:t.title, releaseType:t.releaseType, releaseDate:t.releaseDate, genre:t.genre, language:t.language })) $(k).value = v || '';
+
+  $('moods').innerHTML = MOODS.map(m => `<label><input type="checkbox" value="${m}" ${c.moodTags.includes(m) ? 'checked' : ''}>${m}</label>`).join('');
+
+  const sel = $('adAccount');
+  sel.innerHTML = '<option value="">— choisir —</option>' + adAccounts.map(a => `<option value="${a.id}">${esc(a.name)}${a.status && a.status !== 'Actif' ? ' (' + esc(a.status) + ')' : ''}</option>`).join('');
+  sel.value = c.adAccountId || '';
+  $('slug').value = c.slug || '';
+  sel.onchange = refreshAcc;
+  $('slug').oninput = refreshSlugInfo;
+  refreshAcc();
+  if (!c.slug && !sel.value) $('slug').value = slugify(`${t.artist} ${t.title}`);
+  refreshSlugInfo();
+
+  if (t.artwork) {
+    $('artImg').src = t.artwork.url; $('artDl').href = t.artwork.url;
+    const ext = (t.artwork.filename.split('.').pop() || '').toLowerCase().replace('jpeg','jpg');
+    if (['webp','jpg','png'].includes(ext)) $('artExt').value = ext;
+  } else { $('artDl').removeAttribute('href'); $('artDl').textContent = 'Pas d’artwork dans Airtable — voir le dossier Drive'; }
+
+  $('trackingMeta').checked = c.trackingMeta !== false;
+  $('dsps').innerHTML = DSPS.map(d => {
+    const url = t.dsp[d.key] || '';
+    return `<div class="dsp" data-key="${d.key}">
+      <input type="checkbox" ${url ? 'checked' : ''} aria-label="Afficher ${d.name}">
+      <strong>${d.name}</strong>
+      <input type="url" value="${esc(url)}" placeholder="Lien ${d.name}">
+      <span class="geo">${d.geo}${d.never ? ' · jamais envoyé à Meta' : ''}</span>
+    </div>`;
+  }).join('');
+  $('dsps').querySelectorAll('.dsp input[type=url]').forEach(inp => inp.addEventListener('input', () => {
+    inp.parentElement.querySelector('input[type=checkbox]').checked = Boolean(inp.value.trim());
+  }));
+
+  $('bExplore').value = metaDefaults.explore_daily_budget;
+  $('bScale').value = metaDefaults.scale_daily_budget;
+  $('costCap').value = metaDefaults.scale_cost_cap;
+  const hasIds = c.campaignIdExplore && c.campaignIdScale;
+  $('metaCreate').checked = !hasIds;
+  const ids = [c.campaignIdExplore && `EXPLORE ${c.campaignIdExplore}`, c.campaignIdScale && `SCALE ${c.campaignIdScale}`].filter(Boolean);
+  if (ids.length) $('metaInfo').insertAdjacentHTML('afterend', `<div class="acc">Déjà créées : ${esc(ids.join(' · '))} — elles ne seront pas recréées.</div>`);
+  if (!metaTokenVar) $('metaInfo').insertAdjacentHTML('afterend', `<div class="warn">Aucun token d'écriture Meta dans Vercel : la création échouera.</div>`);
+
+  $('go').onclick = save;
+}
+
+async function save(){
+  const btn = $('go'), err = $('err');
+  err.textContent = ''; btn.disabled = true; btn.textContent = 'En cours…';
+  const body = {
+    campaignId: S.current,
+    adAccountId: $('adAccount').value,
+    slug: $('slug').value.trim(),
+    track: { artist:$('artist').value, featuring:$('featuring').value, title:$('title').value, releaseType:$('releaseType').value,
+      releaseDate:$('releaseDate').value, genre:$('genre').value, language:$('language').value },
+    moodTags: Array.from(document.querySelectorAll('#moods input:checked')).map(i => i.value),
+    trackingMeta: $('trackingMeta').checked,
+    artworkExt: $('artExt').value,
+    dsps: Array.from(document.querySelectorAll('.dsp')).map(row => ({
+      key: row.dataset.key, enabled: row.querySelector('input[type=checkbox]').checked, url: row.querySelector('input[type=url]').value })),
+    meta: { create: $('metaCreate').checked, explore: $('bExplore').value, scale: $('bScale').value, costCap: $('costCap').value },
+  };
+  try {
+    const d = await api('/api/fanlink-save', { method:'POST', body: JSON.stringify(body) });
+    $('out').hidden = false;
+    $('prompt').value = d.prompt;
+    $('setup').value = d.setupPrompt;
+    $('outUrl').textContent = d.url;
+    let html = '';
+    if (d.meta) {
+      const rows = [];
+      for (const role of ['explore','scale']) {
+        const r = d.meta[role];
+        if (r) rows.push(`<li>${role.toUpperCase()} : campagne <span class="mono">${esc(r.campaignId)}</span>${r.adsetId ? `, ad set <span class="mono">${esc(r.adsetId)}</span>` : ''}${r.skipped ? ' (existait déjà)' : ' (en pause)'}</li>`);
+      }
+      html = `<h2 style="margin-top:20px">Meta</h2><ul>${rows.join('')}${d.meta.errors.map(e => `<li class="err">${esc(e)}</li>`).join('')}${d.meta.notes.map(n => `<li class="acc">${esc(n)}</li>`).join('')}</ul>`;
+    }
+    $('metaOut').innerHTML = html;
+    $('copy').onclick = async () => { await navigator.clipboard.writeText(d.prompt); $('copy').textContent = 'Copié'; };
+    $('copySetup').onclick = async () => { await navigator.clipboard.writeText(d.setupPrompt); $('copySetup').textContent = 'Copié'; };
+    $('out').scrollIntoView({ behavior:'smooth' });
+    loadQueue();
+  } catch (e) {
+    err.textContent = e.message;
+    if (e.data?.prompt) { $('out').hidden = false; $('prompt').value = e.data.prompt; }
+  } finally { btn.disabled = false; btn.textContent = 'Générer le prompt et enregistrer'; }
+}
+
+loadQueue();
+$('linksBox').addEventListener('toggle', (e) => { if (e.target.open && !$('links').children.length) loadLinks(); });
+if (new URLSearchParams(location.search).get('links')) $('linksBox').open = true;
+const qid = new URLSearchParams(location.search).get('c');
+if (qid) openCampaign(qid);
+</script>
+</body>
+</html>

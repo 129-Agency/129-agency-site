@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>New campaign — 129</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{ --bone:#EDEDE7; --ink:#16181A; --graphite:#6B6F73; --rule:#D3D3CB;
+    --ultramarine:#2B3BE8; --rust:#A32C1F; --surface:#F6F6F2; }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bone); color:var(--ink); font-family:Archivo,-apple-system,system-ui,sans-serif;
+    font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased}
+  .wrap{max-width:760px; margin:0 auto; padding:0 16px 80px}
+  header{padding:36px 0 22px; border-bottom:1px solid var(--rule)}
+  .mark{font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.14em; color:var(--graphite)}
+  h1{font-size:30px; font-weight:700; letter-spacing:-.025em; margin:6px 0 6px}
+  .lede{color:var(--graphite); margin:0; max-width:56ch}
+  .client{margin-top:14px; font-size:13px}
+  .client b{font-weight:600}
+  fieldset{border:0; border-bottom:1px solid var(--rule); margin:0; padding:26px 0}
+  legend{font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--graphite);
+    font-weight:500; padding:0; margin-bottom:14px; float:left; width:100%}
+  legend + *{clear:left}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:14px 18px}
+  .full{grid-column:1/-1}
+  label.f{display:block; font-size:13px; font-weight:500; margin-bottom:5px}
+  label.f .opt{color:var(--graphite); font-weight:400}
+  .hint{font-size:12px; color:var(--graphite); margin-top:4px}
+  input[type=text],input[type=url],input[type=date],input[type=number],select,textarea{
+    width:100%; font:inherit; font-size:15px; padding:9px 10px; border:1px solid var(--rule);
+    background:var(--surface); color:var(--ink); border-radius:0; -webkit-appearance:none; appearance:none}
+  select{background-image:linear-gradient(45deg,transparent 50%,var(--graphite) 50%),linear-gradient(135deg,var(--graphite) 50%,transparent 50%);
+    background-position:calc(100% - 16px) 55%,calc(100% - 11px) 55%; background-size:5px 5px; background-repeat:no-repeat; padding-right:30px}
+  textarea{min-height:90px; resize:vertical}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--ultramarine); outline-offset:-1px}
+  .err-field{border-color:var(--rust) !important}
+  .row{display:flex; gap:10px}
+  .row > :first-child{flex:1}
+  .row select{width:96px}
+  .checks{display:flex; flex-wrap:wrap; gap:8px}
+  .checks label{display:flex; align-items:center; gap:7px; font-size:14px; border:1px solid var(--rule);
+    background:var(--surface); padding:7px 11px; cursor:pointer}
+  .checks input{accent-color:var(--ultramarine)}
+  .seg{display:flex; border:1px solid var(--rule); background:var(--surface); width:max-content}
+  .seg label{padding:8px 14px; font-size:14px; cursor:pointer; border-right:1px solid var(--rule)}
+  .seg label:last-child{border-right:0}
+  .seg input{position:absolute; opacity:0; pointer-events:none}
+  .seg input:checked + span{font-weight:600}
+  .seg label:has(input:checked){background:var(--ink); color:var(--bone)}
+  .drop{border:1px dashed var(--graphite); background:var(--surface); padding:16px; cursor:pointer; display:block}
+  .drop.over{border-color:var(--ultramarine); background:#E9EAF6}
+  .drop .t{font-weight:500}
+  .drop input{display:none}
+  .list{margin:8px 0 0; padding:0; list-style:none; font-size:13px}
+  .list li{display:flex; justify-content:space-between; gap:10px; padding:5px 0; border-bottom:1px solid var(--rule)}
+  .list .n{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .list button{background:none; border:0; color:var(--rust); cursor:pointer; font:inherit; font-size:12px}
+  .mono{font-family:'IBM Plex Mono',monospace; font-variant-numeric:tabular-nums}
+  .actions{padding:28px 0 0}
+  .btn{font:inherit; font-size:15px; font-weight:600; padding:13px 22px; border:1px solid var(--ink);
+    background:var(--ink); color:var(--bone); cursor:pointer}
+  .btn:disabled{opacity:.45; cursor:default}
+  .btn:focus-visible{outline:2px solid var(--ultramarine); outline-offset:2px}
+  .formerr{color:var(--rust); font-size:14px; margin-top:12px}
+  .progress{display:none; padding:28px 0}
+  .progress.on{display:block}
+  .bar{height:6px; background:var(--rule); margin:8px 0 4px}
+  .bar i{display:block; height:100%; width:0; background:var(--ultramarine); transition:width .2s}
+  .done{display:none; padding:56px 0}
+  .done.on{display:block}
+  .done h2{font-size:24px; letter-spacing:-.02em; margin:0 0 8px}
+  .blocked{padding:56px 0; display:none}
+  .blocked.on{display:block}
+  @media (max-width:640px){ .grid{grid-template-columns:1fr} h1{font-size:25px} }
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mark">129</div>
+    <h1>New campaign</h1>
+    <p class="lede">Everything we need to set up your release. Files go straight to our storage; nothing is published until we have reviewed it.</p>
+    <div class="client" id="clientLine"></div>
+  </header>
+
+  <div class="blocked" id="blocked">
+    <p><b>This link is incomplete.</b> Use the exact link 129 sent you, or ask us for a new one.</p>
+  </div>
+
+  <form id="f" novalidate>
+    <fieldset>
+      <legend>Release</legend>
+      <div class="grid">
+        <div><label class="f" for="artist">Artist</label><input type="text" id="artist" autocomplete="off" required></div>
+        <div><label class="f" for="featuring">Featuring <span class="opt">(optional)</span></label><input type="text" id="featuring" autocomplete="off"></div>
+        <div class="full"><label class="f" for="title">Track title</label><input type="text" id="title" autocomplete="off" required></div>
+        <div><label class="f" for="releaseType">Release type</label>
+          <select id="releaseType" required><option>Single</option><option>EP</option><option>Album</option><option>Compilation</option></select></div>
+        <div><label class="f" for="releaseDate">Release date</label><input type="date" id="releaseDate" required></div>
+        <div><label class="f" for="isrc">ISRC <span class="opt">(recommended)</span></label><input type="text" id="isrc" placeholder="FR-XXX-26-00001" autocomplete="off"></div>
+        <div><label class="f" for="upc">UPC <span class="opt">(optional)</span></label><input type="text" id="upc" inputmode="numeric" autocomplete="off"></div>
+        <div class="full"><label class="f" for="distributor">Distributor <span class="opt">(optional)</span></label><input type="text" id="distributor" autocomplete="off"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Sound</legend>
+      <div class="grid">
+        <div><label class="f" for="genre">Main genre</label>
+          <select id="genre" required>
+            <option value="">Choose…</option>
+            <option value="afro_house">Afro house</option><option value="afrobeat">Afrobeat</option>
+            <option value="dance">Dance</option><option value="deep_house">Deep house</option>
+            <option value="downtempo">Downtempo</option><option value="house">House</option>
+            <option value="indie_dance">Indie dance</option><option value="melodic_techno">Melodic techno</option>
+            <option value="organic_house">Organic house</option><option value="pop">Pop</option>
+            <option value="progressive">Progressive</option><option value="slap_house">Slap house</option>
+          </select></div>
+        <div><label class="f" for="language">Vocals language</label>
+          <select id="language" required>
+            <option value="">Choose…</option>
+            <option value="en">English</option><option value="fr">French</option><option value="es">Spanish</option>
+            <option value="pt">Portuguese</option><option value="de">German</option><option value="it">Italian</option>
+            <option value="instrumental">Instrumental</option>
+          </select></div>
+        <div class="full"><label class="f">Spotify Discovery Mode active on this track?</label>
+          <div class="seg">
+            <label><input type="radio" name="dm" value="oui"><span>Yes</span></label>
+            <label><input type="radio" name="dm" value="non"><span>No</span></label>
+            <label><input type="radio" name="dm" value="nsp" checked><span>Not sure</span></label>
+          </div></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Links</legend>
+      <div class="grid">
+        <div class="full"><label class="f" for="spotifyUrl">Spotify <span class="opt">(link or URI, if already available)</span></label><input type="url" id="spotifyUrl" placeholder="https://open.spotify.com/track/…"></div>
+        <div><label class="f" for="appleUrl">Apple Music <span class="opt">(optional)</span></label><input type="url" id="appleUrl"></div>
+        <div><label class="f" for="deezerUrl">Deezer <span class="opt">(optional)</span></label><input type="url" id="deezerUrl"></div>
+        <div><label class="f" for="amazonUrl">Amazon Music <span class="opt">(optional)</span></label><input type="url" id="amazonUrl"></div>
+        <div><label class="f" for="youtubeUrl">YouTube <span class="opt">(optional)</span></label><input type="url" id="youtubeUrl"></div>
+      </div>
+      <div class="hint">Before release, links are often not live yet. Leave them empty: we complete them on release day.</div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Campaign</legend>
+      <div class="grid">
+        <div><label class="f" for="budget">Ad budget</label>
+          <div class="row"><input type="number" id="budget" min="1" step="1" inputmode="decimal" required>
+            <select id="currency"><option>EUR</option><option>USD</option><option>GBP</option></select></div>
+          <div class="hint">Ad spend only, excluding our fee.</div></div>
+        <div><label class="f" for="startDate">Preferred start <span class="opt">(optional)</span></label><input type="date" id="startDate"></div>
+        <div class="full"><label class="f" for="objective">Main objective</label>
+          <select id="objective" required>
+            <option value="">Choose…</option>
+            <option>Streams</option><option>Saves and playlist adds</option>
+            <option>Catalogue revival</option><option>Awareness around a release</option>
+          </select></div>
+        <div class="full"><label class="f" for="territories">Priority territories <span class="opt">(optional)</span></label><input type="text" id="territories" placeholder="e.g. UK, Germany, Netherlands"></div>
+        <div class="full"><label class="f">Other marketing running in parallel</label>
+          <div class="checks" id="actions">
+            <label><input type="checkbox" value="Radio">Radio</label>
+            <label><input type="checkbox" value="Pitch playlist éditorial">Editorial playlist pitch</label>
+            <label><input type="checkbox" value="Playlists tierces">Third-party playlists</label>
+            <label><input type="checkbox" value="TikTok / UGC">TikTok / UGC</label>
+            <label><input type="checkbox" value="Influence">Influencers</label>
+            <label><input type="checkbox" value="Presse">Press</label>
+            <label><input type="checkbox" value="Autre agence ads">Another ads agency</label>
+            <label><input type="checkbox" value="Aucune">None</label>
+          </div>
+          <div class="hint">We use this to read results correctly: a spike from radio is not an ad result.</div></div>
+        <div class="full"><label class="f" for="page">Artist Instagram / Facebook page</label><input type="url" id="page" placeholder="https://instagram.com/…"></div>
+        <div class="full"><label class="checks" style="border:0;padding:0;background:none"><input type="checkbox" id="pageAccess">&nbsp;Ad access to this page has already been granted to 129</label></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Files</legend>
+      <div class="grid">
+        <div class="full">
+          <label class="drop" data-kind="artwork" tabindex="0"><span class="t">Artwork</span> <span class="hint">— required, square JPG / PNG / WebP</span>
+            <input type="file" accept="image/jpeg,image/png,image/webp"></label>
+          <ul class="list" data-list="artwork"></ul>
+        </div>
+        <div class="full">
+          <label class="drop" data-kind="audio" tabindex="0"><span class="t">Audio</span> <span class="hint">— WAV or MP3, plus any edits you want us to use</span>
+            <input type="file" accept="audio/*,.wav,.mp3,.aiff,.flac" multiple></label>
+          <ul class="list" data-list="audio"></ul>
+        </div>
+        <div class="full">
+          <label class="drop" data-kind="video" tabindex="0"><span class="t">Videos</span> <span class="hint">— clips, visualisers, behind the scenes, vertical preferred</span>
+            <input type="file" accept="video/*" multiple></label>
+          <ul class="list" data-list="video"></ul>
+        </div>
+        <div class="full">
+          <label class="drop" data-kind="visual" tabindex="0"><span class="t">Photos and other visuals</span> <span class="hint">— press shots, live photos</span>
+            <input type="file" accept="image/*" multiple></label>
+          <ul class="list" data-list="visual"></ul>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Anything else</legend>
+      <label class="f" for="notes">Context we should know <span class="opt">(optional)</span></label>
+      <textarea id="notes" placeholder="Story behind the track, references, what worked or did not work before…"></textarea>
+    </fieldset>
+
+    <div class="actions">
+      <button class="btn" type="submit" id="send">Send</button>
+      <div class="formerr" id="formErr" role="alert"></div>
+    </div>
+  </form>
+
+  <section class="progress" id="progress" aria-live="polite">
+    <div id="pLabel">Preparing…</div>
+    <div class="bar"><i id="pBar"></i></div>
+    <div class="hint mono" id="pDetail"></div>
+    <p class="hint">Keep this page open until the upload is complete.</p>
+  </section>
+
+  <section class="done" id="done">
+    <h2>Received.</h2>
+    <p>We have everything for <b id="doneTitle"></b>. We will come back to you once the campaign is set up.</p>
+    <p class="hint" id="doneWarn"></p>
+  </section>
+</div>
+
+<script>
+const CHUNK = 4 * 1024 * 1024;          // multiple de 256 Ko, sous la limite Vercel de 4,5 Mo
+const MAX_ARTWORK_INLINE = 3 * 1024 * 1024;
+const k = new URLSearchParams(location.search).get('k');
+const form = document.getElementById('f');
+const files = { artwork: [], audio: [], video: [], visual: [] };
+
+if (!k) { form.style.display = 'none'; document.getElementById('blocked').classList.add('on'); }
+
+const fmt = (n) => n >= 1e9 ? (n/1e9).toFixed(2)+' GB' : n >= 1e6 ? (n/1e6).toFixed(1)+' MB' : Math.max(1, Math.round(n/1e3))+' KB';
+
+function render(kind) {
+  const ul = document.querySelector(`[data-list="${kind}"]`);
+  ul.innerHTML = '';
+  files[kind].forEach((f, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="n"></span><span class="mono">${fmt(f.size)}</span><button type="button" aria-label="Remove">Remove</button>`;
+    li.querySelector('.n').textContent = f.name;
+    li.querySelector('button').onclick = () => { files[kind].splice(i, 1); render(kind); };
+    ul.appendChild(li);
+  });
+}
+
+document.querySelectorAll('.drop').forEach(drop => {
+  const kind = drop.dataset.kind, input = drop.querySelector('input');
+  const add = (list) => {
+    const arr = Array.from(list);
+    files[kind] = kind === 'artwork' ? arr.slice(0, 1) : files[kind].concat(arr);
+    render(kind); drop.classList.remove('err-field');
+  };
+  input.addEventListener('change', () => { add(input.files); input.value = ''; });
+  drop.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
+  ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => add(e.dataTransfer.files));
+});
+
+const val = (id) => document.getElementById(id).value.trim();
+form.addEventListener('input', e => { e.target.classList.remove('err-field'); document.getElementById('formErr').textContent = ''; });
+
+function validate() {
+  const req = ['artist','title','releaseType','releaseDate','genre','language','budget','objective'];
+  const missing = req.filter(id => !val(id));
+  missing.forEach(id => document.getElementById(id).classList.add('err-field'));
+  if (!files.artwork.length) { document.querySelector('[data-kind="artwork"]').classList.add('err-field'); missing.push('artwork'); }
+  if (val('budget') && !(Number(val('budget')) > 0)) { document.getElementById('budget').classList.add('err-field'); missing.push('budget'); }
+  if (missing.length) {
+    document.getElementById('formErr').textContent = 'Some required fields are missing (highlighted in red).';
+    document.querySelector('.err-field')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return false;
+  }
+  return true;
+}
+
+async function postJson(url, body) {
+  const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || ('Error ' + r.status));
+  return d;
+}
+
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+async function uploadFile(file, token, onBytes) {
+  let start = 0;
+  while (start < file.size) {
+    const end = Math.min(start + CHUNK, file.size);
+    const blob = file.slice(start, end);
+    let attempt = 0, out;
+    for (;;) {
+      try {
+        const r = await fetch('/api/onboarding-chunk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/octet-stream', 'X-Upload-Token': token,
+            'X-Chunk-Start': String(start), 'X-Total-Size': String(file.size) },
+          body: blob,
+        });
+        out = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(out.error || ('Error ' + r.status));
+        break;
+      } catch (e) {
+        if (++attempt > 4) throw e;
+        await sleep(1500 * attempt);
+      }
+    }
+    if (out.done) { onBytes(file.size); return true; }
+    start = Number.isFinite(out.next) && out.next > start ? out.next : end;
+    onBytes(start);
+  }
+  return true;
+}
+
+function readBase64(file) {
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => res(String(fr.result).split(',')[1]);
+    fr.onerror = () => rej(fr.error);
+    fr.readAsDataURL(file);
+  });
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!validate()) return;
+  const btn = document.getElementById('send');
+  btn.disabled = true;
+
+  const order = ['artwork', 'audio', 'video', 'visual'];
+  const list = order.flatMap(kind => files[kind].map(f => ({ kind, file: f })));
+  const page = val('page');
+  const payload = {
+    k,
+    track: {
+      artist: val('artist'), featuring: val('featuring'), title: val('title'),
+      releaseType: val('releaseType'), releaseDate: val('releaseDate'),
+      isrc: val('isrc'), upc: val('upc'), distributor: val('distributor'),
+      genre: val('genre'), language: val('language'),
+      discoveryMode: document.querySelector('input[name=dm]:checked')?.value || 'nsp',
+      spotifyUrl: val('spotifyUrl'), appleUrl: val('appleUrl'), deezerUrl: val('deezerUrl'),
+      amazonUrl: val('amazonUrl'), youtubeUrl: val('youtubeUrl'),
+    },
+    campaign: {
+      budget: Number(val('budget')), currency: val('currency'), startDate: val('startDate'),
+      objective: val('objective'), territories: val('territories'),
+      parallelActions: Array.from(document.querySelectorAll('#actions input:checked')).map(i => i.value),
+      pageIgFb: page ? page + (document.getElementById('pageAccess').checked ? ' — accès pub donné à 129' : ' — accès pub NON confirmé') : '',
+      notes: val('notes'),
+    },
+    files: list.map(x => ({ kind: x.kind, name: x.file.name, size: x.file.size, type: x.file.type })),
+  };
+
+  const prog = document.getElementById('progress'), pBar = document.getElementById('pBar');
+  const pLabel = document.getElementById('pLabel'), pDetail = document.getElementById('pDetail');
+  let started = false;
+  try {
+    const start = await postJson('/api/onboarding-start', payload);
+    started = true;
+    form.style.display = 'none'; prog.classList.add('on'); window.scrollTo(0, 0);
+
+    const total = list.reduce((s, x) => s + x.file.size, 0) || 1;
+    const sent = new Array(list.length).fill(0);
+    const uploaded = [];
+    for (let i = 0; i < list.length; i++) {
+      const { file } = list[i];
+      pLabel.textContent = `Uploading ${i + 1} of ${list.length}: ${file.name}`;
+      try {
+        await uploadFile(file, start.uploads[i].token, (bytes) => {
+          sent[i] = bytes;
+          const done = sent.reduce((a, b) => a + b, 0);
+          pBar.style.width = (100 * done / total).toFixed(1) + '%';
+          pDetail.textContent = `${fmt(done)} / ${fmt(total)}`;
+        });
+        uploaded.push({ name: file.name, ok: true });
+      } catch (err) {
+        uploaded.push({ name: file.name, ok: false });
+      }
+    }
+
+    pLabel.textContent = 'Finishing…';
+    const art = files.artwork[0];
+    let artwork = null;
+    if (art && art.size <= MAX_ARTWORK_INLINE) {
+      artwork = { filename: art.name, contentType: art.type, base64: await readBase64(art) };
+    }
+    await postJson('/api/onboarding-finish', { k, campaignId: start.campaignId, artwork, uploaded });
+
+    prog.classList.remove('on');
+    document.getElementById('doneTitle').textContent = `${payload.track.artist} — ${payload.track.title}`;
+    const failed = uploaded.filter(u => !u.ok).map(u => u.name);
+    if (failed.length) document.getElementById('doneWarn').textContent =
+      `These files could not be uploaded: ${failed.join(', ')}. Send them to us directly.`;
+    document.getElementById('done').classList.add('on');
+  } catch (err) {
+    if (started) {
+      // La campagne existe déjà côté 129 : ne jamais renvoyer le formulaire (doublon).
+      pLabel.textContent = 'Your submission was received, but the last step failed.';
+      pDetail.textContent = err.message + ' — do not resubmit; let 129 know the track title.';
+      return;
+    }
+    prog.classList.remove('on'); form.style.display = '';
+    document.getElementById('formErr').textContent = err.message;
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

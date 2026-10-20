@@ -1,0 +1,32 @@
+{
+  "_doc": "Template EXPLORE / SCALE (spec du 02/08/2026). Budgets en unités de la devise du compte (EUR, USD...). Tout est créé en PAUSE.",
+  "objective": "OUTCOME_SALES",
+  "optimization_goal": "OFFSITE_CONVERSIONS",
+  "conversion_event": "CONTENT_VIEW",
+  "countries": ["US", "CA", "GB", "DE", "FR", "NL", "SE", "FI", "DK", "BE"],
+  "location_types": ["home", "recent"],
+  "device_platforms": ["mobile", "desktop"],
+  "publisher_platforms": ["facebook", "instagram"],
+  "facebook_positions": ["story", "facebook_reels"],
+  "instagram_positions": ["story", "reels"],
+  "explore": {
+    "daily_budget": 50,
+    "bid_strategy": "LOWEST_COST_WITHOUT_CAP",
+    "age_min": 18,
+    "age_max": 40,
+    "advantage_audience": 0
+  },
+  "scale": {
+    "daily_budget": 100,
+    "bid_strategy": "COST_CAP",
+    "cost_cap": 0.20,
+    "age_min": 18,
+    "age_max": 65,
+    "advantage_audience": 1
+  },
+  "exclude_custom_audiences": {
+    "_doc": "Audience « Already Converted 60j » par compte pub (ID numérique sans act_). Vide = pas d'exclusion, signalé dans le résultat.",
+    "1438949328152890": null,
+    "110521542482244": null
+  }
+}

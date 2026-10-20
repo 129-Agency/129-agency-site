@@ -1,0 +1,16 @@
+{
+  "cr2": {
+    "label": "CR2",
+    "ad_account_id": "110521542482244",
+    "business_id": "465827650534227",
+    "currency": "USD",
+    "client_facing": true
+  },
+  "129": {
+    "label": "129 Agency",
+    "ad_account_id": "1438949328152890",
+    "business_id": "2931318437227206",
+    "currency": "EUR",
+    "client_facing": true
+  }
+}

@@ -1,0 +1,9 @@
+# Secrets - jamais commites. Le token vit dans Vercel, pas dans le repo.
+.env
+.env.local
+.env.*.local
+*.token
+
+.vercel
+node_modules
+.DS_Store

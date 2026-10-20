@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Internal Tools — 129</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{ --bone:#EDEDE7; --ink:#16181A; --graphite:#6B6F73; --rule:#D3D3CB;
+    --ultramarine:#2B3BE8; --rust:#A32C1F; --surface:#F6F6F2; --live:#1F6B3A; --soon:#B4741A; }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bone); color:var(--ink); font-family:Archivo,-apple-system,system-ui,sans-serif;
+    font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased}
+  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+  .wrap{max-width:1040px; margin:0 auto; padding:72px 20px 96px}
+  .eyebrow{font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--graphite)}
+  h1{font-size:clamp(34px,5vw,52px); font-weight:400; letter-spacing:-.03em; line-height:1.05; margin:14px 0 0}
+  h1 b{display:block; font-weight:700; color:var(--ultramarine)}
+  .lede{max-width:58ch; color:var(--graphite); margin:18px 0 0; font-size:16px}
+  .sec{display:flex; align-items:center; gap:14px; margin:56px 0 18px;
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:var(--graphite)}
+  .sec::after{content:""; flex:1; height:1px; background:var(--rule)}
+  .grid{display:grid; grid-template-columns:repeat(2,1fr); gap:16px}
+  a.card,div.card{display:flex; flex-direction:column; gap:10px; padding:22px 22px 18px; background:var(--surface);
+    border:1px solid var(--rule); color:inherit; text-decoration:none; min-height:190px}
+  a.card:hover{border-color:var(--ink)}
+  a.card:focus-visible{outline:2px solid var(--ultramarine); outline-offset:2px}
+  .card .n{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--graphite)}
+  .card h2{font-size:19px; font-weight:600; letter-spacing:-.01em; margin:0}
+  .card p{margin:0; color:var(--graphite); font-size:14px; flex:1}
+  .tags{display:flex; flex-wrap:wrap; gap:6px; align-items:center}
+  .st{display:inline-flex; align-items:center; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; margin-right:4px}
+  .st::before{content:""; width:7px; height:7px; border-radius:50%; background:currentColor}
+  .st.live{color:var(--live)} .st.soon{color:var(--soon)}
+  .tag{font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+    border:1px solid var(--rule); color:var(--graphite); padding:2px 6px}
+  div.card{opacity:.7}
+  footer{margin-top:56px; font-size:12px; color:var(--graphite)}
+  @media (max-width:720px){ .grid{grid-template-columns:1fr} .wrap{padding-top:48px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">129 Agency · Internal</div>
+  <h1>Tools<b>for the work behind the records.</b></h1>
+  <p class="lede">Hub des outils internes de 129. Chaque outil sert un workflow précis : du formulaire client à la campagne en pause, puis au suivi.</p>
+
+  <div class="sec">Live</div>
+  <div class="grid">
+    <a class="card" href="/internal-tools/fanlink">
+      <span class="n">01</span>
+      <h2>Fanlink Generator</h2>
+      <p>Les campagnes reçues par le formulaire client arrivent préremplies. Prompt Lovable au format Fanlinkhub, réécriture Airtable, création EXPLORE + SCALE en pause.</p>
+      <div class="tags"><span class="st live">Live</span><span class="tag">V2</span><span class="tag">Lovable</span><span class="tag">Meta</span><span class="tag">Airtable</span></div>
+    </a>
+    <a class="card" href="/internal-tools/fanlink?links=1">
+      <span class="n">02</span>
+      <h2>Formulaire client</h2>
+      <p>Un lien par client récurrent. Métadonnées, budget, contexte marketing ; les fichiers partent directement sur le Drive 129.</p>
+      <div class="tags"><span class="st live">Live</span><span class="tag">Public</span><span class="tag">Drive</span></div>
+    </a>
+    <a class="card" href="/internal-tools/ads">
+      <span class="n">03</span>
+      <h2>Ads Dashboard</h2>
+      <p>Toutes les campagnes, sources 129 et CR2. Détail par campagne, créas, comparaison à la période précédente.</p>
+      <div class="tags"><span class="st live">Live</span><span class="tag">Meta Ads</span><span class="tag">Lecture seule</span></div>
+    </a>
+    <a class="card" href="/internal-tools/ads">
+      <span class="n">04</span>
+      <h2>Rapport client</h2>
+      <p>Lien signé généré depuis le dashboard : le client voit sa campagne en lecture seule, sans accès au compte pub.</p>
+      <div class="tags"><span class="st live">Live</span><span class="tag">Lien signé</span></div>
+    </a>
+  </div>
+
+  <div class="sec">À venir</div>
+  <div class="grid">
+    <div class="card">
+      <span class="n">05</span>
+      <h2>Tracking Stats</h2>
+      <p>Ingestion quotidienne des streams et du spend vers la base « 129 — Tracking Stats ». Source du modèle de prédiction.</p>
+      <div class="tags"><span class="st soon">À venir</span><span class="tag">Airtable</span><span class="tag">ML</span></div>
+    </div>
+  </div>
+
+  <footer>Accès réservé : chaque outil demande la clé 129.</footer>
+</div>
+</body>
+</html>

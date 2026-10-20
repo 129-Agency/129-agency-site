@@ -1,0 +1,6 @@
+{
+  "name": "129-internal-tools",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "22.x" }
+}
