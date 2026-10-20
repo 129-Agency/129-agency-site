@@ -41,7 +41,7 @@
   "rewrites": [
     {
       "source": "/onboarding",
-      "destination": "/internal-tools/onboarding/index.html"
+      "destination": "/internal-tools/onboarding"
     }
   ]
 }
