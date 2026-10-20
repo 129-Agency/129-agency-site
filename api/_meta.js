@@ -1,7 +1,8 @@
 // Helpers partages par toutes les routes /api de 129 Internal Tools.
 //
 // Env vars Vercel :
-//   META_ACCESS_TOKEN   - token System User (Business Manager), permission ads_read.
+//   META_ACCESS_TOKEN   - optionnel : token System User ads_read. A defaut, le token
+//                         d'ecriture META_SYSTEM_USER_TOKEN sert aussi a la lecture.
 //                         Ne JAMAIS mettre un token utilisateur ici : il expire.
 //   ADMIN_SECRET        - secret partage Antoine / Sacha, envoye en header
 //                         Authorization: Bearer <ADMIN_SECRET>. Protege les vues internes
@@ -32,8 +33,11 @@ export function resolveSource(key) {
 }
 
 export async function graph(path, params = {}) {
-  const token = process.env.META_ACCESS_TOKEN;
-  if (!token) throw new Error('META_ACCESS_TOKEN absent des variables Vercel.');
+  // Lecture : token ads_read dedie s'il existe, sinon le token System User d'ecriture
+  // (meme projet Vercel, donc meme perimetre d'exposition ; ces routes ne font que lire).
+  const token = process.env.META_ACCESS_TOKEN || process.env.META_SYSTEM_USER_TOKEN
+    || process.env.META_SYSTEM_USER || process.env.META_WRITE_TOKEN;
+  if (!token) throw new Error('Aucun token Meta dans les variables Vercel (META_ACCESS_TOKEN ou META_SYSTEM_USER_TOKEN).');
   const qs = new URLSearchParams({ ...params, access_token: token });
   const r = await fetch(`https://graph.facebook.com/${API_VERSION}/${path}?${qs}`);
   const d = await r.json();
