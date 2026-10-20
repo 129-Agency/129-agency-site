@@ -4,9 +4,10 @@
 //   META_ACCESS_TOKEN   - optionnel : token System User ads_read. A defaut, le token
 //                         d'ecriture META_SYSTEM_USER_TOKEN sert aussi a la lecture.
 //                         Ne JAMAIS mettre un token utilisateur ici : il expire.
-//   ADMIN_SECRET        - secret partage Antoine / Sacha, envoye en header
-//                         Authorization: Bearer <ADMIN_SECRET>. Protege les vues internes
-//                         et la generation de liens client. Jamais en query string.
+//   TOOLS_PASSWORD      - mot de passe partage Antoine / Sacha, envoye en header
+//                         Authorization: Bearer <mot de passe>. Protege les vues internes.
+//   SIGNING_SECRET      - optionnel : cle de signature des liens client et des uploads.
+//                         A defaut, derivee du token Meta (voir signingSecret).
 //   META_API_VERSION    - optionnel, defaut v23.0
 
 import crypto from 'crypto';
@@ -52,20 +53,34 @@ export async function graph(path, params = {}) {
   return d;
 }
 
+// Acces aux outils internes : un mot de passe choisi par Antoine, partage a Sacha.
 export function requireAdmin(req) {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) return { ok: false, status: 500, message: 'ADMIN_SECRET absent des variables Vercel.' };
+  const pwd = process.env.TOOLS_PASSWORD;
+  if (!pwd) return { ok: false, status: 500, message: 'TOOLS_PASSWORD absent des variables Vercel.' };
   const header = req.headers.authorization || '';
   const given = header.startsWith('Bearer ') ? header.slice(7) : '';
-  const a = Buffer.from(given), b = Buffer.from(secret);
-  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
-    return { ok: false, status: 403, message: 'Acces refuse.' };
+  // Comparaison a longueur fixe : ne revele ni le mot de passe ni sa longueur.
+  const h = (v) => crypto.createHash('sha256').update(String(v)).digest();
+  if (!crypto.timingSafeEqual(h(given), h(pwd))) {
+    return { ok: false, status: 403, message: 'Mot de passe refuse.' };
   }
   return { ok: true };
 }
 
+// Signature des liens client et des jetons d'upload. Volontairement SEPARE du mot de
+// passe : un mot de passe humain se casse hors ligne a partir d'un lien signe que le
+// client possede. Cle forte derivee du token Meta (serveur uniquement), sauf si
+// SIGNING_SECRET est defini. Changer le token Meta invalide les liens client en cours.
+export function signingSecret() {
+  if (process.env.SIGNING_SECRET) return process.env.SIGNING_SECRET;
+  const t = process.env.META_SYSTEM_USER_TOKEN || process.env.META_SYSTEM_USER
+    || process.env.META_WRITE_TOKEN || process.env.META_ACCESS_TOKEN;
+  if (!t) throw new Error('Aucun secret de signature : definir SIGNING_SECRET ou un token Meta.');
+  return crypto.createHmac('sha256', t).update('129-signing-v1').digest('hex');
+}
+
 export function sign(payload) {
-  return crypto.createHmac('sha256', process.env.ADMIN_SECRET).update(payload).digest('hex');
+  return crypto.createHmac('sha256', signingSecret()).update(payload).digest('hex');
 }
 
 export function verify(payload, sig) {

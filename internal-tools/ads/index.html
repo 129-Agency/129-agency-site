@@ -152,16 +152,41 @@
 const S = { key: (() => { const u = new URL(location.href); const k = u.searchParams.get('key'); if (k) { localStorage.setItem('adminKey', k.trim()); u.searchParams.delete('key'); history.replaceState(null, '', u.pathname + u.search + u.hash); } return localStorage.getItem('adminKey') || ''; })(), source:'all', preset:'last_30d',
             data:null, sources:{}, showOff:false };
 
-function askKey(){
-  const k = prompt('Clé d’accès 129');
-  if (k) { S.key = k.trim(); localStorage.setItem('adminKey', S.key); }
-  return S.key;
+// Mot de passe 129 : saisi une fois, memorise sur l'appareil. Champ masque.
+let keyWait = null;
+function askPassword(msg){
+  return new Promise(resolve => {
+    const box = document.createElement('div');
+    box.style.cssText = 'position:fixed;inset:0;z-index:100;background:rgba(22,24,26,.45);display:flex;align-items:center;justify-content:center;padding:16px';
+    box.innerHTML = `<form style="background:#EDEDE7;border:1px solid #16181A;padding:24px;width:min(360px,100%);font-family:Archivo,system-ui,sans-serif">
+      <div style="font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#6B6F73">129 · Internal</div>
+      <label for="pwd129" style="display:block;font-weight:600;margin:8px 0 10px">Mot de passe</label>
+      <input id="pwd129" type="password" autocomplete="current-password" style="width:100%;font:inherit;padding:9px 10px;border:1px solid #D3D3CB;background:#F6F6F2">
+      <div style="color:#A32C1F;font-size:13px;min-height:18px;margin-top:6px">${msg || ''}</div>
+      <button style="margin-top:6px;font:inherit;font-weight:600;padding:9px 16px;border:1px solid #16181A;background:#16181A;color:#EDEDE7;cursor:pointer">Entrer</button>
+    </form>`;
+    document.body.appendChild(box);
+    const input = box.querySelector('input');
+    input.focus();
+    box.querySelector('form').onsubmit = (e) => {
+      e.preventDefault();
+      const v = input.value.trim();
+      if (!v) return;
+      S.key = v; localStorage.setItem('adminKey', v);
+      box.remove(); resolve();
+    };
+  });
+}
+async function ensureKey(msg){
+  if (S.key && !msg) return;
+  if (!keyWait) keyWait = askPassword(msg).finally(() => { keyWait = null; });
+  await keyWait;
 }
 
-async function api(path){
-  if (!S.key && !askKey()) throw new Error('Clé requise.');
+async function api(path, retry = true){
+  await ensureKey();
   const r = await fetch(path, { headers:{ Authorization:'Bearer ' + S.key } });
-  if (r.status === 403){ localStorage.removeItem('adminKey'); S.key=''; throw new Error('Clé refusée. Recharge la page pour la ressaisir.'); }
+  if (r.status === 403 && retry){ localStorage.removeItem('adminKey'); S.key=''; await ensureKey('Mot de passe incorrect.'); return api(path, false); }
   const d = await r.json().catch(()=>({}));
   if (!r.ok) throw new Error(d.error || 'Erreur de chargement.');
   return d;

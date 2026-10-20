@@ -2,12 +2,9 @@
 
 import crypto from 'crypto';
 import { T, FN, find, q } from './_airtable.js';
+import { signingSecret } from './_meta.js';
 
-const secret = () => {
-  const s = process.env.ADMIN_SECRET;
-  if (!s) throw new Error('ADMIN_SECRET absent des variables Vercel.');
-  return s;
-};
+const secret = () => signingSecret();
 
 const b64u = (s) => Buffer.from(s).toString('base64url');
 const unb64u = (s) => Buffer.from(s, 'base64url').toString('utf8');
