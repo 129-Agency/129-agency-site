@@ -36,21 +36,46 @@ export async function compteFromKey(k) {
   return rows.length === 1 ? rows[0] : null;
 }
 
-// Lien générique : le client s'identifie par son email. Si l'email appartient à un
-// Contact rattaché à un Compte, la campagne est rattachée à ce Compte. Sinon elle
-// arrive sans Compte, marquée à vérifier. Un lien ?k= (prérempli) reste accepté.
+// Lien générique : le client s'identifie par son email.
+//   1. Email exact d'un Contact rattaché à un Compte  -> via « email » (on connaît la personne).
+//   2. Sinon, domaine de l'email listé dans Comptes → « Domaines email » -> via « domaine »
+//      (on connaît l'équipe, pas la personne : le formulaire demande son nom et crée le Contact).
+//   3. Sinon, inconnu : la campagne arrive sans Compte, marquée à vérifier.
+// Un lien ?k= (prérempli) reste accepté et prime.
+const PUBLIC_DOMAINS = /^(gmail|googlemail|hotmail|outlook|live|msn|windowslive|yahoo|ymail|rocketmail|icloud|me|mac|aol|proton|protonmail|pm|gmx|web|orange|free|sfr|laposte|wanadoo|bbox|neuf|numericable|yandex|mail|inbox|qq|163|126|zoho|hey|fastmail|tutanota|tuta|libero|virgilio|t-online|seznam|naver|daum)\.[a-z.]{2,}$/i;
+
+export function emailDomain(email) {
+  const m = String(email || '').trim().toLowerCase().match(/^[^@\s]+@([a-z0-9.-]+\.[a-z]{2,})$/);
+  return m ? m[1] : null;
+}
+
+export async function compteFromDomain(domain) {
+  if (!domain || PUBLIC_DOMAINS.test(domain)) return null;
+  const rows = await find(T.comptes, `${FN.compteDomains} != ''`, { maxRecords: 200 });
+  const hits = rows.filter(r => String(r.fields?.[F.compte.domains] || '').toLowerCase()
+    .split(/[\s,;]+/).map(d => d.replace(/^@/, '').trim()).filter(d => d && !PUBLIC_DOMAINS.test(d))
+    .includes(domain));
+  return hits.length === 1 ? hits[0] : null;   // deux comptes sur un même domaine : on ne devine pas
+}
+
 export async function identify({ k, email }) {
+  const e = String(email || '').trim().toLowerCase();
+  const valid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
+  let contact = null;
+  if (valid) {
+    const contacts = await find(T.contacts, `LOWER(${FN.contactEmail}) = ${q(e)}`, { maxRecords: 2 });
+    contact = contacts[0] || null;
+  }
   if (k) {
     const compte = await compteFromKey(k);
-    if (compte) return { compte, contact: null, via: 'lien' };
+    if (compte) return { compte, contact, via: 'lien' };
   }
-  const e = String(email || '').trim().toLowerCase();
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return { compte: null, contact: null, via: null };
-  const contacts = await find(T.contacts, `LOWER(${FN.contactEmail}) = ${q(e)}`, { maxRecords: 2 });
-  const contact = contacts[0] || null;
+  if (!valid) return { compte: null, contact: null, via: null };
   const compteId = contact?.fields?.[F.contact.compte]?.[0];
-  const compte = compteId ? await get(T.comptes, compteId) : null;
-  return { compte, contact, via: compte ? 'email' : null };
+  if (compteId) return { compte: await get(T.comptes, compteId), contact, via: 'email' };
+  const byDomain = await compteFromDomain(emailDomain(e));
+  if (byDomain) return { compte: byDomain, contact, via: 'domaine' };
+  return { compte: null, contact, via: null };
 }
 
 // Ce que le formulaire peut afficher d'un client reconnu : prénom, nom du compte,
@@ -58,7 +83,7 @@ export async function identify({ k, email }) {
 // Rien d'autre (pas de budget, pas de fee, pas de notes) : la route est publique.
 const CURRENCIES = ['EUR', 'USD', 'GBP'];
 
-export async function publicProfile({ compte, contact }) {
+export async function publicProfile({ compte, contact, via }) {
   if (!compte) return { known: false };
   const cf = compte.fields || {};
   const firstName = clean(contact?.fields?.[F.contact.name], 120).split(/\s+/)[0] || '';
@@ -95,7 +120,8 @@ export async function publicProfile({ compte, contact }) {
     } catch { /* liste facultative */ }
   }
 
-  return { known: true, firstName, company, currency, artists, returning: ids.length > 0 };
+  // needsName : on connaît l'équipe (domaine ou lien) mais pas encore la personne.
+  return { known: true, via, needsName: !firstName, firstName, company, currency, artists, returning: ids.length > 0 };
 }
 
 export function spotifyIdFrom(url) {

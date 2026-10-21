@@ -27,6 +27,7 @@ export const F = {
     feeDefault: 'fldYrE5IGhbQVnf8T',
     currency: 'fld6uAJVSVz7UOAWY',
     campagnes: 'fldGvhNTOTNwbdq2p',     // lien inverse vers Campagnes
+    domains: 'fldxNZuHJEazWj63n',       // Domaines email (ex. cr2records.com)
   },
   track: {
     title: 'fldI8DeuYSNfnk1UR',
@@ -93,6 +94,7 @@ export const F = {
     name: 'fldBqZjkgn9SnqBDQ',
     email: 'fldCZTt0B8MwSw1lT',
     compte: 'fldzgWevxoo7qQHfk',
+    notes: 'fldVXPExA6LLs5Tjh',         // Notes relation
   },
   adAccount: {
     name: 'fldYT1TATC3euYTGM',
@@ -117,6 +119,7 @@ export const FN = {
   campMetaStatus: '{Statut Meta}',
   compteStatut: '{Statut compte}',
   contactEmail: '{Email}',
+  compteDomains: '{Domaines email}',
 };
 
 function token() {

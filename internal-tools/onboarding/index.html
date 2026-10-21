@@ -37,7 +37,7 @@
   .logo{display:block; width:88px; height:auto; color:var(--blue)}
   .count{font-size:14px; color:var(--graphite); font-variant-numeric:tabular-nums}
 
-  .bar{display:grid; grid-template-columns:repeat(8,1fr); gap:6px; margin:22px 0 0}
+  .bar{display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin:22px 0 0}
   .bar i{display:block; height:3px; border-radius:3px; background:var(--smoke); transition:background .3s}
   .bar i.on{background:var(--blue)}
   .bar.off{visibility:hidden}
@@ -52,6 +52,7 @@
   .sub{font-size:18px; color:var(--graphite); margin:16px 0 0; max-width:50ch}
   .stack{display:grid; gap:22px; margin-top:36px}
   .two{display:grid; grid-template-columns:1fr 1fr; gap:22px}
+  .two.one{grid-template-columns:1fr}
 
   /* ---------- Fields ---------- */
   .fld{display:grid; gap:8px; min-width:0}
@@ -149,6 +150,7 @@
   .drop strong{font-weight:500; font-size:17px}
   .drop:hover{border-color:var(--graphite)}
   .files{list-style:none; padding:0; margin:0; display:grid; gap:8px}
+  .files:empty{display:none}
   .files li{display:grid; grid-template-columns:auto 1fr auto auto; gap:12px; align-items:center; padding:10px 12px 10px 14px; border-radius:12px; background:var(--white); border:1px solid var(--smoke); font-size:14px}
   .files .kind{font-size:12px; font-weight:500; padding:3px 10px; border-radius:999px; background:var(--cloud)}
   .files .name{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
@@ -300,13 +302,13 @@
       <svg class="logo" role="img" aria-label="129 Agency"><use href="#logo" fill="currentColor"/></svg>
       <span class="count" id="count" aria-live="polite"></span>
     </div>
-    <div class="bar off" id="bar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="bar off" id="bar" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 
     <main>
-      <!-- 0 · Welcome -->
+      <!-- Accueil -->
       <section class="step" data-step="welcome">
         <h1 class="q" tabindex="-1">Let’s get your release moving.</h1>
-        <p class="sub">One short form and everything lands with the 129 team: the track, your files, and access to run the ads. About four minutes.</p>
+        <p class="sub">Four short steps and everything lands with the 129 team: the track, your files, and access to run the ads.</p>
         <ul class="need">
           <li>Cover art, and any videos or visuals you’d like in the ads</li>
           <li>Release date, or a streaming link if it’s already out</li>
@@ -333,12 +335,12 @@
             <div><p class="who" id="helloWho"></p><p class="help" id="helloSub"></p></div>
           </div>
           <div class="two" id="newcomer" hidden>
-            <div class="fld">
+            <div class="fld" id="fldName">
               <label for="name">Your name</label>
               <input class="in" id="name" data-k="name" autocomplete="name" aria-describedby="err-name">
               <p class="err" id="err-name" role="alert"></p>
             </div>
-            <div class="fld">
+            <div class="fld" id="fldCompany">
               <label for="company">Label, management or artist</label>
               <input class="in" id="company" data-k="company" autocomplete="organization" aria-describedby="err-company">
               <p class="err" id="err-company" role="alert"></p>
@@ -347,8 +349,8 @@
         </div>
       </section>
 
-      <!-- 2 · Track -->
-      <section class="step" data-step="track" hidden>
+      <!-- 2 · Release -->
+      <section class="step" data-step="release" hidden>
         <h1 class="q" tabindex="-1">Which track are we pushing?</h1>
         <p class="sub">Already out? Paste a streaming link and we’ll fill in what we can.</p>
         <div class="stack">
@@ -380,29 +382,22 @@
             <input class="in" id="title" data-k="title" autocomplete="off" aria-describedby="err-title">
             <p class="err" id="err-title" role="alert"></p>
           </div>
-          <div class="fld">
-            <span class="lbl" id="typeLbl">Release type</span>
-            <div class="chips" role="radiogroup" aria-labelledby="typeLbl">
-              <label class="chip"><input type="radio" name="releaseType" data-k="releaseType" value="Single" checked><span>Single</span></label>
-              <label class="chip"><input type="radio" name="releaseType" data-k="releaseType" value="EP"><span>EP</span></label>
-              <label class="chip"><input type="radio" name="releaseType" data-k="releaseType" value="Album"><span>Album</span></label>
-              <label class="chip"><input type="radio" name="releaseType" data-k="releaseType" value="Compilation"><span>Compilation</span></label>
+          <div class="two">
+            <div class="fld">
+              <label for="releaseDate">Release date</label>
+              <input class="in" id="releaseDate" data-k="releaseDate" type="date" aria-describedby="err-releaseDate dateHint">
+              <p class="help" id="dateHint" aria-live="polite"></p>
+              <p class="err" id="err-releaseDate" role="alert"></p>
+            </div>
+            <div class="fld">
+              <span class="lbl" id="typeLbl">Release type</span>
+              <div class="chips" role="radiogroup" aria-labelledby="typeLbl">
+                <label class="chip"><input type="radio" name="releaseType" data-k="releaseType" value="Single" checked><span>Single</span></label>
+                <label class="chip"><input type="radio" name="releaseType" data-k="releaseType" value="EP"><span>EP</span></label>
+                <label class="chip"><input type="radio" name="releaseType" data-k="releaseType" value="Album"><span>Album</span></label>
+              </div>
             </div>
           </div>
-          <div class="fld">
-            <label for="releaseDate">Release date</label>
-            <input class="in" id="releaseDate" data-k="releaseDate" type="date" aria-describedby="err-releaseDate dateHint" style="max-width:260px">
-            <p class="help" id="dateHint" aria-live="polite"></p>
-            <p class="err" id="err-releaseDate" role="alert"></p>
-          </div>
-        </div>
-      </section>
-
-      <!-- 3 · Sound -->
-      <section class="step" data-step="sound" hidden>
-        <h1 class="q" tabindex="-1">How does it sound?</h1>
-        <p class="sub">This shapes who sees the ads and which past campaigns we learn from.</p>
-        <div class="stack">
           <div class="fld">
             <span class="lbl" id="genreLbl">Main genre</span>
             <div class="chips" role="radiogroup" aria-labelledby="genreLbl" aria-describedby="err-genre" id="genreChips"></div>
@@ -413,50 +408,41 @@
             <div class="chips" role="radiogroup" aria-labelledby="langLbl" aria-describedby="err-language" id="langChips"></div>
             <p class="err" id="err-language" role="alert"></p>
           </div>
-          <div class="fld">
-            <span class="lbl" id="dmLbl">Spotify Discovery Mode on this track?</span>
-            <div class="chips" role="radiogroup" aria-labelledby="dmLbl">
-              <label class="chip"><input type="radio" name="dm" data-k="discoveryMode" value="oui"><span>Yes</span></label>
-              <label class="chip"><input type="radio" name="dm" data-k="discoveryMode" value="non"><span>No</span></label>
-              <label class="chip"><input type="radio" name="dm" data-k="discoveryMode" value="nsp" checked><span>Not sure</span></label>
-            </div>
-            <p class="help">Your distributor switches it on in Spotify for Artists.</p>
-          </div>
-          <details class="more" id="moreDetails">
-            <summary>ISRC, UPC and distributor</summary>
+          <details class="more" id="moreRelease">
+            <summary>Streaming links and codes <span class="opt" id="linksCount"></span></summary>
             <div class="stack">
+              <p class="note" id="preNote" hidden>Not out yet, so leave the links empty. We add them on release day.</p>
+              <div class="dsp"><label for="l-spotify">Spotify</label><input class="in" id="l-spotify" data-k="links.spotify" type="url" inputmode="url" placeholder="open.spotify.com/track/…" aria-describedby="err-links"></div>
+              <div class="dsp"><label for="l-apple">Apple Music</label><input class="in" id="l-apple" data-k="links.apple" type="url" inputmode="url" placeholder="music.apple.com/…"></div>
+              <div class="dsp"><label for="l-deezer">Deezer</label><input class="in" id="l-deezer" data-k="links.deezer" type="url" inputmode="url" placeholder="deezer.com/track/…"></div>
+              <div class="dsp"><label for="l-amazon">Amazon Music</label><input class="in" id="l-amazon" data-k="links.amazon" type="url" inputmode="url" placeholder="music.amazon.com/…"></div>
+              <div class="dsp"><label for="l-youtube">YouTube</label><input class="in" id="l-youtube" data-k="links.youtube" type="url" inputmode="url" placeholder="youtube.com/watch?v=…"></div>
+              <p class="err" id="err-links" role="alert"></p>
               <div class="two">
                 <div class="fld"><label for="isrc">ISRC <span class="opt">Helps us match streams</span></label><input class="in" id="isrc" data-k="isrc" autocomplete="off" placeholder="GB-ABC-26-00001"></div>
                 <div class="fld"><label for="upc">UPC <span class="opt">Optional</span></label><input class="in" id="upc" data-k="upc" inputmode="numeric" autocomplete="off"></div>
               </div>
               <div class="fld"><label for="distributor">Distributor <span class="opt">Optional</span></label><input class="in" id="distributor" data-k="distributor" autocomplete="off" placeholder="e.g. Believe, The Orchard, DistroKid"></div>
+              <div class="fld">
+                <span class="lbl" id="dmLbl">Spotify Discovery Mode on this track?</span>
+                <div class="chips" role="radiogroup" aria-labelledby="dmLbl">
+                  <label class="chip"><input type="radio" name="dm" data-k="discoveryMode" value="oui"><span>Yes</span></label>
+                  <label class="chip"><input type="radio" name="dm" data-k="discoveryMode" value="non"><span>No</span></label>
+                  <label class="chip"><input type="radio" name="dm" data-k="discoveryMode" value="nsp" checked><span>Not sure</span></label>
+                </div>
+              </div>
             </div>
           </details>
         </div>
       </section>
 
-      <!-- 4 · Links -->
-      <section class="step" data-step="links" hidden>
-        <h1 class="q" tabindex="-1">Where will people listen?</h1>
-        <p class="sub" id="linksSub">These go on the fanlink, the page every ad points to.</p>
-        <div class="stack">
-          <p class="note" id="preNote" hidden>Not out yet, so leave any of these empty. We add the links on release day.</p>
-          <div class="dsp"><label for="l-spotify">Spotify</label><input class="in" id="l-spotify" data-k="links.spotify" type="url" inputmode="url" placeholder="open.spotify.com/track/…" aria-describedby="err-links"></div>
-          <div class="dsp"><label for="l-apple">Apple Music</label><input class="in" id="l-apple" data-k="links.apple" type="url" inputmode="url" placeholder="music.apple.com/…"></div>
-          <div class="dsp"><label for="l-deezer">Deezer</label><input class="in" id="l-deezer" data-k="links.deezer" type="url" inputmode="url" placeholder="deezer.com/track/…"></div>
-          <div class="dsp"><label for="l-amazon">Amazon Music</label><input class="in" id="l-amazon" data-k="links.amazon" type="url" inputmode="url" placeholder="music.amazon.com/…"></div>
-          <div class="dsp"><label for="l-youtube">YouTube</label><input class="in" id="l-youtube" data-k="links.youtube" type="url" inputmode="url" placeholder="youtube.com/watch?v=…"></div>
-          <p class="err" id="err-links" role="alert"></p>
-        </div>
-      </section>
-
-      <!-- 5 · Campaign -->
+      <!-- 3 · Budget and assets -->
       <section class="step" data-step="campaign" hidden>
-        <h1 class="q" tabindex="-1">Tell us about the campaign.</h1>
-        <p class="sub">Ad spend only. Our fee is separate.</p>
+        <h1 class="q" tabindex="-1">Budget and assets.</h1>
+        <p class="sub" id="campSub">Your ad budget, then everything you’d like us to use in the ads.</p>
         <div class="stack">
           <div class="fld">
-            <label for="budget">Ad budget</label>
+            <label for="budget">Ad budget <span class="opt">Ad spend only, our fee is separate</span></label>
             <div class="money"><span class="sym" id="sym">€</span><input class="in" id="budget" data-k="budget" inputmode="decimal" autocomplete="off" placeholder="3,000" aria-describedby="err-budget"></div>
             <div class="chips" role="radiogroup" aria-label="Currency">
               <label class="chip"><input type="radio" name="currency" data-k="currency" value="EUR" checked><span>EUR</span></label>
@@ -465,34 +451,6 @@
             </div>
             <p class="err" id="err-budget" role="alert"></p>
           </div>
-          <div class="fld">
-            <span class="lbl" id="goalLbl">What matters most?</span>
-            <div class="chips" role="radiogroup" aria-labelledby="goalLbl" aria-describedby="err-objective">
-              <label class="chip"><input type="radio" name="objective" data-k="objective" value="Streams"><span>Streams</span></label>
-              <label class="chip"><input type="radio" name="objective" data-k="objective" value="Saves and playlist adds"><span>Saves and playlist adds</span></label>
-              <label class="chip"><input type="radio" name="objective" data-k="objective" value="Catalogue revival"><span>Catalogue revival</span></label>
-              <label class="chip"><input type="radio" name="objective" data-k="objective" value="Awareness around a release"><span>Awareness around a release</span></label>
-            </div>
-            <p class="err" id="err-objective" role="alert"></p>
-          </div>
-          <div class="two">
-            <div class="fld"><label for="startDate">Preferred start <span class="opt">Optional</span></label><input class="in" id="startDate" data-k="startDate" type="date"></div>
-            <div class="fld"><label for="territories">Priority countries <span class="opt">Optional</span></label><input class="in" id="territories" data-k="territories" autocomplete="off" placeholder="UK, Germany, Netherlands"></div>
-          </div>
-          <div class="fld">
-            <span class="lbl" id="actLbl">Anything else running alongside? <span class="opt">Optional</span></span>
-            <div class="chips" role="group" aria-labelledby="actLbl" id="actChips"></div>
-            <p class="help">It helps us read the results: a spike from radio isn’t an ad result.</p>
-          </div>
-          <div class="fld"><label for="notes">Anything we should know? <span class="opt">Optional</span></label><textarea class="in" id="notes" data-k="notes" rows="3" placeholder="Story behind the track, key dates, tone you’re after…"></textarea></div>
-        </div>
-      </section>
-
-      <!-- 6 · Files -->
-      <section class="step" data-step="files" hidden>
-        <h1 class="q" tabindex="-1">Send us the files.</h1>
-        <p class="sub" id="filesSub">They go straight into a folder for this release.</p>
-        <div class="stack">
           <div class="cover">
             <label class="art" id="artTile" tabindex="0" aria-describedby="err-artwork artHelp">
               <span id="artEmpty">Add cover art</span>
@@ -508,20 +466,36 @@
           <div id="dropWrap">
             <label class="drop" id="drop" tabindex="0">
               <strong>Videos, visuals, audio</strong>
-              <span class="help">Drop everything here, or click to browse. We sort it into folders.</span>
+              <span class="help">Drop everything here, or click to browse. It goes straight into this release’s folder.</span>
               <input type="file" id="dropInput" multiple class="sr">
             </label>
           </div>
           <ul class="files" id="fileList"></ul>
-          <div class="fld">
-            <label for="filesLink" id="filesLinkLbl">Prefer a link? <span class="opt">Dropbox, WeTransfer, Google Drive</span></label>
+          <button type="button" class="link" id="linkToggle" style="justify-self:start">Files too big? Share a link instead</button>
+          <div class="fld" id="filesLinkFld">
+            <label for="filesLink" id="filesLinkLbl">Link to your videos and visuals <span class="opt">Dropbox, WeTransfer, Google Drive</span></label>
             <input class="in" id="filesLink" data-k="filesLink" type="url" inputmode="url" placeholder="https://" aria-describedby="err-filesLink">
             <p class="err" id="err-filesLink" role="alert"></p>
           </div>
+          <details class="more" id="moreCampaign">
+            <summary>Timing, countries and notes <span class="opt">Optional</span></summary>
+            <div class="stack">
+              <div class="two">
+                <div class="fld"><label for="startDate">Preferred start</label><input class="in" id="startDate" data-k="startDate" type="date"></div>
+                <div class="fld"><label for="territories">Priority countries</label><input class="in" id="territories" data-k="territories" autocomplete="off" placeholder="UK, Germany, Netherlands"></div>
+              </div>
+              <div class="fld">
+                <span class="lbl" id="actLbl">Anything else running alongside?</span>
+                <div class="chips" role="group" aria-labelledby="actLbl" id="actChips"></div>
+                <p class="help">It helps us read the results: a spike from radio isn’t an ad result.</p>
+              </div>
+              <div class="fld"><label for="notes">Anything we should know?</label><textarea class="in" id="notes" data-k="notes" rows="3" placeholder="Story behind the track, key dates, tone you’re after…"></textarea></div>
+            </div>
+          </details>
         </div>
       </section>
 
-      <!-- 7 · Access -->
+      <!-- 4 · Access -->
       <section class="step" data-step="access" hidden>
         <h1 class="q" tabindex="-1">Give us access to run the ads.</h1>
         <p class="sub">Ads run as the artist, so our business account needs access to their Facebook Page and Instagram. You stay the owner and can remove us anytime.</p>
@@ -556,7 +530,7 @@
         </div>
       </section>
 
-      <!-- 8 · Review -->
+      <!-- Récapitulatif -->
       <section class="step" data-step="review" hidden>
         <h1 class="q" tabindex="-1">Everything look right?</h1>
         <p class="sub">Check it over, then send it to the team.</p>
@@ -564,7 +538,7 @@
         <p class="err" id="err-send" role="alert" style="margin-top:16px"></p>
       </section>
 
-      <!-- 9 · Sending -->
+      <!-- Envoi -->
       <section class="step" data-step="sending" hidden>
         <h1 class="q" tabindex="-1" id="sendQ">Sending it over.</h1>
         <p class="sub" id="sendSub">Keep this tab open while your files upload.</p>
@@ -572,7 +546,7 @@
         <div class="meter-label"><span id="meterLbl" aria-live="polite">Creating your release</span><span id="meterVal"></span></div>
       </section>
 
-      <!-- 10 · Done -->
+      <!-- Terminé -->
       <section class="step" data-step="done" hidden>
         <h1 class="q" tabindex="-1" id="doneQ">It’s with us.</h1>
         <p class="sub" id="doneSub">Thanks. The team has everything it needs to start.</p>
@@ -625,7 +599,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const CHUNK = 4 * 1024 * 1024;              // multiple de 256 Ko, sous la limite Vercel (4,5 Mo)
 const MAX_FILES = 40, MAX_FILE = 5 * 1024 ** 3;
-const DRAFT_KEY = '129-onboarding-draft-v2', EMAIL_KEY = '129-onboarding-email';
+const DRAFT_KEY = '129-onboarding-draft-v3', EMAIL_KEY = '129-onboarding-email';
 const params = new URLSearchParams(location.search);
 const K = params.get('k') || '';
 
@@ -639,8 +613,8 @@ const PLATS = [['spotify','Spotify'],['apple','Apple Music'],['deezer','Deezer']
 const ACCESS_LABEL = { in_place: 'Already set up', done: 'Shared by you', request: 'Request to send', help: 'We’ll help' };
 const KIND_LABEL = { artwork: 'Cover', audio: 'Audio', video: 'Video', visual: 'Visual', other: 'File' };
 
-const STEPS = ['welcome','you','track','sound','links','campaign','files','access','review','sending','done'];
-const COUNTED = ['you','track','sound','links','campaign','files','access','review'];
+const STEPS = ['welcome','you','release','campaign','access','review','sending','done'];
+const COUNTED = ['you','release','campaign','access'];   // le récapitulatif vient après les 4 étapes
 
 let S = blank();
 function blank(keepIdentity) {
@@ -781,6 +755,8 @@ function renderCard(changed) {
   $('#cSound').textContent = [g, l === 'Instrumental' ? 'instrumental' : l ? l + ' vocals' : null].filter(Boolean).join(', ');
   showRow('sound', !!(g || l));
 
+  const nLinks = PLATS.filter(([k]) => isUrl(withScheme(S.links[k]))).length;
+  $('#linksCount').textContent = nLinks ? `${nLinks} link${nLinks > 1 ? 's' : ''} added` : 'Optional';
   $('#cPlats').innerHTML = PLATS.map(([k, n]) => `<span class="${isUrl(withScheme(S.links[k])) ? 'on' : ''}">${n}</span>`).join('');
 
   const b = budgetNum();
@@ -822,19 +798,19 @@ function go(i, { focus = true } = {}) {
   sec.hidden = false;
   sec.classList.remove('enter'); void sec.offsetWidth; sec.classList.add('enter');
 
-  const ci = COUNTED.indexOf(id);
-  $('#bar').classList.toggle('off', ci < 0);
-  $$('#bar i').forEach((b, j) => b.classList.toggle('on', j <= ci));
-  $('#count').textContent = ci >= 0 ? `${ci + 1} of ${COUNTED.length}` : '';
+  const ci = COUNTED.indexOf(id), isReview = id === 'review';
+  $('#bar').classList.toggle('off', ci < 0 && !isReview);
+  $$('#bar i').forEach((b, j) => b.classList.toggle('on', isReview || j <= ci));
+  $('#count').textContent = isReview ? 'Review' : ci >= 0 ? `${ci + 1} of ${COUNTED.length}` : '';
 
-  const navOn = ci >= 0;
+  const navOn = ci >= 0 || isReview;
   $('#nav').hidden = !navOn;
   $('#back').hidden = id === 'you' && !returnToReview;
   $('#next').textContent = id === 'review' ? 'Send to 129' : returnToReview ? 'Back to review' : 'Continue';
   $('#hint').hidden = id === 'review';
 
-  if (id === 'links') { const pre = (daysUntil(S.releaseDate) ?? -1) > 0; $('#preNote').hidden = !pre; }
-  if (id === 'files') filesUi();
+  if (id === 'release') dateHint();
+  if (id === 'campaign') filesUi();
   if (id === 'access') accessUi();
   if (id === 'review') buildReview();
   if (id !== 'welcome' && id !== 'sending' && id !== 'done') saveDraft();
@@ -842,7 +818,7 @@ function go(i, { focus = true } = {}) {
   window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
   if (focus) {
     const first = sec.querySelector('input.in:not([type=file]), textarea.in');
-    const target = (id === 'you' || id === 'track' || id === 'campaign') && first && !first.value ? first : sec.querySelector('h1.q');
+    const target = (id === 'you' || id === 'release' || id === 'campaign') && first && !first.value ? first : sec.querySelector('h1.q');
     setTimeout(() => target && target.focus({ preventScroll: true }), reduced ? 0 : 60);
   }
 }
@@ -872,7 +848,7 @@ document.addEventListener('keydown', (e) => {
   if (t.closest && t.closest('.drop, .art')) return;
   const id = STEPS[cur];
   if (id === 'welcome') { e.preventDefault(); go(1); return; }
-  if (COUNTED.includes(id) && id !== 'review') { e.preventDefault(); next(); }
+  if (COUNTED.includes(id)) { e.preventDefault(); next(); }
 });
 
 /* ---------- Validation par étape ---------- */
@@ -889,26 +865,21 @@ async function validate(id) {
     } else if (!profile?.known) {
       need('name', 'Tell us your name.');
       need('company', 'Tell us who you work with, or the artist name.');
+    } else if (profile.needsName) {
+      need('name', 'Tell us your name.');
     }
   }
-  if (id === 'track') {
+  if (id === 'release') {
     need('artist', 'Add the artist name.');
     need('title', 'Add the track title.');
     if (!S.releaseDate) errs.push(['releaseDate', 'Pick the release date, even if it’s approximate.']);
-  }
-  if (id === 'sound') {
     if (!S.genre) errs.push(['genre', 'Pick the closest genre.']);
     if (!S.language) errs.push(['language', 'Pick the vocals language, or instrumental.']);
-  }
-  if (id === 'links') {
     const bad = PLATS.filter(([k]) => S.links[k] && !isUrl(withScheme(S.links[k]))).map(x => x[1]);
-    if (bad.length) errs.push(['links', `Check the ${bad.join(' and ')} link: it should start with https://`]);
+    if (bad.length) { $('#moreRelease').open = true; errs.push(['links', `Check the ${bad.join(' and ')} link: it should start with https://`]); }
   }
   if (id === 'campaign') {
     if (!(budgetNum() > 0)) errs.push(['budget', 'Enter the ad budget as a number, like 3000.']);
-    if (!S.objective) errs.push(['objective', 'Pick what matters most for this one.']);
-  }
-  if (id === 'files') {
     if (S.filesLink && !isUrl(withScheme(S.filesLink))) errs.push(['filesLink', 'This link should start with https://']);
     if (!files.artwork && !S.artworkUrl && !S.filesLink) errs.push(['artwork', 'Add the cover art, or a link where we can find it.']);
     if (files.artwork && !CONFIG.drive && files.artwork.size > CONFIG.maxArtworkInlineBytes)
@@ -933,6 +904,7 @@ function initials(s) { return String(s || '?').trim().charAt(0).toUpperCase() ||
 function resetIdentity() {
   profile = null; identifiedFor = '';
   $('#hello').hidden = true; $('#newcomer').hidden = true;
+  $('#fldCompany').hidden = false; $('#newcomer').classList.remove('one');
   $('#youQ').textContent = 'First, what’s your email?';
   $('#youSub').textContent = 'If we’ve worked together before, we’ll pick up from there.';
   $('#choiceInPlace').hidden = true;
@@ -955,13 +927,26 @@ async function identifyNow({ silent = false } = {}) {
 function applyProfile() {
   if (profile?.known) {
     const first = profile.firstName;
-    $('#youQ').textContent = first ? `Welcome back, ${first}.` : `Welcome back.`;
-    $('#youSub').textContent = profile.returning ? 'Good to have you again. Let’s go straight to the track.' : 'Good to have you. Let’s go straight to the track.';
     $('#helloMark').textContent = initials(profile.company);
     $('#helloWho').textContent = profile.company;
-    $('#helloSub').textContent = 'We’ll file this release under your account.';
-    $('#hello').hidden = false; $('#newcomer').hidden = true;
-    S.name = ''; S.company = '';
+    $('#hello').hidden = false;
+    $('#fldCompany').hidden = true;
+    $('#newcomer').classList.add('one');
+    S.company = '';
+    if (profile.needsName) {
+      // Équipe reconnue par le domaine de l'email : on ne connaît pas encore la personne.
+      $('#youQ').textContent = `Welcome to the ${profile.company} space.`;
+      $('#youSub').textContent = 'We know your team. Just your name, and we’re set.';
+      $('#helloSub').textContent = 'This release goes under your team’s account.';
+      $('#newcomer').hidden = false;
+      setTimeout(() => { if (STEPS[cur] === 'you') $('#name').focus(); }, 50);
+    } else {
+      $('#youQ').textContent = first ? `Welcome back, ${first}.` : `Welcome back.`;
+      $('#youSub').textContent = profile.returning ? 'Good to have you again. Let’s go straight to the track.' : 'Good to have you. Let’s go straight to the track.';
+      $('#helloSub').textContent = 'We’ll file this release under your account.';
+      $('#newcomer').hidden = true;
+      S.name = '';
+    }
     if (profile.currency && !S._currencyTouched) { S.currency = profile.currency; fillInputs(); }
     $('#choiceInPlace').hidden = !profile.returning;
     if (profile.returning && !S.pageAccess) { S.pageAccess = 'in_place'; }
@@ -969,9 +954,10 @@ function applyProfile() {
     $('#youQ').textContent = 'Nice to meet you.';
     $('#youSub').textContent = 'Two quick details so we know who we’re working with.';
     $('#hello').hidden = true; $('#newcomer').hidden = false;
+    $('#fldCompany').hidden = false; $('#newcomer').classList.remove('one');
     $('#choiceInPlace').hidden = true;
     if (S.pageAccess === 'in_place') S.pageAccess = '';
-    setTimeout(() => $('#name').focus(), 50);
+    setTimeout(() => { if (STEPS[cur] === 'you') $('#name').focus(); }, 50);
   }
   fillInputs(); renderArtists(); renderCard('company'); saveDraft();
 }
@@ -1041,6 +1027,7 @@ async function lookup() {
 
 function dateHint() {
   const n = daysUntil(S.releaseDate);
+  $('#preNote').hidden = !(n > 0);
   $('#dateHint').textContent = n === null ? '' : n > 0 ? `Out in ${n} day${n > 1 ? 's' : ''}.` : n === 0 ? 'Out today.' : 'Already out, so we’ll run it as a catalogue campaign.';
 }
 
@@ -1050,12 +1037,17 @@ const kindOf = (f) =>
   /^video\//.test(f.type) || /\.(mp4|mov|m4v|webm|avi|mkv)$/i.test(f.name) ? 'video' :
   /^image\//.test(f.type) || /\.(jpe?g|png|webp|gif|tiff?|psd|heic|svg)$/i.test(f.name) ? 'visual' : 'other';
 
+let linkOpen = false;
 function filesUi() {
+  // Drive actif : on dépose tout ici, le lien n'est qu'un repli pour les très gros fichiers.
   $('#dropWrap').hidden = !CONFIG.drive;
-  $('#filesSub').textContent = CONFIG.drive ? 'They go straight into a folder for this release.' : 'Add the cover here. For videos and other files, share a link below.';
-  $('#filesLinkLbl').innerHTML = CONFIG.drive ? 'Prefer a link? <span class="opt">Dropbox, WeTransfer, Google Drive</span>' : 'Link to your videos and visuals <span class="opt">Dropbox, WeTransfer, Google Drive</span>';
+  $('#campSub').textContent = CONFIG.drive ? 'Your ad budget, then everything you’d like us to use in the ads.' : 'Your ad budget, the cover, and a link to your videos and visuals.';
+  const showLink = !CONFIG.drive || linkOpen || !!S.filesLink;
+  $('#filesLinkFld').hidden = !showLink;
+  $('#linkToggle').hidden = showLink;
   renderArt(); renderFiles();
 }
+$('#linkToggle').addEventListener('click', () => { linkOpen = true; filesUi(); $('#filesLink').focus(); });
 function renderArt() {
   const tile = $('#artTile');
   tile.querySelector('img')?.remove();
@@ -1128,20 +1120,20 @@ $('#copyBiz').addEventListener('click', async () => {
 
 /* ---------- Récapitulatif ---------- */
 function buildReview() {
-  const who = profile?.known ? `${profile.company}${S.email ? ', ' + S.email : ''}` : [S.name, S.company, S.email].filter(Boolean).join(', ');
+  const who = profile?.known ? [S.name, profile.company, S.email].filter(Boolean).join(', ') : [S.name, S.company, S.email].filter(Boolean).join(', ');
   const plats = PLATS.filter(([k]) => S.links[k]).map(x => x[1]);
   const fileList = [files.artwork ? 'Cover: ' + files.artwork.name : S.artworkUrl ? `Cover from ${found?.coverFrom || 'streaming'}` : null,
     files.other.length ? `${files.other.length} other file${files.other.length > 1 ? 's' : ''}, ${fmtBytes(files.other.reduce((s, f) => s + f.size, 0))}` : null,
     S.filesLink ? 'Link: ' + S.filesLink : null].filter(Boolean);
   const blocks = [
     ['You', 'you', [['From', who]]],
-    ['Track', 'track', [['Artist', S.artist + (S.featuring ? ' feat. ' + S.featuring : '')], ['Title', S.title], ['Type', S.releaseType], ['Release', dateLine(S.releaseDate)]]],
-    ['Sound', 'sound', [['Genre', GENRES.find(x => x[0] === S.genre)?.[1]], ['Vocals', LANGS.find(x => x[0] === S.language)?.[1]],
-      ['Discovery Mode', { oui: 'Yes', non: 'No', nsp: 'Not sure' }[S.discoveryMode]], ['ISRC', S.isrc], ['UPC', S.upc], ['Distributor', S.distributor]]],
-    ['Links', 'links', [['Platforms', plats.length ? plats.join(', ') : 'None yet, we’ll add them on release day']]],
-    ['Campaign', 'campaign', [['Ad budget', money(budgetNum(), S.currency)], ['Focus', S.objective], ['Start', S.startDate ? dateLine(S.startDate).split(',').slice(0, 2).join(',') : null],
+    ['Release', 'release', [['Artist', S.artist + (S.featuring ? ' feat. ' + S.featuring : '')], ['Title', S.title], ['Type', S.releaseType], ['Release', dateLine(S.releaseDate)],
+      ['Genre', GENRES.find(x => x[0] === S.genre)?.[1]], ['Vocals', LANGS.find(x => x[0] === S.language)?.[1]],
+      ['Platforms', plats.length ? plats.join(', ') : 'None yet, we’ll add them on release day'],
+      ['ISRC', S.isrc], ['UPC', S.upc], ['Distributor', S.distributor], ['Discovery Mode', { oui: 'Yes', non: 'No', nsp: 'Not sure' }[S.discoveryMode]]]],
+    ['Budget and assets', 'campaign', [['Ad budget', money(budgetNum(), S.currency)], ['Sending', fileList.join('; ')],
+      ['Start', S.startDate ? dateLine(S.startDate).split(',').slice(0, 2).join(',') : null],
       ['Countries', S.territories], ['Alongside', (S.actions || []).map(v => ACTIONS.find(a => a[0] === v)?.[1] || v).join(', ')], ['Notes', S.notes]]],
-    ['Files', 'files', [['Sending', fileList.join('; ')]]],
     ['Access', 'access', [['Instagram', S.instagram], ['Facebook', S.facebook], ['Status', ACCESS_LABEL[S.pageAccess]]]],
   ];
   $('#review').innerHTML = blocks.map(([h, step, rows]) => `<section class="rv"><header><h2>${h}</h2><button type="button" class="link" data-edit="${step}">Edit</button></header><dl>${
@@ -1198,7 +1190,7 @@ async function send() {
   const ig = String(S.instagram || '').trim();
   const payload = {
     k: K,
-    identity: { email: (S.email || '').trim(), name: profile?.known ? '' : S.name, company: profile?.known ? '' : S.company },
+    identity: { email: (S.email || '').trim(), name: profile?.known && !profile.needsName ? '' : S.name, company: profile?.known ? '' : S.company },
     hasArtwork: !!files.artwork,
     track: {
       artist: S.artist, featuring: S.featuring, title: S.title, releaseType: S.releaseType, releaseDate: S.releaseDate,
@@ -1208,7 +1200,7 @@ async function send() {
       artworkUrl: files.artwork ? '' : (S.artworkUrl || ''),
     },
     campaign: {
-      budget: budgetNum(), currency: S.currency, startDate: S.startDate, objective: S.objective, territories: S.territories,
+      budget: budgetNum(), currency: S.currency, startDate: S.startDate, objective: 'Streams', territories: S.territories,
       parallelActions: S.actions || [], notes: S.notes, filesLink: withScheme(S.filesLink),
       instagram: ig, facebook: S.facebook, pageAccess: S.pageAccess,
     },
@@ -1270,7 +1262,7 @@ async function send() {
 
 function finish(failed) {
   busy = false;
-  const first = profile?.known ? profile.firstName : String(S.name || '').trim().split(/\s+/)[0];
+  const first = profile?.firstName || String(S.name || '').trim().split(/\s+/)[0];
   $('#doneQ').textContent = first ? `It’s with us, ${first}.` : 'It’s with us.';
   $('#doneSub').textContent = `Thanks. ${S.artist}, “${S.title}” is now in the 129 workflow.`;
   if (failed.length) {
@@ -1296,7 +1288,8 @@ $('#another').addEventListener('click', () => {
   $('#capState').textContent = 'fills in as you go'; $('#panelFoot').textContent = 'This is what lands with the 129 team.';
   $('#next').disabled = false;
   fillInputs(); renderCard(); renderFiles();
-  go(STEPS.indexOf('track'));
+  linkOpen = false;
+  go(STEPS.indexOf('release'));
 });
 
 /* ---------- Toast ---------- */
@@ -1344,7 +1337,7 @@ document.addEventListener('change', (e) => { if (e.target.dataset?.k === 'curren
   if (draft && (draft.S.artist || draft.S.title)) {
     const step = STEPS.indexOf(draft.step);
     go(step > 0 && step < STEPS.indexOf('sending') ? step : 1, { focus: true });
-    toast(step > STEPS.indexOf('files') ? 'We kept your progress. Add your files again before sending.' : 'We kept your progress.', 'Start over', () => { store.del(DRAFT_KEY); S = blank(true); files = { artwork: null, other: [] }; artURL = null; fillInputs(); renderCard(); go(1); });
+    toast(step >= STEPS.indexOf('campaign') ? 'We kept your progress. Add your files again before sending.' : 'We kept your progress.', 'Start over', () => { store.del(DRAFT_KEY); S = blank(true); files = { artwork: null, other: [] }; artURL = null; fillInputs(); renderCard(); go(1); });
   } else {
     go(0, { focus: false });
   }

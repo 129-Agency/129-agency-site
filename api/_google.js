@@ -1,6 +1,13 @@
-// Google Drive via compte de service (Workspace 129), sans dependance externe.
+// Google Drive pour l'onboarding client, sans dependance externe. Deux modes :
 //
-// Env vars Vercel :
+// A. Apps Script (le plus simple, aucun projet Google Cloud a creer) :
+//   GOOGLE_APPS_SCRIPT_URL    - URL /exec de l'application web « 129 Onboarding Drive »
+//                               (code dans tools/google-apps-script/).
+//   GOOGLE_APPS_SCRIPT_SECRET - secret affiche par la fonction setup() du script.
+//   Le script renvoie un jeton Drive limite (drive.file : uniquement les fichiers qu'il a crees)
+//   et l'ID du dossier racine « 129 — Onboarding » qu'il a cree dans le Drive de son proprietaire.
+//
+// B. Compte de service (si un projet Google Cloud est disponible) :
 //   GOOGLE_SERVICE_ACCOUNT_JSON - contenu complet du fichier JSON de cle du compte de service.
 //   DRIVE_PARENT_FOLDER_ID      - dossier racine des onboardings, DANS un Drive partage
 //                                 (un compte de service n'a pas de quota sur un « Mon Drive »).
@@ -12,6 +19,31 @@ import crypto from 'crypto';
 
 const SCOPE = 'https://www.googleapis.com/auth/drive';
 let cached = { token: null, exp: 0 };
+let scriptRoot = null;
+
+const SCRIPT_URL = () => process.env.GOOGLE_APPS_SCRIPT_URL;
+const SCRIPT_SECRET = () => process.env.GOOGLE_APPS_SCRIPT_SECRET;
+const scriptMode = () => Boolean(SCRIPT_URL() && SCRIPT_SECRET());
+
+// L'application web Apps Script repond par une redirection vers script.googleusercontent.com :
+// fetch la suit (en GET), c'est le fonctionnement normal d'un /exec.
+async function tokenFromScript() {
+  const r = await fetch(SCRIPT_URL(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ secret: SCRIPT_SECRET() }),
+    redirect: 'follow',
+  });
+  const text = await r.text();
+  let d;
+  try { d = JSON.parse(text); }
+  catch { throw new Error('[Apps Script] reponse non JSON : verifier que l\'application web est deployee avec « Qui a acces : Tout le monde ».'); }
+  if (!d.token) throw new Error(`[Apps Script] ${d.error || 'pas de jeton'}`);
+  scriptRoot = d.rootId || null;
+  const now = Math.floor(Date.now() / 1000);
+  cached = { token: d.token, exp: now + Math.min(Number(d.expiresIn) || 1200, 1800) };
+  return cached.token;
+}
 
 function serviceAccount() {
   const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
@@ -27,6 +59,7 @@ const b64url = (buf) => Buffer.from(buf).toString('base64').replace(/=+$/, '').r
 export async function accessToken() {
   const now = Math.floor(Date.now() / 1000);
   if (cached.token && cached.exp - 60 > now) return cached.token;
+  if (scriptMode()) return tokenFromScript();
   const sa = serviceAccount();
   const header = b64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
   const claims = b64url(JSON.stringify({
@@ -60,13 +93,17 @@ async function drive(method, path, { query = {}, body } = {}) {
 const esc = (s) => String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
 export function driveConfigured() {
-  return Boolean(process.env.GOOGLE_SERVICE_ACCOUNT_JSON && process.env.DRIVE_PARENT_FOLDER_ID);
+  return scriptMode() || Boolean(process.env.GOOGLE_SERVICE_ACCOUNT_JSON && process.env.DRIVE_PARENT_FOLDER_ID);
 }
 
-export function rootFolderId() {
-  const id = process.env.DRIVE_PARENT_FOLDER_ID;
-  if (!id) throw new Error('DRIVE_PARENT_FOLDER_ID absent des variables Vercel.');
-  return id;
+export async function rootFolderId() {
+  if (process.env.DRIVE_PARENT_FOLDER_ID) return process.env.DRIVE_PARENT_FOLDER_ID;
+  if (scriptMode()) {
+    if (!scriptRoot) { cached = { token: null, exp: 0 }; await accessToken(); }
+    if (scriptRoot) return scriptRoot;
+    throw new Error('[Apps Script] dossier racine inconnu : relancer setup() dans le script.');
+  }
+  throw new Error('DRIVE_PARENT_FOLDER_ID absent des variables Vercel.');
 }
 
 // Retrouve un sous-dossier par nom, ou le cree. Idempotent.

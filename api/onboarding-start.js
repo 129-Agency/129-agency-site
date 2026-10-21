@@ -51,11 +51,11 @@ export default async function handler(req, res) {
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(idEmail)) errors.push('Your email');
 
     // Client reconnu (email dans les Contacts, ou lien ?k=) : nom et société viennent d'Airtable.
-    const { compte, contact } = errors.length ? { compte: null, contact: null } : await identify({ k: b.k, email: idEmail });
+    const { compte, contact, via } = errors.length ? { compte: null, contact: null, via: null } : await identify({ k: b.k, email: idEmail });
     const cf = compte?.fields || {};
     const idName = clean(who.name, 120) || clean(contact?.fields?.[F.contact.name], 120);
     const idCompany = clean(who.company, 160) || clean(cf[F.compte.name], 160);
-    if (!compte && !idName) errors.push('Your name');
+    if ((!compte || !contact) && !idName) errors.push('Your name');
     if (!compte && !idCompany) errors.push('Label / company');
     if (!artist) errors.push('Artist');
     if (!title) errors.push('Title');
@@ -94,7 +94,7 @@ export default async function handler(req, res) {
     const sub = {};
     if (drive) {
       const clientFolderName = compte ? (clean(cf[F.compte.name], 120) || clientSlug) : `À vérifier — ${idCompany}`;
-      const clientFolder = await ensureFolder(clientFolderName, rootFolderId());
+      const clientFolder = await ensureFolder(clientFolderName, await rootFolderId());
       const today = new Date().toISOString().slice(0, 10);
       campaignFolder = await ensureFolder(`${today} ${artist} - ${title}`, clientFolder.id);
       const kinds = new Set(files.map(f => f.kind));
@@ -169,7 +169,7 @@ export default async function handler(req, res) {
       [F.campagne.driveFolder]: campaignFolder?.webViewLink,
       [F.campagne.clientFilesLink]: filesLink,
       [F.campagne.spotifyUrl]: spotifyUrl,
-      [F.campagne.objective]: clean(c.objective, 200),
+      [F.campagne.objective]: clean(c.objective, 200) || 'Streams',
       [F.campagne.territories]: clean(c.territories, 1000),
       [F.campagne.pageIgFb]: pageIgFb,
       [F.campagne.pageAccess]: access,
@@ -183,7 +183,20 @@ export default async function handler(req, res) {
       cfields[F.campagne.compte] = [compte.id];
       if (cf[F.compte.defaultAdAccount]?.length) cfields[F.campagne.adAccount] = cf[F.compte.defaultAdAccount];
     }
-    if (contact) cfields[F.campagne.submittedBy] = [contact.id];
+    // Équipe reconnue (domaine ou lien) mais personne inconnue : on crée son Contact,
+    // pour qu'elle soit accueillie par son prénom la prochaine fois.
+    let submitter = contact;
+    if (compte && !contact && idName) {
+      try {
+        submitter = await create(T.contacts, {
+          [F.contact.name]: idName,
+          [F.contact.email]: idEmail,
+          [F.contact.compte]: [compte.id],
+          [F.contact.notes]: `Créé par le formulaire d'onboarding le ${new Date().toISOString().slice(0, 10)} (${via === 'domaine' ? 'domaine reconnu' : 'lien client'}). Vérifier le rôle.`,
+        });
+      } catch (e) { console.error('[onboarding-start] contact', e.message); }
+    }
+    if (submitter) cfields[F.campagne.submittedBy] = [submitter.id];
     const campaign = await create(T.campagnes, cfields);
 
     // Pochette trouvée en ligne : copiée sur la Track (Airtable la télécharge) et sur Drive.
