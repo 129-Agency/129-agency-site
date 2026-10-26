@@ -149,11 +149,20 @@ export function q(v) {
   return '"' + String(v).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
 }
 
+// Airtable renvoie au plus 100 enregistrements par page : au-delà, on suit `offset`
+// jusqu'à maxRecords (sans ça, une recherche sur 200 comptes s'arrêtait en silence à 100).
 export async function find(table, formula, { maxRecords = 100, fields } = {}) {
-  const params = new URLSearchParams({ filterByFormula: formula, maxRecords: String(maxRecords), returnFieldsByFieldId: 'true' });
-  if (fields) fields.forEach(f => params.append('fields[]', f));
-  const d = await call('GET', `${table}?${params}`);
-  return d.records || [];
+  const out = [];
+  let offset;
+  do {
+    const params = new URLSearchParams({ filterByFormula: formula, maxRecords: String(maxRecords), pageSize: String(Math.min(100, maxRecords)), returnFieldsByFieldId: 'true' });
+    if (fields) fields.forEach(f => params.append('fields[]', f));
+    if (offset) params.set('offset', offset);
+    const d = await call('GET', `${table}?${params}`);
+    out.push(...(d.records || []));
+    offset = d.offset;
+  } while (offset && out.length < maxRecords);
+  return out.slice(0, maxRecords);
 }
 
 export async function get(table, id) {

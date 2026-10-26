@@ -52,6 +52,7 @@
 const q = new URLSearchParams(location.search);
 const nf = (n,d=0)=>Number(n||0).toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});
 const esc = s => String(s??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const httpsOnly = u => /^https:\/\//i.test(String(u || '')) ? String(u) : '';
 let CUR='EUR';
 const money = n => nf(n, Math.abs(n)<100?2:0) + ' ' + (CUR==='USD'?'$':'€');
 
@@ -86,10 +87,10 @@ const money = n => nf(n, Math.abs(n)<100?2:0) + ' ' + (CUR==='USD'?'$':'€');
         <p class="lbl">Ce qui a le mieux fonctionné</p>
         <div class="creas">${c.best_ads.map(a => `
           <div class="crea">
-            <img src="${a.thumbnail || ''}" alt="">
+            <img src="${esc(httpsOnly(a.thumbnail))}" alt="">
             <div class="t">${esc(a.name)}</div>
             <div class="n mono">${nf(a.result_count)} ${esc(a.result_type || '')}</div>
-            ${a.preview ? `<a href="${a.preview}" target="_blank" rel="noopener">Voir</a>` : ''}
+            ${httpsOnly(a.preview) ? `<a href="${esc(httpsOnly(a.preview))}" target="_blank" rel="noopener">Voir</a>` : ''}
           </div>`).join('')}</div>` : ''}
 
         ${c.countries.length ? `

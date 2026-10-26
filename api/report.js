@@ -25,8 +25,10 @@ export default async function handler(req, res) {
 
     const campaigns = await Promise.all(ids.map(async (id) => {
       const meta = await graph(id, { fields: 'name,start_time' });
-      const since = meta.start_time ? meta.start_time.split('T')[0] : '2020-01-01';
       const until = new Date().toISOString().split('T')[0];
+      // Campagne programmée (début dans le futur) : since > until ferait échouer tout le rapport.
+      const start = meta.start_time ? meta.start_time.split('T')[0] : '2020-01-01';
+      const since = start > until ? until : start;
       const range = { time_range: JSON.stringify({ since, until }) };
 
       const [totals, daily, countries, adRows, adMeta] = await Promise.all([
@@ -84,6 +86,8 @@ export default async function handler(req, res) {
       title: String(t), currency: src.currency, campaigns,
     });
   } catch (e) {
-    return res.status(502).json({ error: 'Les données ne sont pas accessibles pour le moment.', detail: e.message });
+    // Le détail reste dans les logs Vercel : la route est publique, le message Meta brut n'a pas à en sortir.
+    console.error('[report]', e.message);
+    return res.status(502).json({ error: 'Les données ne sont pas accessibles pour le moment.' });
   }
 }

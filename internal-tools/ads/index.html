@@ -196,6 +196,7 @@ const nf = (n,d=0)=> Number(n||0).toLocaleString('fr-FR',{minimumFractionDigits:
 const money = (n,c)=> nf(n, Math.abs(n)<100 ? 2 : 0) + ' ' + (c==='USD' ? '$' : '€');
 const pct = n => nf(n,2) + ' %';
 const esc = s => String(s??'').replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+const httpsOnly = u => /^https:\/\//i.test(String(u || '')) ? String(u) : '';
 
 function renderSources(){
   const el = document.getElementById('src');
@@ -304,11 +305,11 @@ async function openDrawer(source, id){
       <p class="lbl">Créas</p>
       <div class="creas">${d.ads.length ? d.ads.map(a => `
         <div class="crea">
-          <img src="${a.thumbnail || ''}" alt="">
+          <img src="${esc(httpsOnly(a.thumbnail))}" alt="">
           <div class="meta">
             <div class="t">${esc(a.name)}</div>
             <div class="sub mono">${money(a.spend,cur)} · ${nf(a.result_count)} · ${a.cost_per_result == null ? '—' : money(a.cost_per_result,cur)} / rés.</div>
-            ${a.preview ? `<a href="${a.preview}" target="_blank" rel="noopener">Voir la créa</a>` : ''}
+            ${httpsOnly(a.preview) ? `<a href="${esc(httpsOnly(a.preview))}" target="_blank" rel="noopener">Voir la créa</a>` : ''}
           </div>
         </div>`).join('') : '<p class="sub">Aucune créa n’a diffusé sur cette période.</p>'}
       </div>

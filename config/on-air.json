@@ -7,9 +7,9 @@
     { "key": "era", "ad_account_id": "1909983676326333", "default_label": null }
   ],
 
-  "_rules": "Une campagne apparait si (1) elle a depense sur les `active_days` derniers jours et (2) son nom suit notre convention « Artiste - Titre — EXPLORE|SCALE ». La regle 2 exclut les campagnes que les equipes clientes lancent elles-memes sur leurs propres comptes (ex. CR2 : Beatport, Rupert & Bas).",
+  "_rules": "Une campagne apparait si (1) elle a depense sur les `active_days` derniers jours et (2) son nom suit notre convention « Artiste - Titre — EXPLORE|SCALE », éventuellement suivie de « — clé » (campagnes créées par le generator). La regle 2 exclut les campagnes que les equipes clientes lancent elles-memes sur leurs propres comptes (ex. CR2 : Beatport, Rupert & Bas).",
   "active_days": 3,
-  "name_pattern": "(EXPLORE|SCALE)\\s*$",
+  "name_pattern": "\\b(EXPLORE|SCALE)\\b(\\s*—\\s*[\\w./-]+)?\\s*$",
   "max_items": 8,
 
   "_overrides": "Cle = « artiste - titre » tel qu'ecrit dans le nom de campagne, en minuscules, sans le suffixe EXPLORE/SCALE. Champs possibles : title, artists, label, cover (chemin img/... ou URL), hide (true = jamais affiche, ex. client qui n'a pas donne son accord).",
