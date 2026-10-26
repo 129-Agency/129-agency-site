@@ -6,7 +6,7 @@ Static site, no build step. Deploy as-is (Vercel: framework "Other", output = ro
 - `img/` — covers and partner logos
 
 To plug in:
-- **Live campaigns**: replace the `LIVE` array with a call to a server route reading the Meta Marketing API (Insights). Token stays server-side.
+- **On air (home)**: `/api/on-air` lit les campagnes en diffusion sur les comptes 129, CR2 et ERA (`config/on-air.json`) et renvoie titre / artistes / label / pochette / jour de campagne, sans aucun chiffre. Règle : spend > 0 sur 3 jours ET nom en « Artiste - Titre — EXPLORE|SCALE ». Corrections de titre, pochette ou masquage d'un client : bloc `overrides` du même fichier. Cache CDN 1 h.
 - **Book a call**: paste the Lemcal embed inside `#lemcal-embed`. Bookings → Airtable via Lemcal webhook (or Make/Zapier).
 
 ## Internal tools (fusionnés depuis 129-Agency/internal-tools, 20/10/2026)

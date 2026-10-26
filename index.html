@@ -97,6 +97,7 @@ button{font:inherit;color:inherit}
 /* now-running mini player */
 .player{width:100%;display:grid;grid-template-columns:64px 1fr;gap:12px;align-items:center;border:1px solid rgba(247,247,245,.5);padding:10px;background:rgba(0,0,250,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);text-decoration:none}
 .player img{width:64px;height:64px;object-fit:cover}
+.player[hidden]{display:none}
 .player .meta{display:grid;gap:3px;min-width:0}
 .player .t{font:700 22px/1 var(--display);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .player .a{font-size:13px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -138,12 +139,15 @@ button{font:inherit;color:inherit}
 /* ───── on air: tracklist ───── */
 .onair .sec-top{padding-top:clamp(64px,9vw,128px)}
 .tl{border-top:1px solid rgba(247,247,245,.25)}
-.tl-head,.trk{display:grid;grid-template-columns:44px 72px minmax(0,2.2fr) minmax(0,1.4fr) repeat(3,minmax(0,1fr)) 92px;gap:16px;align-items:center;padding-inline:var(--g)}
+.tl-head,.trk{display:grid;grid-template-columns:44px 72px minmax(0,2.4fr) minmax(0,1.2fr) 120px 92px;gap:16px;align-items:center;padding-inline:var(--g)}
 .tl-head{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:rgba(247,247,245,.55);padding-block:12px;border-bottom:1px solid rgba(247,247,245,.25)}
 .trk{padding-block:14px;border-bottom:1px solid rgba(247,247,245,.25);transition:background .2s}
 .trk:hover{background:#0B0E2A}
 .trk .no{font-family:var(--mono);font-size:13px;color:rgba(247,247,245,.55)}
-.trk img{width:72px;height:72px;object-fit:cover}
+.trk img,.trk .ph{width:72px;height:72px;object-fit:cover}
+.ph{display:grid;place-items:center;background:var(--blue);color:var(--paper);font:700 30px/1 var(--display);text-transform:uppercase}
+.player .ph{width:64px;height:64px;font-size:26px}
+.tl-empty{padding:28px var(--g);border-bottom:1px solid rgba(247,247,245,.25);font:600 clamp(22px,2.4vw,32px)/1.1 var(--display);text-transform:uppercase;color:rgba(247,247,245,.65)}
 .trk .t{font:700 clamp(26px,2.6vw,38px)/.95 var(--display);text-transform:uppercase}
 .trk .a{font-size:14px;color:rgba(247,247,245,.65);margin-top:4px}
 .trk .lb{font-family:var(--mono);font-size:12px;color:rgba(247,247,245,.65);text-transform:uppercase}
@@ -156,7 +160,7 @@ button{font:inherit;color:inherit}
   .tl-head{display:none}
   .trk{grid-template-columns:72px minmax(0,1fr) auto;grid-template-areas:"img t st" "img m m";row-gap:10px}
   .trk .no,.trk .lb{display:none}
-  .trk img{grid-area:img;align-self:start}
+  .trk img,.trk .ph{grid-area:img;align-self:start}
   .trk .tt{grid-area:t}.trk .st{grid-area:st;align-self:start}
   .trk .ms{grid-area:m;display:flex;gap:18px}
   .cell-l{display:block;font-family:var(--mono);font-size:10px;color:rgba(247,247,245,.5);letter-spacing:.06em}
@@ -363,7 +367,7 @@ html.lenis,html.lenis body{height:auto}.lenis.lenis-smooth{scroll-behavior:auto!
 <header class="hdr">
   <div class="hdr-in px">
     <a class="logo" href="#top" aria-label="129 Agency, back to top"><svg><use href="#logo"/></svg></a>
-    <span class="now"><span class="dot" aria-hidden="true"></span><span id="hdr-now">3 campaigns on air</span></span>
+    <span class="now"><span class="dot" aria-hidden="true"></span><span id="hdr-now">On air</span></span>
     <button class="menu-btn" id="menu-open" aria-expanded="false" aria-controls="idx">Index <i aria-hidden="true"><b></b><b></b></i></button>
   </div>
 </header>
@@ -375,7 +379,7 @@ html.lenis,html.lenis body{height:auto}.lenis.lenis-smooth{scroll-behavior:auto!
   </div>
   <nav class="px" aria-label="Sections">
     <a href="#do" style="--i:0"><span>01</span><strong>What we do</strong><em>3 services</em></a>
-    <a href="#onair" style="--i:1"><span>02</span><strong>On air</strong><em id="idx-live">3 live</em></a>
+    <a href="#onair" style="--i:1"><span>02</span><strong>On air</strong><em id="idx-live">Live</em></a>
     <a href="#results" style="--i:2"><span>03</span><strong>Results</strong><em>5 cases</em></a>
     <a href="#stack" style="--i:3"><span>04</span><strong>The stack</strong><em>How it works</em></a>
     <a href="#contact" style="--i:4"><span>05</span><strong>Book a call</strong><em>20 min</em></a>
@@ -400,8 +404,8 @@ html.lenis,html.lenis body{height:auto}.lenis.lenis-smooth{scroll-behavior:auto!
     <div class="hero-side">
       <p>Music-native ad campaigns for dance labels, artists and managers.</p>
       <a class="player" href="#onair" id="player" aria-label="Now on air">
-        <img id="pl-img" src="img/live-beauty-in-us.jpg" alt="">
-        <span class="meta"><span class="k"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>On air</span><span class="t" id="pl-t">Beauty In Us</span><span class="a" id="pl-a">Robbie Williams, Miss Monique</span></span>
+        <img id="pl-img" src="img/cs-wav-of-luv.jpg" alt="">
+        <span class="meta"><span class="k"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>On air</span><span class="t" id="pl-t">Waves Of Luv</span><span class="a" id="pl-a">Matt Sassari, Mont Rouge</span></span>
       </a>
       <a class="b b-solid" href="#contact" style="width:100%">Book a call <span class="ar">→</span></a>
     </div>
@@ -425,13 +429,13 @@ html.lenis,html.lenis body{height:auto}.lenis.lenis-smooth{scroll-behavior:auto!
 <section class="sec ink onair" id="onair">
   <div class="sec-top px">
     <div><span class="lbl">02 — On air</span><h2>Running now</h2></div>
-    <p class="side">Campaigns live on Meta right now. Figures refresh from our ad accounts.</p>
+    <p class="side">Our full attention, on a handful of records at a time. These are the ones we are pushing right now.</p>
   </div>
   <div class="tl" role="table" aria-label="Live campaigns">
-    <div class="tl-head" role="row"><span>#</span><span></span><span>Record</span><span>Label</span><span>Impressions</span><span>Cost / result</span><span>Day</span><span style="text-align:right">Status</span></div>
+    <div class="tl-head" role="row"><span>#</span><span></span><span>Record</span><span>Label</span><span>Campaign</span><span style="text-align:right">Status</span></div>
     <div id="tracks"></div>
   </div>
-  <div class="tl-foot"><span>Source: Meta Ads · last 7 days</span><b>Demo data</b></div>
+  <div class="tl-foot"><span id="tl-src">Live from our ad accounts · updated hourly</span><b id="tl-n">On air</b></div>
 </section>
 
 <!-- ═════ RESULTS ═════ -->
@@ -559,10 +563,11 @@ const clamp=(v,a=0,b=1)=>Math.min(b,Math.max(a,v));
 const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
 
 /* ── data (Meta Ads + Airtable hooks documented in Site A) ── */
-const LIVE=[
-  {name:'Beauty In Us',artists:'Robbie Williams, Miss Monique',label:'CR2 Records',cover:'img/live-beauty-in-us.jpg',imp:842000,cpr:0.19,day:12},
-  {name:'We Are Fire',artists:'Amour Propre',label:'Warner Music UK',cover:'img/live-we-are-fire.jpg',imp:515000,cpr:0.24,day:9},
-  {name:'How Far (Chalé)',artists:'Solto, Bellil Brothers',label:'CR2 Records',cover:'img/live-how-far.jpg',imp:468000,cpr:0.17,day:21},
+/* Liste de secours (relevé du 26/10/2026), remplacée au chargement par /api/on-air,
+   qui lit les campagnes en diffusion sur les comptes 129, CR2 et ERA. Aucun chiffre public. */
+let LIVE=[
+  {title:'Waves Of Luv',artists:'Matt Sassari, Mont Rouge',label:'CR2 Records',cover:'img/cs-wav-of-luv.jpg',day:null},
+  {title:'Reckless 69',artists:'Innellea',label:null,cover:null,day:null},
 ];
 const CASES=[
   {title:'Girlfriend',artists:'Tayc',label:'H24 / Play Two',type:'Release',date:'Apr 2026',cover:'img/cs-girlfriend.jpg',roi:'×5.6',roiL:'ROI to date',
@@ -594,19 +599,35 @@ if(!reduce)addEventListener('pointermove',e=>{const x=e.clientX/innerWidth-.5,y=
 const words=['Release campaigns','Catalogue revivals','Scene-native creative','House','Techno','Afro house','Melodic','Disco','Server-side tracking','Own fanlinks'];
 $('#mq').innerHTML=[...words,...words].map(w=>`<span>${w}</span>`).join('');
 let pi=0;
-function rotatePlayer(){pi=(pi+1)%LIVE.length;const c=LIVE[pi];const pl=$('#player');pl.style.opacity=.0;
-  setTimeout(()=>{$('#pl-img').src=c.cover;$('#pl-t').textContent=c.name;$('#pl-a').textContent=c.artists;pl.style.opacity=1;},220);}
+function setPlayer(c){const img=$('#pl-img');
+  if(c.cover){img.src=c.cover;img.hidden=false;$('#pl-ph')?.remove();}
+  else{img.hidden=true;if(!$('#pl-ph'))img.insertAdjacentHTML('afterend','<span class="ph" id="pl-ph" aria-hidden="true"></span>');$('#pl-ph').textContent=(c.title||'?')[0];}
+  $('#pl-t').textContent=c.title;$('#pl-a').textContent=c.artists;}
+function rotatePlayer(){if(LIVE.length<2)return;pi=(pi+1)%LIVE.length;const pl=$('#player');pl.style.opacity=0;
+  setTimeout(()=>{setPlayer(LIVE[pi]);pl.style.opacity=1;},220);}
 $('#player').style.transition='opacity .22s';
 if(!reduce)setInterval(rotatePlayer,3600);
-$('#hdr-now').textContent=LIVE.length+' campaigns on air';$('#idx-live').textContent=LIVE.length+' live';
+function setCounts(){const n=LIVE.length,w=n===1?'record':'records';
+  $('#hdr-now').textContent=n?n+' '+w+' on air':'Between records';$('#idx-live').textContent=n+' live';
+  $('#tl-n').textContent=n?n+' '+w+' on air':'Between records';$('#player').hidden=!n;}
+setCounts();
 
 /* ── on air ── */
-$('#tracks').innerHTML=LIVE.map((c,i)=>`<div class="trk rise" role="row">
-  <span class="no">${String(i+1).padStart(2,'0')}</span><img src="${c.cover}" alt="${esc(c.name)} artwork" loading="lazy">
-  <div class="tt"><div class="t">${esc(c.name)}</div><div class="a">${esc(c.artists)}</div></div>
-  <span class="lb">${esc(c.label)}</span>
-  <div class="ms"><span><span class="cell-l">Impr.</span><span class="v">${compact(c.imp)}</span></span><span><span class="cell-l">Cost / result</span><span class="v">€${c.cpr.toFixed(2)}</span></span><span><span class="cell-l">Day</span><span class="v">${c.day}</span></span></div>
-  <span class="st"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Live</span></div>`).join('');
+const cover=(c)=>c.cover?`<img src="${esc(c.cover)}" alt="${esc(c.title)} artwork" loading="lazy">`:`<span class="ph" aria-hidden="true">${esc((c.title||'?')[0])}</span>`;
+function renderOnAir(){
+  $('#tracks').innerHTML=LIVE.length?LIVE.map((c,i)=>`<div class="trk rise" role="row">
+  <span class="no">${String(i+1).padStart(2,'0')}</span>${cover(c)}
+  <div class="tt"><div class="t">${esc(c.title)}</div><div class="a">${esc(c.artists)}</div></div>
+  <span class="lb">${esc(c.label||'')}</span>
+  <div class="ms"><span><span class="cell-l">Campaign</span><span class="v">${c.day?'Day '+c.day:'Live'}</span></span></div>
+  <span class="st"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Live</span></div>`).join('')
+  :`<div class="tl-empty">Between records. The next one is in the studio.</div>`;
+}
+renderOnAir();
+fetch('/api/on-air').then(r=>r.ok?r.json():null).then(d=>{
+  if(!d||!Array.isArray(d.items))return;  /* API indisponible : on garde la liste de secours */
+  LIVE=d.items;pi=0;renderOnAir();setCounts();if(LIVE[0])setPlayer(LIVE[0]);
+}).catch(()=>{});
 
 /* ── results ── */
 let filter='all',openIdx=-1;

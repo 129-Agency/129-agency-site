@@ -16,12 +16,21 @@
   ],
   "headers": [
     {
-      "source": "/api/(.*)",
+      "source": "/api/((?!on-air).*)",
       "headers": [
         {
           "key": "Cache-Control",
           "value": "no-store"
         },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        }
+      ]
+    },
+    {
+      "source": "/api/on-air",
+      "headers": [
         {
           "key": "X-Robots-Tag",
           "value": "noindex"

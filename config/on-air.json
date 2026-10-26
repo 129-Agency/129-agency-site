@@ -1,0 +1,20 @@
+{
+  "_doc": "Section « On air » de la home. Liste publique des records qu'on pousse en ce moment, sans aucun chiffre. Voir api/on-air.js.",
+
+  "accounts": [
+    { "key": "129", "ad_account_id": "1438949328152890", "default_label": null },
+    { "key": "cr2", "ad_account_id": "110521542482244", "default_label": "CR2 Records" },
+    { "key": "era", "ad_account_id": "1909983676326333", "default_label": null }
+  ],
+
+  "_rules": "Une campagne apparait si (1) elle a depense sur les `active_days` derniers jours et (2) son nom suit notre convention « Artiste - Titre — EXPLORE|SCALE ». La regle 2 exclut les campagnes que les equipes clientes lancent elles-memes sur leurs propres comptes (ex. CR2 : Beatport, Rupert & Bas).",
+  "active_days": 3,
+  "name_pattern": "(EXPLORE|SCALE)\\s*$",
+  "max_items": 8,
+
+  "_overrides": "Cle = « artiste - titre » tel qu'ecrit dans le nom de campagne, en minuscules, sans le suffixe EXPLORE/SCALE. Champs possibles : title, artists, label, cover (chemin img/... ou URL), hide (true = jamais affiche, ex. client qui n'a pas donne son accord).",
+  "overrides": {
+    "matt sassari, mont rouge - wav of luv": { "title": "Waves Of Luv", "artists": "Matt Sassari, Mont Rouge", "cover": "img/cs-wav-of-luv.jpg" },
+    "solto, bellil brothers - how far chale": { "title": "How Far (Chalé)", "artists": "Solto, Bellil Brothers", "cover": "img/live-how-far.jpg" }
+  }
+}
