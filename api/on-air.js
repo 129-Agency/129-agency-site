@@ -143,14 +143,22 @@ export default async function handler(req, res) {
   // Les plus recents d'abord : ce sur quoi on vient de demarrer.
   items.sort((a, b) => (a.day ?? 1e9) - (b.day ?? 1e9));
 
-  // Si tous les comptes ont echoue (token mort...), on ne met pas en cache une liste vide :
-  // la home garde sa liste de secours et on reessaie a la prochaine visite.
-  if (errors && errors === results.length) {
+  // Etat par compte, sans message ni identifiant : juste ok / code d'erreur Meta,
+  // pour diagnostiquer un token qui n'a pas acces a un compte.
+  const status = (CONF.accounts || []).map((a, i) => results[i].status === 'fulfilled'
+    ? { source: a.key, ok: true }
+    : { source: a.key, ok: false, meta_code: results[i].reason?.metaCode ?? null });
+
+  // Un compte en echec = liste incomplete : on ne la met pas en cache, et si elle est
+  // vide on renvoie une erreur pour que la home garde sa liste de secours.
+  if (errors) {
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(502).json({ items: [], error: 'unavailable' });
+    res.setHeader('Vercel-CDN-Cache-Control', 'no-store');
+    if (!items.length) return res.status(502).json({ items: [], error: 'unavailable', sources: status });
+    return res.status(200).json({ updated_at: new Date().toISOString(), partial: true, items: items.slice(0, CONF.max_items || 8), sources: status });
   }
 
   res.setHeader('Cache-Control', 'public, max-age=300');
   res.setHeader('Vercel-CDN-Cache-Control', 'max-age=3600, stale-while-revalidate=86400');
-  return res.status(200).json({ updated_at: new Date().toISOString(), items: items.slice(0, CONF.max_items || 8) });
+  return res.status(200).json({ updated_at: new Date().toISOString(), items: items.slice(0, CONF.max_items || 8), sources: status });
 }
