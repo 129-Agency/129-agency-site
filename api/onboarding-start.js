@@ -35,6 +35,9 @@ function artworkUrlFrom(v) {
   return u.protocol === 'https:' && ARTWORK_HOSTS.test(u.hostname) ? s : null;
 }
 const MAX_FILE_BYTES = 5 * 1024 ** 3;
+// Versions de 129agency.com/terms. Le formulaire envoie la version affichée sous le bouton d'envoi
+// (« By submitting this form, you agree to our terms ») : c'est la preuve d'acceptation.
+const TERMS = { v1: 'v1 · 26/10/2026' };
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only.' });
@@ -167,6 +170,10 @@ export default async function handler(req, res) {
       [F.campagne.metaStatus]: 'À créer',
       [F.campagne.declaredIdentity]: declared,
     };
+    if (TERMS[b.terms]) {
+      cfields[F.campagne.termsAcceptedAt] = new Date().toISOString();
+      cfields[F.campagne.termsVersion] = TERMS[b.terms];
+    }
     const copt = {
       [F.campagne.driveFolder]: campaignFolder?.webViewLink,
       [F.campagne.clientFilesLink]: filesLink,

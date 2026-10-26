@@ -210,6 +210,7 @@
   .next li:first-child::before{background:var(--blue); border-color:var(--blue); color:#fff}
   .next b{font-weight:500; display:block}
   .next span{color:var(--graphite); font-size:15px}
+  .legal{font-size:14px; color:var(--graphite); margin:24px 0 0; max-width:52ch}
   .warn{padding:14px 18px; border-radius:var(--r-field); background:#FDECEC; color:#8A0F13; font-size:15px; margin:24px 0 0}
 
   .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); width:max-content; max-width:calc(100% - 32px); background:var(--ink); color:var(--paper); padding:12px 14px 12px 20px;
@@ -568,6 +569,7 @@
         <p class="sub">Check it over, then send it to the team.</p>
         <div class="review" id="review"></div>
         <p class="err" id="err-send" role="alert" style="margin-top:16px"></p>
+        <p class="legal">By submitting this form, you agree to our <a href="/terms" target="_blank" rel="noopener">terms</a>.</p>
       </section>
 
       <!-- Envoi -->
@@ -632,6 +634,7 @@ const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const CHUNK = 4 * 1024 * 1024;              // multiple de 256 Ko, sous la limite Vercel (4,5 Mo)
 const MAX_FILES = 40, MAX_FILE = 5 * 1024 ** 3;
 const DRAFT_KEY = '129-onboarding-draft-v3', EMAIL_KEY = '129-onboarding-email';
+const TERMS = 'v1';                         // version de /terms affichée au moment de l'envoi
 const params = new URLSearchParams(location.search);
 const K = params.get('k') || '';
 
@@ -1232,6 +1235,7 @@ async function send() {
   const ig = String(S.instagram || '').trim();
   const payload = {
     k: K,
+    terms: TERMS,
     identity: { email: (S.email || '').trim(), name: profile?.known && !profile.needsName ? '' : S.name, company: profile?.known ? '' : S.company },
     hasArtwork: !!files.artwork,
     track: {

@@ -89,6 +89,8 @@ export const F = {
     declaredIdentity: 'fldzcMlYdQ7w2D91G',
     clientFilesLink: 'fldaHlg7koK3TWTg9',
     pageAccess: 'fldj3MnqQDsLwKzvj',     // Accès Page / IG
+    termsAcceptedAt: 'fld2070ikBKfkopAU', // Conditions acceptées le (dateTime)
+    termsVersion: 'fldDRos1wIVZTU124',    // Version conditions
   },
   contact: {
     name: 'fldBqZjkgn9SnqBDQ',
