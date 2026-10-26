@@ -95,8 +95,8 @@ export default async function handler(req, res) {
     if (drive) {
       const clientFolderName = compte ? (clean(cf[F.compte.name], 120) || clientSlug) : `À vérifier — ${idCompany}`;
       const clientFolder = await ensureFolder(clientFolderName, await rootFolderId());
-      const today = new Date().toISOString().slice(0, 10);
-      campaignFolder = await ensureFolder(`${today} ${artist} - ${title}`, clientFolder.id);
+      // Même nom que la fiche Campagne Airtable : « Artiste - Titre ».
+      campaignFolder = await ensureFolder(`${artist} - ${title}`, clientFolder.id);
       const kinds = new Set(files.map(f => f.kind));
       if (artworkUrl) kinds.add('artwork');
       for (const kind of kinds) {

@@ -3,7 +3,7 @@
  *
  * Donne au site 129agency.com de quoi déposer les fichiers clients dans Google Drive,
  * sans projet Google Cloud ni compte de service :
- *   - un jeton Drive limité (drive.file : le script ne voit QUE les dossiers et fichiers qu'il a créés),
+ *   - un jeton Drive (scope drive : nécessaire pour écrire dans un dossier existant, ROOT_ID),
  *   - l'ID du dossier racine « 129 — Onboarding », créé dans le Drive du propriétaire du script.
  *
  * Mise en place : lancer setup() une fois, puis Déployer > Application web
@@ -11,6 +11,8 @@
  */
 
 const ROOT_NAME = '129 — Onboarding';
+// Dossier de destination choisi par Antoine (26/10/2026). Vide = dossier créé par setup().
+const ROOT_ID = '1Gtp-TLl_xJV7SlbV99v8xGGXxVaOUUe-';
 
 function setup() {
   const props = PropertiesService.getScriptProperties();
@@ -35,6 +37,7 @@ function doGet() {
 }
 
 function rootFolder_() {
+  if (ROOT_ID) return ROOT_ID;
   const props = PropertiesService.getScriptProperties();
   const known = props.getProperty('ROOT_ID');
   if (known) return known;
