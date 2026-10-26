@@ -362,10 +362,6 @@
             </div>
             <p class="help" id="magicMsg" aria-live="polite"></p>
           </div>
-          <div class="fld" id="artistPick" hidden>
-            <span class="lbl" id="artistPickLbl">Your artists</span>
-            <div class="chips" id="artistChips" role="group" aria-labelledby="artistPickLbl"></div>
-          </div>
           <div class="two">
             <div class="fld">
               <label for="artist">Artist</label>
@@ -777,7 +773,6 @@ function renderCard(changed) {
   const src = files.artwork ? artURL : S.artworkUrl || null;
   const img = sleeve.querySelector('img');
   sleeve.classList.toggle('has', !!src);
-  if (profile?.known) markArtist();
   if (src && (!img || img.getAttribute('src') !== src)) {
     if (img) img.remove();
     const im = new Image(); im.alt = ''; im.src = src; sleeve.appendChild(im);
@@ -908,7 +903,7 @@ function resetIdentity() {
   $('#youQ').textContent = 'First, what’s your email?';
   $('#youSub').textContent = 'If we’ve worked together before, we’ll pick up from there.';
   $('#choiceInPlace').hidden = true;
-  renderArtists(); renderCard();
+  renderCard();
 }
 async function identifyNow({ silent = false } = {}) {
   const email = (S.email || '').trim().toLowerCase();
@@ -959,32 +954,8 @@ function applyProfile() {
     if (S.pageAccess === 'in_place') S.pageAccess = '';
     setTimeout(() => { if (STEPS[cur] === 'you') $('#name').focus(); }, 50);
   }
-  fillInputs(); renderArtists(); renderCard('company'); saveDraft();
+  fillInputs(); renderCard('company'); saveDraft();
 }
-function renderArtists() {
-  const list = profile?.known ? profile.artists || [] : [];
-  $('#artistPick').hidden = !list.length;
-  $('#artistChips').innerHTML = list.map((a, i) => `<button type="button" class="chip" data-artist="${i}" aria-pressed="false"><span>${esc(a.name)}</span></button>`).join('');
-  markArtist();
-}
-function markArtist() {
-  const cur = String(S.artist || '').trim().toLowerCase();
-  const list = profile?.artists || [];
-  $$('#artistChips [data-artist]').forEach(b => b.setAttribute('aria-pressed', String((list[Number(b.dataset.artist)]?.name || '').toLowerCase() === cur)));
-}
-$('#artistChips').addEventListener('click', (e) => {
-  const b = e.target.closest('[data-artist]'); if (!b) return;
-  const a = profile.artists[Number(b.dataset.artist)];
-  S.artist = a.name;
-  const page = a.page || '';
-  const ig = (page.match(/IG:\s*@?([\w.]+)/i) || page.match(/instagram\.com\/([\w.]+)/i) || [])[1];
-  const fb = (page.match(/FB:\s*([^·]+?)\s*(?:·|$)/i) || page.match(/(https?:\/\/(?:www\.)?facebook\.com\/[^\s·]+)/i) || [])[1];
-  if (ig && !S.instagram) S.instagram = '@' + ig;
-  if (fb && !S.facebook) S.facebook = fb.trim();
-  fillInputs(); renderCard('artist'); saveDraft();
-  $('#title').focus();
-});
-
 /* ---------- Lien magique ---------- */
 let lookedUp = '';
 $('#magic').addEventListener('paste', () => setTimeout(lookup, 0));
@@ -1327,7 +1298,7 @@ document.addEventListener('change', (e) => { if (e.target.dataset?.k === 'curren
   } else if (rememberedEmail) {
     S.email = rememberedEmail;
   }
-  fillInputs(); renderCard(); renderArtists();
+  fillInputs(); renderCard();
 
   // Email connu sur cet appareil (ou lien ?k=) : on reconnaît la personne sans attendre.
   if (isEmail(S.email) || K) {
