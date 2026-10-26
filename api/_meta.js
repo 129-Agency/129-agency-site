@@ -33,10 +33,11 @@ export function resolveSource(key) {
   return s;
 }
 
-export async function graph(path, params = {}) {
+export async function graph(path, params = {}, tokenOverride = null) {
   // Lecture : token ads_read dedie s'il existe, sinon le token System User d'ecriture
   // (meme projet Vercel, donc meme perimetre d'exposition ; ces routes ne font que lire).
-  const token = process.env.META_ACCESS_TOKEN || process.env.META_SYSTEM_USER_TOKEN
+  // tokenOverride : utilise uniquement par /api/on-air (token perso, voir ce fichier).
+  const token = tokenOverride || process.env.META_ACCESS_TOKEN || process.env.META_SYSTEM_USER_TOKEN
     || process.env.META_SYSTEM_USER || process.env.META_WRITE_TOKEN;
   if (!token) throw new Error('Aucun token Meta dans les variables Vercel (META_ACCESS_TOKEN ou META_SYSTEM_USER_TOKEN).');
   const qs = new URLSearchParams({ ...params, access_token: token });

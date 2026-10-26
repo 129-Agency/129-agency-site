@@ -77,22 +77,37 @@ async function lookupArtwork(artists, title) {
   return null;
 }
 
+// Token de lecture de la vitrine. META_ONAIR_TOKEN (optionnel) = token utilisateur
+// d'Antoine, scope ads_read UNIQUEMENT : il voit les comptes ERA et CR2 sans partage
+// au BM 129. Il expire (60 jours max) : en cas d'echec on retombe sur le token System
+// User, et la home garde sa liste de secours si rien ne passe.
+async function read(path, params) {
+  const perso = process.env.META_ONAIR_TOKEN;
+  if (!perso) return graph(path, params);
+  try { return await graph(path, params, perso); }
+  catch (e) { return graph(path, params); }
+}
+
+// Regle de selection : depense sur N jours + nom « Artiste - Titre — EXPLORE|SCALE ».
+// Le separateur « - » entre artiste et titre est obligatoire.
+const isOurs = (name) => NAME_RE.test(name) && / - \S/.test(String(name).replace(SUFFIX_RE, ''));
+
 async function liveCampaigns(acc) {
   const until = new Date();
   const since = new Date(); since.setDate(since.getDate() - (CONF.active_days || 3));
   // Insights ne renvoie que les campagnes qui ont diffuse sur la fenetre : pas besoin
   // de parcourir les centaines de campagnes du compte.
-  const ins = await graph(`act_${acc.ad_account_id}/insights`, {
+  const ins = await read(`act_${acc.ad_account_id}/insights`, {
     level: 'campaign',
     fields: 'campaign_id,campaign_name,spend',
     time_range: JSON.stringify({ since: iso(since), until: iso(until) }),
     limit: '200',
   });
-  const rows = (ins.data || []).filter(r => Number(r.spend) > 0 && NAME_RE.test(r.campaign_name || ''));
+  const rows = (ins.data || []).filter(r => Number(r.spend) > 0 && isOurs(r.campaign_name || ''));
   if (!rows.length) return [];
 
   // Date de lancement, pour le compteur « jour N ».
-  const meta = await graph('', { ids: rows.map(r => r.campaign_id).join(','), fields: 'start_time,created_time' });
+  const meta = await read('', { ids: rows.map(r => r.campaign_id).join(','), fields: 'start_time,created_time' });
   return rows.map(r => ({
     name: r.campaign_name,
     start: meta[r.campaign_id]?.start_time || meta[r.campaign_id]?.created_time || null,
