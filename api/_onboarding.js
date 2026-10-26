@@ -79,8 +79,9 @@ export async function identify({ k, email }) {
 }
 
 // Ce que le formulaire peut afficher d'un client reconnu : prénom, nom du compte,
-// devise habituelle, et ses artistes récents avec la dernière page IG/FB connue.
-// Rien d'autre (pas de budget, pas de fee, pas de notes) : la route est publique.
+// devise habituelle. Rien d'autre (ni artistes, ni budget, ni fee, ni notes) : la route
+// est publique et la reconnaissance par domaine ne prouve pas que l'email appartient
+// à la personne qui tape. La liste des artistes a été retirée avec le sélecteur (26/10/2026).
 const CURRENCIES = ['EUR', 'USD', 'GBP'];
 
 export async function publicProfile({ compte, contact, via }) {
@@ -99,29 +100,9 @@ export async function publicProfile({ compte, contact, via }) {
     } catch { /* devise facultative */ }
   }
 
-  // Artistes : les 30 dernières campagnes du compte, dédoublonnées, plus récentes d'abord.
-  const artists = [];
-  const ids = (cf[F.compte.campagnes] || []).slice(-30);
-  if (ids.length) {
-    try {
-      const rows = await find(T.campagnes, `OR(${ids.map(id => `RECORD_ID() = ${q(id)}`).join(', ')})`, {
-        maxRecords: 30, fields: [F.campagne.artist, F.campagne.pageIgFb],
-      });
-      const byId = new Map(rows.map(r => [r.id, r.fields || {}]));
-      const seen = new Set();
-      for (const id of ids.slice().reverse()) {
-        const f = byId.get(id);
-        const name = clean(f?.[F.campagne.artist], 120);
-        if (!name || seen.has(name.toLowerCase())) continue;
-        seen.add(name.toLowerCase());
-        artists.push({ name, page: clean(f[F.campagne.pageIgFb], 300) });
-        if (artists.length >= 8) break;
-      }
-    } catch { /* liste facultative */ }
-  }
-
   // needsName : on connaît l'équipe (domaine ou lien) mais pas encore la personne.
-  return { known: true, via, needsName: !firstName, firstName, company, currency, artists, returning: ids.length > 0 };
+  const returning = (cf[F.compte.campagnes] || []).length > 0;
+  return { known: true, via, needsName: !firstName, firstName, company, currency, returning };
 }
 
 export function spotifyIdFrom(url) {

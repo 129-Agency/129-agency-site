@@ -157,6 +157,16 @@
   .files .size{color:var(--graphite); font-variant-numeric:tabular-nums}
   .files button{border:0; background:none; cursor:pointer; color:var(--graphite); width:32px; height:32px; border-radius:50%; font-size:18px; line-height:1}
   .files button:hover{background:var(--cloud); color:var(--ink)}
+  .group{display:grid; gap:16px; padding-top:22px; border-top:1px solid var(--smoke)}
+  .group-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px}
+  .group-head h2{font-size:17px; font-weight:500; letter-spacing:-.01em; margin:0}
+  .group-head .tag{font-size:13px; color:var(--graphite)}
+  .specs{list-style:none; padding:0; margin:0; display:grid; gap:10px; font-size:15px; line-height:1.45; color:var(--graphite)}
+  .specs li{display:grid; grid-template-columns:14px 1fr; gap:10px}
+  .specs li::before{content:""; width:12px; height:2px; background:var(--blue); margin-top:10px; transform:rotate(-56.5deg)}
+  .specs b{color:var(--ink); font-weight:500}
+  .cover .art .fmt{font-size:20px; font-weight:500; letter-spacing:.02em}
+  .cover .art.audio.has{background:var(--blue); color:var(--white)}
 
   /* ---------- Access ---------- */
   .choices{display:grid; gap:10px}
@@ -310,9 +320,10 @@
         <h1 class="q" tabindex="-1">Let’s get your release moving.</h1>
         <p class="sub">Four short steps and everything lands with the 129 team: the track, your files, and access to run the ads.</p>
         <ul class="need">
-          <li>Cover art, and any videos or visuals you’d like in the ads</li>
+          <li>Cover art and the audio file, MP3 or WAV</li>
+          <li>Videos for the ads, vertical if you have them</li>
           <li>Release date, or a streaming link if it’s already out</li>
-          <li>Admin access to the artist’s Facebook Page and Instagram</li>
+          <li>Access to the artist’s Facebook Page and Instagram, for ads only</li>
         </ul>
         <div class="welcome-cta">
           <button class="btn primary" type="button" data-go="next">Start</button>
@@ -435,7 +446,7 @@
       <!-- 3 · Budget and assets -->
       <section class="step" data-step="campaign" hidden>
         <h1 class="q" tabindex="-1">Budget and assets.</h1>
-        <p class="sub" id="campSub">Your ad budget, then everything you’d like us to use in the ads.</p>
+        <p class="sub" id="campSub">Your ad budget, then the files we build the ads from.</p>
         <div class="stack">
           <div class="fld">
             <label for="budget">Ad budget <span class="opt">Ad spend only, our fee is separate</span></label>
@@ -447,6 +458,8 @@
             </div>
             <p class="err" id="err-budget" role="alert"></p>
           </div>
+          <div class="group">
+          <div class="group-head"><h2>For every release</h2><span class="tag">Required</span></div>
           <div class="cover">
             <label class="art" id="artTile" tabindex="0" aria-describedby="err-artwork artHelp">
               <span id="artEmpty">Add cover art</span>
@@ -459,17 +472,40 @@
             </div>
           </div>
           <p class="err" id="err-artwork" role="alert"></p>
+          <div class="cover" id="audioRow">
+            <label class="art audio" id="audio" tabindex="0" aria-describedby="err-audio audioHelp">
+              <span id="audioEmpty">Add audio</span>
+              <span class="fmt" id="audioFmt" hidden></span>
+              <input type="file" id="audioInput" accept="audio/*,.mp3,.wav,.aif,.aiff,.flac" multiple class="sr">
+            </label>
+            <div class="fld">
+              <span class="lbl">Audio</span>
+              <p class="help" id="audioHelp">The final master. MP3 at 320 kbps is ideal, WAV works too.</p>
+              <div style="display:flex; gap:16px"><button type="button" class="link" id="audioPick">Choose a file</button></div>
+            </div>
+          </div>
+          <ul class="files" id="audioList"></ul>
+          <p class="err" id="err-audio" role="alert"></p>
+          </div>
+          <div class="group">
+          <div class="group-head"><h2>Videos for the ads</h2><span class="tag">Recommended</span></div>
+          <ul class="specs">
+            <li><span><b>Vertical 9:16 first:</b> teasers, Reels, TikTok edits. It’s the main format our ads run in.</span></li>
+            <li><span><b>Your music video or visualizer</b>, in the best quality you have. Horizontal 16:9 works: in 4K, we can cut clean vertical versions from it.</span></li>
+            <li><span>MP4 or MOV, up to 5 GB per file. Clean versions if you have them: no burned-in subtitles or logos.</span></li>
+          </ul>
           <div id="dropWrap">
             <label class="drop" id="drop" tabindex="0">
-              <strong>Videos, visuals, audio</strong>
-              <span class="help">Drop everything here, or click to browse. It goes straight into this release’s folder.</span>
+              <strong>Add videos</strong>
+              <span class="help">Drop them here, or click to browse. Artist photos are welcome too.</span>
               <input type="file" id="dropInput" multiple class="sr">
             </label>
           </div>
           <ul class="files" id="fileList"></ul>
+          </div>
           <button type="button" class="link" id="linkToggle" style="justify-self:start">Files too big? Share a link instead</button>
           <div class="fld" id="filesLinkFld">
-            <label for="filesLink" id="filesLinkLbl">Link to your videos and visuals <span class="opt">Dropbox, WeTransfer, Google Drive</span></label>
+            <label for="filesLink" id="filesLinkLbl">Link to your files <span class="opt">Dropbox, WeTransfer, Google Drive</span></label>
             <input class="in" id="filesLink" data-k="filesLink" type="url" inputmode="url" placeholder="https://" aria-describedby="err-filesLink">
             <p class="err" id="err-filesLink" role="alert"></p>
           </div>
@@ -620,7 +656,8 @@ function blank(keepIdentity) {
 }
 let profile = null;            // réponse /api/onboarding-identify
 let identifiedFor = '';        // email pour lequel profile est valable
-let files = { artwork: null, other: [] };
+let files = { artwork: null, audio: [], other: [] };
+const allFiles = () => [...(files.artwork ? [files.artwork] : []), ...files.audio, ...files.other];
 let found = null;              // dernière réponse /api/onboarding-lookup
 let CONFIG = { drive: false, maxArtworkInlineBytes: 3 * 1024 * 1024, businessId: '2931318437227206' };
 let cur = 0, returnToReview = false, busy = false;
@@ -758,8 +795,8 @@ function renderCard(changed) {
   const b = budgetNum();
   $('#cBudget').textContent = b > 0 ? money(b, S.currency) : ''; showRow('budget', b > 0);
 
-  const n = (files.artwork ? 1 : 0) + files.other.length;
-  const size = (files.artwork?.size || 0) + files.other.reduce((s, f) => s + f.size, 0);
+  const n = allFiles().length;
+  const size = allFiles().reduce((s, f) => s + f.size, 0);
   const parts = [];
   if (n) parts.push(`${n} file${n > 1 ? 's' : ''}, ${fmtBytes(size)}`);
   else if (S.artworkUrl) parts.push('Cover from ' + (found?.coverFrom || 'streaming'));
@@ -877,12 +914,18 @@ async function validate(id) {
     if (!(budgetNum() > 0)) errs.push(['budget', 'Enter the ad budget as a number, like 3000.']);
     if (S.filesLink && !isUrl(withScheme(S.filesLink))) errs.push(['filesLink', 'This link should start with https://']);
     if (!files.artwork && !S.artworkUrl && !S.filesLink) errs.push(['artwork', 'Add the cover art, or a link where we can find it.']);
+    // L'audio est requis pour chaque release : fichier déposé, ou lien partagé.
+    if (CONFIG.drive) {
+      if (!files.audio.length && !S.filesLink) errs.push(['audio', 'Add the audio, MP3 or WAV, or share it with a link below.']);
+    } else if (!S.filesLink) {
+      errs.push(['filesLink', 'Add a link to the audio and your videos.']);
+    }
     if (files.artwork && !CONFIG.drive && files.artwork.size > CONFIG.maxArtworkInlineBytes)
       errs.push(['artwork', 'This cover is over 3 MB. Export a lighter JPG, or share it with a link below.']);
   }
   if (id === 'access') {
     if (!S.pageAccess) errs.push(['pageAccess', 'Pick where you’re at, even if it’s “I need a hand”.']);
-    if (S.pageAccess !== 'in_place' && !String(S.instagram || '').trim() && !String(S.facebook || '').trim())
+    if (!String(S.instagram || '').trim() && !String(S.facebook || '').trim())
       errs.push(['instagram', 'Add the artist’s Instagram or Facebook Page so we know which one to use.']);
   }
   errs.forEach(([k, m]) => setErr(k, m));
@@ -944,7 +987,6 @@ function applyProfile() {
     }
     if (profile.currency && !S._currencyTouched) { S.currency = profile.currency; fillInputs(); }
     $('#choiceInPlace').hidden = !profile.returning;
-    if (profile.returning && !S.pageAccess) { S.pageAccess = 'in_place'; }
   } else {
     $('#youQ').textContent = 'Nice to meet you.';
     $('#youSub').textContent = 'Two quick details so we know who we’re working with.';
@@ -1012,11 +1054,13 @@ let linkOpen = false;
 function filesUi() {
   // Drive actif : on dépose tout ici, le lien n'est qu'un repli pour les très gros fichiers.
   $('#dropWrap').hidden = !CONFIG.drive;
-  $('#campSub').textContent = CONFIG.drive ? 'Your ad budget, then everything you’d like us to use in the ads.' : 'Your ad budget, the cover, and a link to your videos and visuals.';
+  $('#audioRow').hidden = !CONFIG.drive;
+  $('#campSub').textContent = CONFIG.drive ? 'Your ad budget, then the files we build the ads from.' : 'Your ad budget, the cover, and a link to your audio and videos.';
+  $('#filesLinkLbl').firstChild.textContent = CONFIG.drive ? 'Link to your files ' : 'Link to your audio and videos ';
   const showLink = !CONFIG.drive || linkOpen || !!S.filesLink;
   $('#filesLinkFld').hidden = !showLink;
   $('#linkToggle').hidden = showLink;
-  renderArt(); renderFiles();
+  renderArt(); renderAudio(); renderFiles();
 }
 $('#linkToggle').addEventListener('click', () => { linkOpen = true; filesUi(); $('#filesLink').focus(); });
 function renderArt() {
@@ -1054,27 +1098,43 @@ function dz(el, onFiles) {
 }
 dz($('#artTile'), (fs) => setArtwork(fs.find(f => /^image\//.test(f.type))));
 dz($('#drop'), addFiles);
+dz($('#audio'), addFiles);
 $('#dropInput').addEventListener('change', (e) => { addFiles(Array.from(e.target.files)); e.target.value = ''; });
+$('#audioInput').addEventListener('change', (e) => { addFiles(Array.from(e.target.files)); e.target.value = ''; });
+$('#audioPick').addEventListener('click', () => $('#audioInput').click());
 $('#drop').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#dropInput').click(); } });
+$('#audio').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#audioInput').click(); } });
+// Chaque fichier va dans sa liste selon son type, quelle que soit la zone où il est déposé.
 function addFiles(list) {
   const msgs = [];
   for (const f of list) {
     if (f.size > MAX_FILE) { msgs.push(`${f.name} is over 5 GB, share it with a link.`); continue; }
-    if (files.other.length + 1 > MAX_FILES - 1) { msgs.push(`Up to ${MAX_FILES - 1} files here. Share the rest with a link.`); break; }
-    if (files.other.some(x => x.name === f.name && x.size === f.size)) continue;
-    // Une image carrée glissée ici alors qu'il manque la pochette : on la propose comme pochette.
-    files.other.push(f);
+    if (files.audio.length + files.other.length + 1 > MAX_FILES - 1) { msgs.push(`Up to ${MAX_FILES - 1} files. Share the rest with a link.`); break; }
+    const bucket = kindOf(f) === 'audio' ? files.audio : files.other;
+    if (bucket.some(x => x.name === f.name && x.size === f.size)) continue;
+    bucket.push(f);
   }
-  if (msgs.length) setErr('filesLink', msgs.join(' '));
-  renderFiles(); renderCard('filesLink');
+  if (files.audio.length) clearErr('audio');
+  if (msgs.length) { linkOpen = true; filesUi(); setErr('filesLink', msgs.join(' ')); }
+  renderAudio(); renderFiles(); renderCard('filesLink');
 }
+const fileRow = (f, i, list) => `<li><span class="kind">${KIND_LABEL[kindOf(f)]}</span><span class="name" title="${esc(f.name)}">${esc(f.name)}</span><span class="size">${fmtBytes(f.size)}</span><button type="button" data-rm="${i}" data-list="${list}" aria-label="Remove ${esc(f.name)}">×</button></li>`;
 function renderFiles() {
-  $('#fileList').innerHTML = files.other.map((f, i) => `<li><span class="kind">${KIND_LABEL[kindOf(f)]}</span><span class="name" title="${esc(f.name)}">${esc(f.name)}</span><span class="size">${fmtBytes(f.size)}</span><button type="button" data-rm="${i}" aria-label="Remove ${esc(f.name)}">×</button></li>`).join('');
+  $('#fileList').innerHTML = files.other.map((f, i) => fileRow(f, i, 'other')).join('');
 }
-$('#fileList').addEventListener('click', (e) => {
+function renderAudio() {
+  const n = files.audio.length, fmt = $('#audioFmt');
+  $('#audio').classList.toggle('has', n > 0);
+  $('#audioEmpty').hidden = n > 0;
+  fmt.hidden = !n;
+  fmt.textContent = n > 1 ? `${n} files` : n ? (files.audio[0].name.split('.').pop() || 'audio').toUpperCase().slice(0, 4) : '';
+  $('#audioPick').textContent = n ? 'Add another' : 'Choose a file';
+  $('#audioList').innerHTML = files.audio.map((f, i) => fileRow(f, i, 'audio')).join('');
+}
+['#fileList', '#audioList'].forEach(sel => $(sel).addEventListener('click', (e) => {
   const b = e.target.closest('[data-rm]'); if (!b) return;
-  files.other.splice(Number(b.dataset.rm), 1); renderFiles(); renderCard('filesLink');
-});
+  files[b.dataset.list].splice(Number(b.dataset.rm), 1); renderAudio(); renderFiles(); renderCard('filesLink');
+}));
 
 /* ---------- Accès ---------- */
 function accessUi() {
@@ -1093,16 +1153,19 @@ $('#copyBiz').addEventListener('click', async () => {
 function buildReview() {
   const who = profile?.known ? [S.name, profile.company, S.email].filter(Boolean).join(', ') : [S.name, S.company, S.email].filter(Boolean).join(', ');
   const plats = PLATS.filter(([k]) => S.links[k]).map(x => x[1]);
-  const fileList = [files.artwork ? 'Cover: ' + files.artwork.name : S.artworkUrl ? `Cover from ${found?.coverFrom || 'streaming'}` : null,
-    files.other.length ? `${files.other.length} other file${files.other.length > 1 ? 's' : ''}, ${fmtBytes(files.other.reduce((s, f) => s + f.size, 0))}` : null,
-    S.filesLink ? 'Link: ' + S.filesLink : null].filter(Boolean);
+  const cover = files.artwork ? files.artwork.name : S.artworkUrl ? `From ${found?.coverFrom || 'streaming'}` : null;
+  const count = (k) => files.other.filter(f => kindOf(f) === k).length;
+  const extras = [['video', 'video'], ['visual', 'photo'], ['other', 'other file']]
+    .map(([k, w]) => count(k) ? `${count(k)} ${w}${count(k) > 1 ? 's' : ''}` : null).filter(Boolean);
+  const extrasLine = extras.length ? `${extras.join(', ')}, ${fmtBytes(files.other.reduce((s, f) => s + f.size, 0))}` : null;
   const blocks = [
     ['You', 'you', [['From', who]]],
     ['Release', 'release', [['Artist', S.artist + (S.featuring ? ' feat. ' + S.featuring : '')], ['Title', S.title], ['Type', S.releaseType], ['Release', dateLine(S.releaseDate)],
       ['Genre', GENRES.find(x => x[0] === S.genre)?.[1]], ['Vocals', LANGS.find(x => x[0] === S.language)?.[1]],
       ['Platforms', plats.length ? plats.join(', ') : 'None yet, we’ll add them on release day'],
       ['ISRC', S.isrc], ['UPC', S.upc], ['Distributor', S.distributor], ['Discovery Mode', { oui: 'Yes', non: 'No', nsp: 'Not sure' }[S.discoveryMode]]]],
-    ['Budget and assets', 'campaign', [['Ad budget', money(budgetNum(), S.currency)], ['Sending', fileList.join('; ')],
+    ['Budget and assets', 'campaign', [['Ad budget', money(budgetNum(), S.currency)], ['Cover', cover],
+      ['Audio', files.audio.map(f => f.name).join(', ')], ['Videos', extrasLine], ['Link', S.filesLink],
       ['Start', S.startDate ? dateLine(S.startDate).split(',').slice(0, 2).join(',') : null],
       ['Countries', S.territories], ['Alongside', (S.actions || []).map(v => ACTIONS.find(a => a[0] === v)?.[1] || v).join(', ')], ['Notes', S.notes]]],
     ['Access', 'access', [['Instagram', S.instagram], ['Facebook', S.facebook], ['Status', ACCESS_LABEL[S.pageAccess]]]],
@@ -1123,7 +1186,7 @@ async function postJson(url, body) {
   return d;
 }
 async function uploadFile(file, token, onBytes) {
-  let start = 0;
+  let start = 0, stalls = 0;
   while (start < file.size) {
     const end = Math.min(start + CHUNK, file.size);
     let attempt = 0, out;
@@ -1143,10 +1206,14 @@ async function uploadFile(file, token, onBytes) {
       }
     }
     if (out.done) { onBytes(file.size); return true; }
-    start = Number.isFinite(out.next) && out.next > start ? out.next : end;
+    // Drive indique l'octet attendu ; s'il n'avance pas, on renvoie le même morceau (3 fois au plus).
+    const nextByte = Number.isFinite(out.next) ? out.next : end;
+    if (nextByte <= start) { if (++stalls > 3) throw new Error('Upload stalled'); } else stalls = 0;
+    start = nextByte;
     onBytes(start);
   }
-  return true;
+  // Sortie de boucle sans confirmation de Drive : le fichier n'est pas complet.
+  throw new Error('Upload not confirmed');
 }
 function readBase64(file) {
   return new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1]); fr.onerror = () => rej(fr.error); fr.readAsDataURL(file); });
@@ -1157,7 +1224,11 @@ async function send() {
   busy = true;
   const btn = $('#next'); btn.disabled = true; btn.innerHTML = '<span class="spin" aria-hidden="true"></span>Sending';
   $('#err-send').textContent = '';
-  const list = CONFIG.drive ? [...(files.artwork ? [{ kind: 'artwork', file: files.artwork }] : []), ...files.other.map(f => ({ kind: kindOf(f), file: f }))] : [];
+  const list = CONFIG.drive ? [
+    ...(files.artwork ? [{ kind: 'artwork', file: files.artwork }] : []),
+    ...files.audio.map(f => ({ kind: 'audio', file: f })),
+    ...files.other.map(f => ({ kind: kindOf(f), file: f })),
+  ] : [];
   const ig = String(S.instagram || '').trim();
   const payload = {
     k: K,
@@ -1252,13 +1323,13 @@ function finish(failed) {
 
 $('#another').addEventListener('click', () => {
   S = blank(true); found = null; lookedUp = '';
-  files = { artwork: null, other: [] }; if (artURL) URL.revokeObjectURL(artURL); artURL = null;
-  if (profile?.returning || profile?.known) { S.pageAccess = profile.returning ? 'in_place' : ''; if (profile.currency) S.currency = profile.currency; }
+  files = { artwork: null, audio: [], other: [] }; if (artURL) URL.revokeObjectURL(artURL); artURL = null;
+  if (profile?.known && profile.currency) S.currency = profile.currency;
   $('#card .stamp')?.remove(); $('#doneWarn').hidden = true;
   $('#magic').value = ''; $('#magicMsg').textContent = ''; $('#magicState').innerHTML = '';
   $('#capState').textContent = 'fills in as you go'; $('#panelFoot').textContent = 'This is what lands with the 129 team.';
   $('#next').disabled = false;
-  fillInputs(); renderCard(); renderFiles();
+  fillInputs(); renderCard(); renderAudio(); renderFiles();
   linkOpen = false;
   go(STEPS.indexOf('release'));
 });
@@ -1288,9 +1359,9 @@ function toast(msg, act, fn) {
 document.addEventListener('change', (e) => { if (e.target.dataset?.k === 'currency') S._currencyTouched = true; });
 
 (async function boot() {
-  try { const r = await fetch('/api/onboarding-config'); if (r.ok) CONFIG = { ...CONFIG, ...(await r.json()) }; } catch {}
-  $('#bizId').textContent = CONFIG.businessId;
-
+  // Brouillon et email mémorisé : locaux, appliqués tout de suite. La config et l'identification
+  // arrivent ensuite en arrière-plan, sans écraser ce que le client a commencé à taper
+  // (sur réseau lent, le brouillon rechargé après coup effaçait les saisies récentes).
   const draft = loadDraft();
   const rememberedEmail = store.get(EMAIL_KEY) || '';
   if (draft && (draft.S.artist || draft.S.title || draft.S.email)) {
@@ -1300,18 +1371,20 @@ document.addEventListener('change', (e) => { if (e.target.dataset?.k === 'curren
   }
   fillInputs(); renderCard();
 
-  // Email connu sur cet appareil (ou lien ?k=) : on reconnaît la personne sans attendre.
-  if (isEmail(S.email) || K) {
-    await identifyNow({ silent: true });
-  }
-
   if (draft && (draft.S.artist || draft.S.title)) {
     const step = STEPS.indexOf(draft.step);
     go(step > 0 && step < STEPS.indexOf('sending') ? step : 1, { focus: true });
-    toast(step >= STEPS.indexOf('campaign') ? 'We kept your progress. Add your files again before sending.' : 'We kept your progress.', 'Start over', () => { store.del(DRAFT_KEY); S = blank(true); files = { artwork: null, other: [] }; artURL = null; fillInputs(); renderCard(); go(1); });
+    toast(step >= STEPS.indexOf('campaign') ? 'We kept your progress. Add your files again before sending.' : 'We kept your progress.', 'Start over', () => { store.del(DRAFT_KEY); S = blank(true); files = { artwork: null, audio: [], other: [] }; artURL = null; fillInputs(); renderCard(); go(1); });
   } else {
     go(0, { focus: false });
   }
+
+  try { const r = await fetch('/api/onboarding-config'); if (r.ok) CONFIG = { ...CONFIG, ...(await r.json()) }; } catch {}
+  $('#bizId').textContent = CONFIG.businessId;
+  if (STEPS[cur] === 'campaign') filesUi();     // la config décide de l'affichage des zones d'upload
+
+  // Email connu sur cet appareil (ou lien ?k=) : on reconnaît la personne sans attendre.
+  if ((isEmail(S.email) || K) && !identifiedFor) await identifyNow({ silent: true });
 })();
 })();
 </script>

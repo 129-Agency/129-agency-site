@@ -75,6 +75,8 @@ export default async function handler(req, res) {
     const files = drive && Array.isArray(b.files) ? b.files : [];
     if (files.length > MAX_FILES) errors.push(`Maximum ${MAX_FILES} files`);
     if (!b.hasArtwork && !artworkUrl && !filesLink) errors.push('Artwork (or a link to your files)');
+    // Audio requis pour chaque release : un fichier audio déposé, ou un lien vers les fichiers.
+    if (!files.some(f => f.kind === 'audio') && !filesLink) errors.push('Audio (or a link to your files)');
     for (const f of files) {
       if (!KIND_FOLDER[f.kind] || !clean(f.name) || !(Number(f.size) > 0) || Number(f.size) > MAX_FILE_BYTES) {
         errors.push(`Invalid file: ${clean(f.name, 80) || '(no name)'}`);
@@ -222,14 +224,14 @@ export default async function handler(req, res) {
     }
 
     // --- Sessions d'upload ---------------------------------------------------------
-    const uploads = [];
-    for (let i = 0; i < files.length; i++) {
-      const f = files[i];
+    // Ouvertes 6 par 6 : en série, 40 fichiers approchaient la limite de 30 s de la fonction,
+    // alors que la Campagne est déjà créée (un timeout ici = doublon si le client renvoie).
+    const uploads = await mapLimit(files, 6, async (f, i) => {
       const folder = sub[KIND_FOLDER[f.kind]];
       const name = f.kind === 'artwork' ? `ARTWORK - ${clean(f.name, 180)}` : clean(f.name, 200);
       const session = await startResumable({ name, mimeType: clean(f.type, 120), size: Number(f.size), parentId: folder.id });
-      uploads.push({ index: i, token: signUpload({ u: session, c: campaign.id, s: Number(f.size) }) });
-    }
+      return { index: i, token: signUpload({ u: session, c: campaign.id, s: Number(f.size) }) };
+    });
 
     return res.status(200).json({
       ok: true,
@@ -243,6 +245,15 @@ export default async function handler(req, res) {
     console.error('[onboarding-start]', e);
     return res.status(500).json({ error: 'Server error. Try again in a few minutes; if it persists, let 129 know.', detail: e.message });
   }
+}
+
+// Applique fn à chaque élément, n à la fois, en conservant l'ordre des résultats.
+async function mapLimit(list, n, fn) {
+  const out = new Array(list.length);
+  let next = 0;
+  const worker = async () => { while (next < list.length) { const i = next++; out[i] = await fn(list[i], i); } };
+  await Promise.all(Array.from({ length: Math.min(n, list.length) }, worker));
+  return out;
 }
 
 async function copyToDrive(url, name, parentId) {
