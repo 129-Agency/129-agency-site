@@ -634,7 +634,7 @@ const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const CHUNK = 4 * 1024 * 1024;              // multiple de 256 Ko, sous la limite Vercel (4,5 Mo)
 const MAX_FILES = 40, MAX_FILE = 5 * 1024 ** 3;
 const DRAFT_KEY = '129-onboarding-draft-v3', EMAIL_KEY = '129-onboarding-email';
-const TERMS = 'v1';                         // version de /terms affichée au moment de l'envoi
+const TERMS = 'v1.1';                       // version de /terms affichée au moment de l'envoi
 const params = new URLSearchParams(location.search);
 const K = params.get('k') || '';
 

@@ -37,7 +37,7 @@ function artworkUrlFrom(v) {
 const MAX_FILE_BYTES = 5 * 1024 ** 3;
 // Versions de 129agency.com/terms. Le formulaire envoie la version affichée sous le bouton d'envoi
 // (« By submitting this form, you agree to our terms ») : c'est la preuve d'acceptation.
-const TERMS = { v1: 'v1 · 26/10/2026' };
+const TERMS = { v1: 'v1 · 26/10/2026', 'v1.1': 'v1.1 · 29/10/2026' };
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only.' });
