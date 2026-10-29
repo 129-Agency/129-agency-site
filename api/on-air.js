@@ -85,7 +85,12 @@ async function read(path, params) {
   const perso = process.env.META_ONAIR_TOKEN;
   if (!perso) return graph(path, params);
   try { return await graph(path, params, perso); }
-  catch (e) { return graph(path, params); }
+  catch (e) {
+    // On garde le code de l'echec du token perso : c'est lui qu'on veut diagnostiquer,
+    // pas celui du repli (qui echoue forcement sur ERA / CR2).
+    try { return await graph(path, params); }
+    catch (e2) { e2.persoCode = e.metaCode ?? null; throw e2; }
+  }
 }
 
 // Regle de selection : depense sur N jours + nom « Artiste - Titre — EXPLORE|SCALE ».
@@ -106,11 +111,21 @@ async function liveCampaigns(acc) {
   const rows = (ins.data || []).filter(r => Number(r.spend) > 0 && isOurs(r.campaign_name || ''));
   if (!rows.length) return [];
 
-  // Date de lancement, pour le compteur « jour N ».
-  const meta = await read('', { ids: rows.map(r => r.campaign_id).join(','), fields: 'start_time,created_time' });
+  // Date de lancement, pour le compteur « jour N ». Lue sur l'edge campaigns du compte
+  // (meme acces que les insights) et non critique : si elle echoue, la ligne s'affiche
+  // en « Live » sans compteur.
+  let starts = {};
+  try {
+    const list = await read(`act_${acc.ad_account_id}/campaigns`, {
+      fields: 'id,start_time,created_time',
+      filtering: JSON.stringify([{ field: 'id', operator: 'IN', value: rows.map(r => r.campaign_id) }]),
+      limit: '200',
+    });
+    for (const c of list.data || []) starts[c.id] = c.start_time || c.created_time || null;
+  } catch { starts = {}; }
   return rows.map(r => ({
     name: r.campaign_name,
-    start: meta[r.campaign_id]?.start_time || meta[r.campaign_id]?.created_time || null,
+    start: starts[r.campaign_id] || null,
     label: acc.default_label,
   }));
 }
@@ -162,7 +177,7 @@ export default async function handler(req, res) {
   // pour diagnostiquer un token qui n'a pas acces a un compte.
   const status = (CONF.accounts || []).map((a, i) => results[i].status === 'fulfilled'
     ? { source: a.key, ok: true }
-    : { source: a.key, ok: false, meta_code: results[i].reason?.metaCode ?? null });
+    : { source: a.key, ok: false, meta_code: results[i].reason?.metaCode ?? null, perso_code: results[i].reason?.persoCode ?? null });
 
   // Un compte en echec = liste incomplete : on ne la met pas en cache, et si elle est
   // vide on renvoie une erreur pour que la home garde sa liste de secours.
