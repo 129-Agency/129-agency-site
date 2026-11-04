@@ -12,7 +12,7 @@
 //     on garde ce que les autres sources ont trouvé.
 // Rien n'est bloquant : en cas d'échec total, le client remplit à la main.
 
-import { readJson, clean } from './_onboarding.js';
+import { readJson, clean, artworkUrlFrom } from './_onboarding.js';
 
 const PLATFORM_HOSTS = /(^|\.)(spotify\.com|spotify\.link|apple\.com|deezer\.com|deezer\.page\.link|amazon\.[a-z.]+|youtube\.com|youtu\.be|tidal\.com|soundcloud\.com)$/i;
 
@@ -159,7 +159,9 @@ export default async function handler(req, res) {
   const out = { title: null, artist: null, artworkUrl: null, releaseDate: null, isrc: null, links: {} };
   for (const src of [deezer, apple, spotify, odesli]) {
     if (!src) continue;
-    for (const k of ['title', 'artist', 'artworkUrl', 'releaseDate', 'isrc']) if (!out[k] && src[k]) out[k] = clean(src[k], 600);
+    for (const k of ['title', 'artist', 'releaseDate', 'isrc']) if (!out[k] && src[k]) out[k] = clean(src[k], 600);
+    // Seules les pochettes qu'/api/onboarding-start acceptera sont renvoyées au formulaire.
+    if (!out.artworkUrl) out.artworkUrl = artworkUrlFrom(src.artworkUrl);
     for (const [p, l] of Object.entries(src.links || {})) if (l && !out.links[p]) out.links[p] = cleanLink(p, l);
   }
   if (own && !out.links[own]) out.links[own] = cleanLink(own, u.toString());
@@ -174,7 +176,8 @@ export default async function handler(req, res) {
       if (!src) continue;
       for (const k of ['releaseDate', 'isrc']) if (!out[k] && src[k]) out[k] = clean(src[k], 60);
       // Pochette Deezer 1000 px préférée à la vignette Spotify 640 px.
-      if (src.artworkUrl && (!out.artworkUrl || /scdn\.co/.test(out.artworkUrl))) out.artworkUrl = src.artworkUrl;
+      const hd = artworkUrlFrom(src.artworkUrl);
+      if (hd && (!out.artworkUrl || /scdn\.co|spotifycdn\.com/.test(out.artworkUrl))) out.artworkUrl = hd;
       for (const [p, l] of Object.entries(src.links || {})) if (l && !out.links[p]) out.links[p] = cleanLink(p, l);
     }
   }

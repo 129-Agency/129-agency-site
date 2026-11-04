@@ -1024,7 +1024,7 @@ async function lookup() {
     for (const [p, l] of Object.entries(d.links || {})) if (l && !S.links[p]) { S.links[p] = l; filled.push('links'); }
     if (d.artworkUrl && !files.artwork) {
       S.artworkUrl = d.artworkUrl;
-      d.coverFrom = /dzcdn/.test(d.artworkUrl) ? 'Deezer' : /mzstatic/.test(d.artworkUrl) ? 'Apple Music' : /scdn/.test(d.artworkUrl) ? 'Spotify' : 'streaming';
+      d.coverFrom = /dzcdn/.test(d.artworkUrl) ? 'Deezer' : /mzstatic/.test(d.artworkUrl) ? 'Apple Music' : /scdn|spotifycdn/.test(d.artworkUrl) ? 'Spotify' : 'streaming';
     }
     fillInputs(); renderCard('links'); saveDraft();
     const nLinks = Object.keys(d.links || {}).length;

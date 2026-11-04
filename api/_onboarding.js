@@ -132,3 +132,13 @@ export function cleanUrl(v) {
   try { const u = new URL(s); return /^https?:$/.test(u.protocol) ? u.toString() : null; }
   catch { return null; }
 }
+
+// Pochettes trouvées par /api/onboarding-lookup : seuls les CDN des plateformes sont acceptés.
+// Spotify sert ses pochettes depuis i.scdn.co ET image-cdn-*.spotifycdn.com (oEmbed).
+export const ARTWORK_HOSTS = /(^|\.)(scdn\.co|spotifycdn\.com|mzstatic\.com|dzcdn\.net|ytimg\.com|media-amazon\.com|ssl-images-amazon\.com)$/i;
+export function artworkUrlFrom(v) {
+  const s = cleanUrl(v);
+  if (!s) return null;
+  const u = new URL(s);
+  return u.protocol === 'https:' && ARTWORK_HOSTS.test(u.hostname) ? s : null;
+}

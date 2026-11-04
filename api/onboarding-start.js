@@ -9,7 +9,7 @@
 
 import { T, F, FN, find, create, update, q, slugify } from './_airtable.js';
 import { ensureFolder, rootFolderId, startResumable, putChunk, driveConfigured } from './_google.js';
-import { identify, signUpload, readJson, clean, cleanUrl, spotifyIdFrom } from './_onboarding.js';
+import { identify, signUpload, readJson, clean, cleanUrl, spotifyIdFrom, artworkUrlFrom } from './_onboarding.js';
 
 const RELEASE_TYPES = ['Single', 'EP', 'Album', 'Compilation'];
 const GENRES = ['afro_house', 'afrobeat', 'dance', 'deep_house', 'downtempo', 'house', 'indie_dance',
@@ -26,14 +26,6 @@ const PAGE_ACCESS = {
   request: 'Demande à envoyer par 129',
   help: "Besoin d'aide",
 };
-// Pochettes trouvées par /api/onboarding-lookup : seuls les CDN des plateformes sont acceptés.
-const ARTWORK_HOSTS = /(^|\.)(scdn\.co|mzstatic\.com|dzcdn\.net)$/i;
-function artworkUrlFrom(v) {
-  const s = cleanUrl(v);
-  if (!s) return null;
-  const u = new URL(s);
-  return u.protocol === 'https:' && ARTWORK_HOSTS.test(u.hostname) ? s : null;
-}
 const MAX_FILE_BYTES = 5 * 1024 ** 3;
 // Versions de 129agency.com/terms. Le formulaire envoie la version affichée sous le bouton d'envoi
 // (« By submitting this form, you agree to our terms ») : c'est la preuve d'acceptation.
