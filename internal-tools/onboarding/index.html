@@ -870,7 +870,17 @@ async function next() {
   const id = STEPS[cur];
   const ok = await validate(id);
   if (!ok) return;
-  if (id === 'review') return send();
+  if (id === 'review') {
+    // Les fichiers ne survivent pas à un rechargement de page : on revérifie l'étape fichiers
+    // avant l'envoi, et on y renvoie le client (avec retour au récap) s'il manque quelque chose.
+    if (!(await validate('campaign'))) {
+      returnToReview = true;
+      go(STEPS.indexOf('campaign'), { focus: false });
+      await validate('campaign');   // réaffiche les erreurs et place le focus sur la première
+      return;
+    }
+    return send();
+  }
   if (returnToReview) { returnToReview = false; return go(STEPS.indexOf('review')); }
   go(cur + 1);
 }
@@ -1376,7 +1386,10 @@ document.addEventListener('change', (e) => { if (e.target.dataset?.k === 'curren
   fillInputs(); renderCard();
 
   if (draft && (draft.S.artist || draft.S.title)) {
-    const step = STEPS.indexOf(draft.step);
+    let step = STEPS.indexOf(draft.step);
+    // Les fichiers déposés sont perdus au rechargement : sans lien partagé, on reprend à l'étape fichiers.
+    const ci = STEPS.indexOf('campaign');
+    if (step > ci && !S.filesLink) step = ci;
     go(step > 0 && step < STEPS.indexOf('sending') ? step : 1, { focus: true });
     toast(step >= STEPS.indexOf('campaign') ? 'We kept your progress. Add your files again before sending.' : 'We kept your progress.', 'Start over', () => { store.del(DRAFT_KEY); S = blank(true); files = { artwork: null, audio: [], other: [] }; artURL = null; fillInputs(); renderCard(); go(1); });
   } else {
