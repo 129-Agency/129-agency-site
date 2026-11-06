@@ -22,6 +22,8 @@ Même projet Vercel que le site : un seul jeu de variables d'environnement.
 | `/client-report?…&sig=…` | Rapport client en lecture seule | Lien signé |
 | `/api/*` | Fonctions serveur | Mot de passe, jeton client ou jeton d'upload signé |
 
+Mail « New submission » : à chaque formulaire d'onboarding clôturé, `/api/onboarding-finish` envoie à Antoine et Sacha (`NOTIFY_EMAILS`) un récap complet relu dans Airtable (client, track, campagne, fichiers, notes, liens Airtable / Drive / generator). Transport : l'application Apps Script de `tools/google-apps-script/` (MailApp). Un échec est noté dans la Campagne, jamais montré au client.
+
 Variables d'environnement : voir `.env.example`. Aucun secret dans le repo.
 Le mot de passe d'accès (`TOOLS_PASSWORD`) et la clé de signature sont volontairement séparés : un lien client signé ne permet pas de retrouver le mot de passe.
 Template des campagnes Meta : `config/meta-template.json`. Sources du dashboard : `config/sources.json`.
