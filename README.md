@@ -24,6 +24,8 @@ Même projet Vercel que le site : un seul jeu de variables d'environnement.
 
 Mail « New submission » : à chaque formulaire d'onboarding clôturé, `/api/onboarding-finish` envoie à Antoine et Sacha (`NOTIFY_EMAILS`) un récap complet relu dans Airtable (client, track, campagne, fichiers, notes, liens Airtable / Drive / generator). Transport : l'application Apps Script de `tools/google-apps-script/` (MailApp). Un échec est noté dans la Campagne, jamais montré au client.
 
+Drive (onboarding) : un dossier par campagne, à plat dans le dossier racine (« Ad Campaigns Assets »), nommé « AAAA-MM-JJ - Artiste - Titre » (date de Paris). Tous les fichiers y vont ensemble, sans dossier client ni sous-dossiers ; la cover est préfixée `ARTWORK -`. Au moins une vidéo déposée est obligatoire (un lien peut la compléter, pas la remplacer).
+
 Variables d'environnement : voir `.env.example`. Aucun secret dans le repo.
 Le mot de passe d'accès (`TOOLS_PASSWORD`) et la clé de signature sont volontairement séparés : un lien client signé ne permet pas de retrouver le mot de passe.
 Template des campagnes Meta : `config/meta-template.json`. Sources du dashboard : `config/sources.json`.

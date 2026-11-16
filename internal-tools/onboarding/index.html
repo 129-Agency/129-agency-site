@@ -322,7 +322,7 @@
         <p class="sub">Four short steps and everything lands with the 129 team: the track, your files, and access to run the ads.</p>
         <ul class="need">
           <li>Cover art and the audio file, MP3 or WAV</li>
-          <li>Videos for the ads, vertical if you have them</li>
+          <li>At least one video for the ads, vertical if you have it</li>
           <li>Release date, or a streaming link if it’s already out</li>
           <li>Access to the artist’s Facebook Page and Instagram, for ads only</li>
         </ul>
@@ -489,22 +489,24 @@
           <p class="err" id="err-audio" role="alert"></p>
           </div>
           <div class="group">
-          <div class="group-head"><h2>Videos for the ads</h2><span class="tag">Recommended</span></div>
+          <div class="group-head"><h2>Videos for the ads</h2><span class="tag">Required</span></div>
           <ul class="specs">
             <li><span><b>Vertical 9:16 first:</b> teasers, Reels, TikTok edits. It’s the main format our ads run in.</span></li>
             <li><span><b>Your music video or visualizer</b>, in the best quality you have. Horizontal 16:9 works: in 4K, we can cut clean vertical versions from it.</span></li>
             <li><span>MP4 or MOV, up to 5 GB per file. Clean versions if you have them: no burned-in subtitles or logos.</span></li>
+            <li><span><b>At least one video uploaded here.</b> A file over 5 GB? Upload a lighter cut here and share the full one with a link.</span></li>
           </ul>
           <div id="dropWrap">
-            <label class="drop" id="drop" tabindex="0">
+            <label class="drop" id="drop" tabindex="0" aria-describedby="err-videos">
               <strong>Add videos</strong>
               <span class="help">Drop them here, or click to browse. Artist photos are welcome too.</span>
               <input type="file" id="dropInput" multiple class="sr">
             </label>
           </div>
           <ul class="files" id="fileList"></ul>
+          <p class="err" id="err-videos" role="alert"></p>
           </div>
-          <button type="button" class="link" id="linkToggle" style="justify-self:start">Files too big? Share a link instead</button>
+          <button type="button" class="link" id="linkToggle" style="justify-self:start">Files too big? Add a link</button>
           <div class="fld" id="filesLinkFld">
             <label for="filesLink" id="filesLinkLbl">Link to your files <span class="opt">Dropbox, WeTransfer, Google Drive</span></label>
             <input class="in" id="filesLink" data-k="filesLink" type="url" inputmode="url" placeholder="https://" aria-describedby="err-filesLink">
@@ -930,6 +932,8 @@ async function validate(id) {
     // L'audio est requis pour chaque release : fichier déposé, ou lien partagé.
     if (CONFIG.drive) {
       if (!files.audio.length && !S.filesLink) errs.push(['audio', 'Add the audio, MP3 or WAV, or share it with a link below.']);
+      // Au moins une vidéo déposée (16/11/2026) : un lien peut compléter, pas remplacer.
+      if (!files.other.some(f => kindOf(f) === 'video')) errs.push(['videos', 'Add at least one video for the ads, MP4 or MOV. Vertical 9:16 if you have it.']);
     } else if (!S.filesLink) {
       errs.push(['filesLink', 'Add a link to the audio and your videos.']);
     }
@@ -944,7 +948,7 @@ async function validate(id) {
   errs.forEach(([k, m]) => setErr(k, m));
   if (errs.length) {
     const firstKey = errs[0][0];
-    const el = $('#' + firstKey) || $(`[data-k="${firstKey}"]`) || $('#err-' + firstKey);
+    const el = $('#' + (firstKey === 'videos' ? 'drop' : firstKey)) || $(`[data-k="${firstKey}"]`) || $('#err-' + firstKey);
     el && el.focus && el.focus({ preventScroll: false });
   }
   return !errs.length;
@@ -1128,6 +1132,7 @@ function addFiles(list) {
     bucket.push(f);
   }
   if (files.audio.length) clearErr('audio');
+  if (files.other.some(f => kindOf(f) === 'video')) clearErr('videos');
   if (msgs.length) { linkOpen = true; filesUi(); setErr('filesLink', msgs.join(' ')); }
   renderAudio(); renderFiles(); renderCard('filesLink');
 }

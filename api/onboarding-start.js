@@ -2,7 +2,9 @@
 //
 // 1. Identifie le client : jeton ?k= si présent, sinon email -> Contact -> Compte.
 //    Email inconnu : la campagne est créée sans Compte, marquée « à vérifier ».
-// 2. Crée le dossier Drive de la campagne (si Google est configuré).
+// 2. Crée le dossier Drive de la campagne (si Google est configuré) : un seul dossier à plat,
+//    directement dans le dossier racine, nommé « AAAA-MM-JJ - Artiste - Titre » (date de Paris).
+//    Ni dossier client, ni sous-dossiers : tous les fichiers y vont ensemble (décision du 16/11/2026).
 // 3. Crée (ou réutilise, à ISRC égal) la fiche Track, puis la fiche Campagne.
 // 4. Ouvre une session d'upload Drive par fichier et renvoie un jeton signé par fichier,
 //    plus un jeton de soumission pour /api/onboarding-finish.
@@ -18,7 +20,7 @@ const LANGS = ['en', 'fr', 'es', 'pt', 'de', 'it', 'instrumental'];
 const CURRENCIES = ['EUR', 'USD', 'GBP'];
 const ACTIONS = ['Radio', 'Pitch playlist éditorial', 'Playlists tierces', 'TikTok / UGC', 'Influence',
   'Presse', 'Autre agence ads', 'Aucune'];
-const KIND_FOLDER = { audio: 'Audio', video: 'Vidéos', visual: 'Visuels', artwork: 'Visuels', other: 'Autres' };
+const KINDS = ['audio', 'video', 'visual', 'artwork', 'other'];
 const MAX_FILES = 40;
 const PAGE_ACCESS = {
   in_place: 'Déjà en place',
@@ -72,8 +74,10 @@ export default async function handler(req, res) {
     if (!b.hasArtwork && !artworkUrl && !filesLink) errors.push('Artwork (or a link to your files)');
     // Audio requis pour chaque release : un fichier audio déposé, ou un lien vers les fichiers.
     if (!files.some(f => f.kind === 'audio') && !filesLink) errors.push('Audio (or a link to your files)');
+    // Au moins une vidéo déposée pour les ads (16/11/2026) : un lien peut la compléter, pas la remplacer.
+    if (drive && !files.some(f => f.kind === 'video')) errors.push('At least one video for the ads');
     for (const f of files) {
-      if (!KIND_FOLDER[f.kind] || !clean(f.name) || !(Number(f.size) > 0) || Number(f.size) > MAX_FILE_BYTES) {
+      if (!KINDS.includes(f.kind) || !clean(f.name) || !(Number(f.size) > 0) || Number(f.size) > MAX_FILE_BYTES) {
         errors.push(`Invalid file: ${clean(f.name, 80) || '(no name)'}`);
       }
     }
@@ -87,19 +91,10 @@ export default async function handler(req, res) {
     const trackKey = `${clientSlug}/${slugify(`${artist} ${title}`)}`;
 
     // --- Drive ---------------------------------------------------------------
+    // Un dossier par campagne, à plat dans la racine : « AAAA-MM-JJ - Artiste - Titre ».
     let campaignFolder = null;
-    const sub = {};
     if (drive) {
-      const clientFolderName = compte ? (clean(cf[F.compte.name], 120) || clientSlug) : `À vérifier — ${idCompany}`;
-      const clientFolder = await ensureFolder(clientFolderName, await rootFolderId());
-      // Même nom que la fiche Campagne Airtable : « Artiste - Titre ».
-      campaignFolder = await ensureFolder(`${artist} - ${title}`, clientFolder.id);
-      const kinds = new Set(files.map(f => f.kind));
-      if (artworkUrl) kinds.add('artwork');
-      for (const kind of kinds) {
-        const name = KIND_FOLDER[kind];
-        sub[name] = sub[name] || await ensureFolder(name, campaignFolder.id);
-      }
+      campaignFolder = await ensureFolder(`${parisDate()} - ${artist} - ${title}`, await rootFolderId());
     }
 
     // --- Track (réutilisée si même ISRC) ------------------------------------------
@@ -206,8 +201,8 @@ export default async function handler(req, res) {
       if (!trackRec.fields?.[F.track.artwork]?.length) {
         try { await update(T.tracks, trackRec.id, { [F.track.artwork]: [{ url: artworkUrl }] }); } catch (e) { notesExtra.push('artwork Track : ' + e.message); }
       }
-      if (sub.Visuels) {
-        try { await copyToDrive(artworkUrl, `ARTWORK (plateforme) - ${artist} - ${title}.jpg`, sub.Visuels.id); }
+      if (campaignFolder) {
+        try { await copyToDrive(artworkUrl, `ARTWORK (plateforme) - ${artist} - ${title}.jpg`, campaignFolder.id); }
         catch (e) { notesExtra.push('artwork Drive : ' + e.message); }
       }
     }
@@ -226,9 +221,8 @@ export default async function handler(req, res) {
     // Ouvertes 6 par 6 : en série, 40 fichiers approchaient la limite de 30 s de la fonction,
     // alors que la Campagne est déjà créée (un timeout ici = doublon si le client renvoie).
     const uploads = await mapLimit(files, 6, async (f, i) => {
-      const folder = sub[KIND_FOLDER[f.kind]];
       const name = f.kind === 'artwork' ? `ARTWORK - ${clean(f.name, 180)}` : clean(f.name, 200);
-      const session = await startResumable({ name, mimeType: clean(f.type, 120), size: Number(f.size), parentId: folder.id });
+      const session = await startResumable({ name, mimeType: clean(f.type, 120), size: Number(f.size), parentId: campaignFolder.id });
       return { index: i, token: signUpload({ u: session, c: campaign.id, s: Number(f.size) }) };
     });
 
@@ -244,6 +238,11 @@ export default async function handler(req, res) {
     console.error('[onboarding-start]', e);
     return res.status(500).json({ error: 'Server error. Try again in a few minutes; if it persists, let 129 know.', detail: e.message });
   }
+}
+
+// Date du jour à Paris, AAAA-MM-JJ : préfixe du dossier Drive (trié chronologiquement).
+function parisDate(d = new Date()) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
 }
 
 // Applique fn à chaque élément, n à la fois, en conservant l'ordre des résultats.
