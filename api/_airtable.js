@@ -169,14 +169,30 @@ export async function get(table, id) {
   return call('GET', `${table}/${id}?returnFieldsByFieldId=true`);
 }
 
+// Si un champ a été supprimé dans Airtable, l'API refuse TOUT l'enregistrement
+// (422 « Unknown field name »). Plutôt que de bloquer un client sur le formulaire,
+// on retire le champ fautif, on journalise, et on réessaie (au plus 5 champs).
+async function writeTolerant(method, table, record) {
+  const fields = { ...record.fields };
+  for (let i = 0; ; i++) {
+    try {
+      const d = await call(method, table, { records: [{ ...record, fields }], returnFieldsByFieldId: true });
+      return d.records[0];
+    } catch (e) {
+      const m = /Unknown field name: "([^"]+)"/.exec(e.message);
+      if (!m || !(m[1] in fields) || i >= 5) throw e;
+      console.warn(`[airtable] champ ${m[1]} absent de ${table} (supprimé ?) : ignoré pour cette écriture`);
+      delete fields[m[1]];
+    }
+  }
+}
+
 export async function create(table, fields) {
-  const d = await call('POST', table, { records: [{ fields }], returnFieldsByFieldId: true });
-  return d.records[0];
+  return writeTolerant('POST', table, { fields });
 }
 
 export async function update(table, id, fields) {
-  const d = await call('PATCH', table, { records: [{ id, fields }], returnFieldsByFieldId: true });
-  return d.records[0];
+  return writeTolerant('PATCH', table, { id, fields });
 }
 
 // Upload direct d'une piece jointe (<= 5 Mo, limite de l'API Airtable).
