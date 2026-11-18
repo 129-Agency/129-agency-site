@@ -70,8 +70,7 @@ export const F = {
     objective: 'fldlzn4fYE0CPgJRk',
     notes: 'fldOsFHoNiHztGUBA',
     metaAccount: 'fldL23Ykfasogngrq',
-    campaignIdExplore: 'fld9hNFefcn74TEJD',
-    campaignIdScale: 'fldVHZvmPx3HBKjyl',
+    metaIds: 'fld6ZyHGcGYpsArX3',       // IDs campagnes Meta (EXPLORE, SCALE…), séparés par des virgules
     releaseDate: 'fldYbY2r0NH5j6PFK',
     pageIgFb: 'fld443uc64lrRDJ5v',
     artwork: 'fldosHCAYgQebaANV',
@@ -80,11 +79,6 @@ export const F = {
     territories: 'fldeVyxgeuLlqeOw2',
     parallelActions: 'fldQomonNN2gheLDl',
     driveFolder: 'flduEmLrCq22h1ScK',
-    moodTags: 'fldONT7D8nbTd2S9K',
-    trackingMeta: 'fldsyxj62dGvzghXW',
-    slug: 'fld388hkR2wv31lLL',
-    fanlinkStatus: 'fldqGlrFpPBqMf2hF',
-    metaStatus: 'fldRWB8c1dWwBD6iA',
     submittedBy: 'fldLCLKf8IFdN8wVf',
     declaredIdentity: 'fldzcMlYdQ7w2D91G',
     clientFilesLink: 'fldaHlg7koK3TWTg9',
@@ -113,12 +107,48 @@ export const F = {
 
 // filterByFormula se lit par NOM de champ : on centralise les noms utilises dans
 // les formules ici, pour n'avoir qu'un endroit a corriger si un champ est renomme.
+// Champs Statut fanlink / Statut Meta / slug / mood tags / tracking Meta / Campaign ID
+// EXPLORE / SCALE supprimés de Campagnes (11/2026). Les statuts se déduisent désormais :
+//   fanlink : Fanlink rempli ou non ; slug = chemin de l'URL Fanlink ;
+//   Meta    : IDs campagnes Meta (rôle de chaque ID retrouvé dans les Notes).
+export function fanlinkStatus(cf) {
+  return cf[F.campagne.fanlinkUrl] ? 'Prompt envoyé' : 'À générer';
+}
+
+export function slugOf(cf) {
+  const m = String(cf[F.campagne.fanlinkUrl] || '').match(/fanlinkhub\.com\/(.+?)\/?$/);
+  return m ? m[1] : '';
+}
+
+export function metaIdList(cf) {
+  return String(cf[F.campagne.metaIds] || '').split(/[\s,;]+/).filter(id => /^\d+$/.test(id));
+}
+
+// { explore, scale } : IDs déjà créés par le generator, pour ne jamais recréer.
+export function metaRoles(cf) {
+  const ids = metaIdList(cf), notes = String(cf[F.campagne.notes] || ''), out = { explore: null, scale: null };
+  for (const role of ['explore', 'scale']) {
+    const re = new RegExp(`${role.toUpperCase()} : campagne (\\d+)`, 'g');
+    for (const m of notes.matchAll(re)) if (ids.includes(m[1])) out[role] = m[1];
+  }
+  // IDs saisis à la main sans trace dans les Notes : ordre EXPLORE, SCALE.
+  if (!out.explore && !out.scale && ids.length >= 2) { out.explore = ids[0]; out.scale = ids[1]; }
+  return out;
+}
+
+export function metaStatus(cf) {
+  const r = metaRoles(cf);
+  if (r.explore && r.scale) return 'Créée en pause';
+  return metaIdList(cf).length ? 'Incomplète' : 'À créer';
+}
+
 export const FN = {
   compteToken: '{Token dashboard}',
   trackIsrc: '{ISRC}',
   campTrack: '{Track}',
-  campFanlinkStatus: '{Statut fanlink}',
-  campMetaStatus: '{Statut Meta}',
+  campFanlink: '{Fanlink}',
+  campMetaIds: '{IDs campagnes Meta}',
+  campStatut: '{Statut}',
   compteStatut: '{Statut compte}',
   contactEmail: '{Email}',
   compteDomains: '{Domaines email}',
@@ -169,14 +199,30 @@ export async function get(table, id) {
   return call('GET', `${table}/${id}?returnFieldsByFieldId=true`);
 }
 
+// Si un champ a été supprimé dans Airtable, l'API refuse TOUT l'enregistrement
+// (422 « Unknown field name »). Plutôt que de bloquer un client sur le formulaire,
+// on retire le champ fautif, on journalise, et on réessaie (au plus 5 champs).
+async function writeTolerant(method, table, record) {
+  const fields = { ...record.fields };
+  for (let i = 0; ; i++) {
+    try {
+      const d = await call(method, table, { records: [{ ...record, fields }], returnFieldsByFieldId: true });
+      return d.records[0];
+    } catch (e) {
+      const m = /Unknown field name: "([^"]+)"/.exec(e.message);
+      if (!m || !(m[1] in fields) || i >= 5) throw e;
+      console.warn(`[airtable] champ ${m[1]} absent de ${table} (supprimé ?) : ignoré pour cette écriture`);
+      delete fields[m[1]];
+    }
+  }
+}
+
 export async function create(table, fields) {
-  const d = await call('POST', table, { records: [{ fields }], returnFieldsByFieldId: true });
-  return d.records[0];
+  return writeTolerant('POST', table, { fields });
 }
 
 export async function update(table, id, fields) {
-  const d = await call('PATCH', table, { records: [{ id, fields }], returnFieldsByFieldId: true });
-  return d.records[0];
+  return writeTolerant('PATCH', table, { id, fields });
 }
 
 // Upload direct d'une piece jointe (<= 5 Mo, limite de l'API Airtable).
