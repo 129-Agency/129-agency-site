@@ -3,7 +3,7 @@
 // Header requis : Authorization: Bearer <TOOLS_PASSWORD>
 
 import { requireAdmin } from './_meta.js';
-import { T, F, FN, find, get, q } from './_airtable.js';
+import { T, F, FN, find, get, q, fanlinkStatus, metaStatus, metaRoles, slugOf } from './_airtable.js';
 import { templateDefaults, writeTokenName } from './_metawrite.js';
 
 const one = (v) => Array.isArray(v) ? v[0] : v;
@@ -43,7 +43,8 @@ export default async function handler(req, res) {
   try {
     if (!req.query.id) {
       const C = F.campagne;
-      const formula = `AND(${FN.campTrack} != '', OR(${FN.campFanlinkStatus} = 'À générer', ${FN.campFanlinkStatus} = 'Prompt envoyé', ${FN.campMetaStatus} = 'Erreur', ${FN.campMetaStatus} = 'À créer'))`;
+      // File : campagnes en Brief / Setup (ou sans statut) dont le fanlink ou les campagnes Meta manquent.
+      const formula = `AND(${FN.campTrack} != '', OR(${FN.campStatut} = '', ${FN.campStatut} = 'Brief', ${FN.campStatut} = 'Setup'), OR(${FN.campFanlink} = '', ${FN.campMetaIds} = ''))`;
       const rows = await find(T.campagnes, formula, { maxRecords: 100 });
       const names = await compteNames(rows.map(r => one(r.fields[C.compte])));
       const items = rows.map(r => ({
@@ -51,8 +52,8 @@ export default async function handler(req, res) {
         name: r.fields[C.name] || '',
         compte: names[one(r.fields[C.compte])] || '',
         declared: r.fields[C.declaredIdentity] || '',
-        fanlinkStatus: nameOf(r.fields[C.fanlinkStatus]) || '',
-        metaStatus: nameOf(r.fields[C.metaStatus]) || '',
+        fanlinkStatus: fanlinkStatus(r.fields),
+        metaStatus: metaStatus(r.fields),
         releaseDate: r.fields[C.releaseDate] || null,
         createdTime: r.createdTime,
       })).sort((a, b) => String(b.createdTime).localeCompare(String(a.createdTime)));
@@ -88,13 +89,13 @@ export default async function handler(req, res) {
         declaredIdentity: cf[C.declaredIdentity] || '',
         startDate: cf[C.startDate] || null,
         adAccountId: one(cf[C.adAccount]) || null,
-        moodTags: (cf[C.moodTags] || []).map(nameOf),
-        trackingMeta: cf[C.trackingMeta] ?? null,
-        slug: cf[C.slug] || '',
-        fanlinkStatus: nameOf(cf[C.fanlinkStatus]) || '',
-        metaStatus: nameOf(cf[C.metaStatus]) || '',
-        campaignIdExplore: cf[C.campaignIdExplore] || '',
-        campaignIdScale: cf[C.campaignIdScale] || '',
+        moodTags: [],           // plus stockés dans Airtable
+        trackingMeta: null,     // idem : le generator coche par défaut
+        slug: slugOf(cf),
+        fanlinkStatus: fanlinkStatus(cf),
+        metaStatus: metaStatus(cf),
+        campaignIdExplore: metaRoles(cf).explore || '',
+        campaignIdScale: metaRoles(cf).scale || '',
       },
       track: {
         id: trackId || null,

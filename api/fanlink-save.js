@@ -2,11 +2,11 @@
 //
 // Le bouton du formulaire privé. En un clic :
 //   1. valide et construit l'entrée fanlink + le prompt Lovable ;
-//   2. réécrit Track et Campagne dans Airtable (ad account, slug, mood tags, liens DSP...) ;
+//   2. réécrit Track et Campagne dans Airtable (ad account, URL fanlink, liens DSP, IDs Meta...) ;
 //   3. si demandé, crée chez Meta EXPLORE + SCALE (campagne + ad set) EN PAUSE, et réécrit les IDs.
 
 import { requireAdmin } from './_meta.js';
-import { T, F, get, update } from './_airtable.js';
+import { T, F, get, update, metaRoles, metaIdList } from './_airtable.js';
 import { buildRelease, releasePrompt, setupPrompt, normalizeDspUrl, MOODS } from './_fanlink.js';
 import { createCampaigns } from './_metawrite.js';
 import { adAccounts } from './fanlink-campaign.js';
@@ -92,11 +92,7 @@ export default async function handler(req, res) {
     await update(T.campagnes, campaign.id, {
       [C.adAccount]: [acc.id],
       [C.metaAccount]: acc.metaId,
-      [C.moodTags]: moodTags,
-      [C.trackingMeta]: b.trackingMeta !== false,
-      [C.slug]: slug,
       [C.fanlinkUrl]: `https://fanlinkhub.com/${slug}`,
-      [C.fanlinkStatus]: 'Prompt envoyé',
       [C.spotifyUrl]: dsp.spotify || null,
     });
 
@@ -118,7 +114,7 @@ export default async function handler(req, res) {
         artistTitle: `${release.artist} - ${release.title}`,
         key,
         budgets,
-        existing: { explore: cf[C.campaignIdExplore] || null, scale: cf[C.campaignIdScale] || null },
+        existing: metaRoles(cf),
       });
       const ok = !meta.errors.length && meta.explore?.campaignId && meta.scale?.campaignId;
       const stamp = new Date().toISOString().slice(0, 16).replace('T', ' ');
@@ -129,11 +125,15 @@ export default async function handler(req, res) {
       }
       lines.push(...meta.errors.map(e => '⚠ ' + e), ...meta.notes.map(n => 'ℹ ' + n));
       const fields = {
-        [C.metaStatus]: ok ? 'Créée en pause' : 'Erreur',
         [C.notes]: ((cf[C.notes] || '') + '\n\n' + lines.join('\n')).trim().slice(0, 90000),
       };
-      if (meta.explore?.campaignId) fields[C.campaignIdExplore] = meta.explore.campaignId;
-      if (meta.scale?.campaignId) fields[C.campaignIdScale] = meta.scale.campaignId;
+      // IDs ajoutés à « IDs campagnes Meta » (lu par le job daily), sans doublon ni perte des relances.
+      const ids = metaIdList(cf);
+      for (const role of ['explore', 'scale']) {
+        const id = meta[role]?.campaignId;
+        if (id && !ids.includes(String(id))) ids.push(String(id));
+      }
+      if (ids.length) fields[C.metaIds] = ids.join(', ');
       if (ok && !cf[C.status]) fields[C.status] = 'Setup';
       if (ok && cf[C.status] === 'Brief') fields[C.status] = 'Setup';
       await update(T.campagnes, campaign.id, fields);

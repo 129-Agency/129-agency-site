@@ -153,8 +153,6 @@ export default async function handler(req, res) {
       [F.campagne.releaseDate]: t.releaseDate,
       [F.campagne.currency]: currency,
       [F.campagne.budgetRequested]: budget,
-      [F.campagne.fanlinkStatus]: 'À générer',
-      [F.campagne.metaStatus]: 'À créer',
       [F.campagne.declaredIdentity]: declared,
     };
     if (TERMS[b.terms]) {
