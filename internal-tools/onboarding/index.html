@@ -1325,7 +1325,9 @@ function finish(failed) {
   busy = false;
   const first = profile?.firstName || String(S.name || '').trim().split(/\s+/)[0];
   $('#doneQ').textContent = first ? `It’s with us, ${first}.` : 'It’s with us.';
-  $('#doneSub').textContent = `Thanks. ${S.artist}, “${S.title}” is now in the 129 workflow.`;
+  const mailTo = String(S.email || '').trim();
+  $('#doneSub').textContent = `Thanks. ${S.artist}, “${S.title}” is now in the 129 workflow.`
+    + (mailTo ? ` A confirmation is on its way to ${mailTo}, with a link to add more assets later.` : '');
   if (failed.length) {
     $('#doneWarn').hidden = false;
     $('#doneWarn').textContent = `${failed.length === 1 ? 'One file' : failed.length + ' files'} didn’t make it: ${failed.join(', ')}. Send ${failed.length === 1 ? 'it' : 'them'} to us with a link and we’ll add ${failed.length === 1 ? 'it' : 'them'} to the folder.`;

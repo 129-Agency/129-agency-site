@@ -3,12 +3,13 @@
 // Clôture la soumission : artwork copié dans Airtable (Track + Campagne, pour la
 // prévisualisation dans le generator), récapitulatif des fichiers reçus dans les notes.
 // Les fichiers maîtres restent sur Drive.
-// Envoie ensuite le mail interne « New submission » (Antoine + Sacha) : un échec du mail
-// ne bloque jamais le client, il est noté dans la Campagne.
+// Envoie ensuite le mail interne « New submission » (Antoine + Sacha), puis la confirmation
+// au client (Antoine + Sacha en copie) avec son lien /drop pour ajouter des assets.
+// Un échec de mail ne bloque jamais le client : il est noté dans la Campagne.
 
 import { T, F, get, update, uploadAttachment } from './_airtable.js';
-import { readUpload, readJson, clean } from './_onboarding.js';
-import { notifySubmission } from './_notify.js';
+import { readUpload, readJson, clean, signDrop } from './_onboarding.js';
+import { notifySubmission, notifyClient, SITE } from './_notify.js';
 
 const IMG = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -51,9 +52,26 @@ export default async function handler(req, res) {
     // Mail interne, après l'écriture : il relit Airtable et montre ce qui a été enregistré.
     const uploaded = (Array.isArray(b.uploaded) ? b.uploaded : []).map(f => ({ name: clean(f.name, 200), ok: Boolean(f.ok) }));
     const mail = await notifySubmission({ campaignId: campaign.id, uploaded });
+    const mailNotes = [];
     if (!mail.ok) {
       console.error('[onboarding-finish] mail', mail.error);
-      await update(T.campagnes, campaign.id, { [F.campagne.notes]: `${notes}\n⚠ mail interne non envoyé : ${mail.error}`.slice(0, 90000) }).catch(() => {});
+      mailNotes.push(`⚠ mail interne non envoyé : ${mail.error}`);
+    }
+
+    // Confirmation client. Les jetons émis avant le 19/11/2026 ne portent pas d'email : pas de mail.
+    if (p.e) {
+      const dropUrl = `${SITE()}/drop?t=${signDrop(campaign.id)}`;
+      const conf = await notifyClient({ campaignId: campaign.id, to: p.e, firstName: p.n, clientName: p.k, uploaded, dropUrl });
+      if (!conf.ok) {
+        console.error('[onboarding-finish] confirmation client', conf.error);
+        mailNotes.push(`⚠ confirmation client non envoyée (${p.e}) : ${conf.error}`);
+      } else {
+        mailNotes.push(`Confirmation envoyée à ${p.e}. Lien de dépôt : ${dropUrl}`);
+        if (conf.warning) mailNotes.push(`⚠ ${conf.warning}`);
+      }
+    }
+    if (mailNotes.length) {
+      await update(T.campagnes, campaign.id, { [F.campagne.notes]: `${notes}\n${mailNotes.join('\n')}`.slice(0, 90000) }).catch(() => {});
     }
 
     return res.status(200).json({ ok: true, warnings });

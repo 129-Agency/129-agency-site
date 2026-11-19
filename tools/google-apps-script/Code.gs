@@ -6,7 +6,8 @@
  *   - un jeton Drive (scope drive : nécessaire pour écrire dans un dossier existant, ROOT_ID),
  *   - l'ID du dossier racine « 129 — Onboarding », créé dans le Drive du propriétaire du script.
  *
- *   - l'envoi du mail interne « New submission » (action « mail », via MailApp).
+ *   - l'envoi des mails de l'onboarding (action « mail », via MailApp) : « New submission » et
+ *     « New assets » à Antoine et Sacha, confirmation « Received » au client avec eux en copie.
  *
  * Mise en place : lancer setup() une fois, puis Déployer > Application web
  * (Exécuter en tant que : moi ; Qui a accès : tout le monde).
@@ -38,15 +39,22 @@ function doPost(e) {
   return json_({ token: ScriptApp.getOAuthToken(), rootId: rootFolder_(), expiresIn: 1200 });
 }
 
-// Mail interne : destinataires imposés par le site (Antoine, Sacha), jamais par le client.
+// Destinataires et copie fixés par le site (Antoine, Sacha ; le client pour sa seule confirmation,
+// à l'adresse qu'il a saisie). Le secret protège l'action : personne d'autre ne peut l'appeler.
+// Renvoie « cc » : le site s'en sert pour savoir que cette version gère la copie (19/11/2026).
+const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+const SENDER_NAMES = ['129 Onboarding', '129 Agency'];
+
 function mail_(b) {
-  const to = (Array.isArray(b.to) ? b.to : []).filter(function (a) { return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(a); }).slice(0, 10);
+  const pick = function (list) { return (Array.isArray(list) ? list : []).filter(function (a) { return EMAIL_RE.test(a); }).slice(0, 10); };
+  const to = pick(b.to), cc = pick(b.cc);
   if (!to.length || !b.subject) return json_({ error: 'mail : destinataires ou objet manquant' });
-  const opts = { name: '129 Onboarding', htmlBody: String(b.html || '') };
-  if (b.replyTo && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(b.replyTo)) opts.replyTo = b.replyTo;
+  const opts = { name: SENDER_NAMES.indexOf(b.name) >= 0 ? b.name : '129 Onboarding', htmlBody: String(b.html || '') };
+  if (cc.length) opts.cc = cc.join(',');
+  if (b.replyTo && EMAIL_RE.test(b.replyTo)) opts.replyTo = b.replyTo;
   try {
     MailApp.sendEmail(to.join(','), String(b.subject).slice(0, 250), String(b.text || ''), opts);
-    return json_({ sent: true, to: to });
+    return json_({ sent: true, to: to, cc: cc });
   } catch (err) {
     return json_({ error: 'mail : ' + err.message });
   }

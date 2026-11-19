@@ -162,6 +162,12 @@ export async function putChunk(sessionUrl, buf, contentRange) {
   throw new Error(`[Drive chunk ${r.status}] ${d?.error?.message || r.statusText}`);
 }
 
+// ID d'un dossier à partir de son lien (champ « Dossier Drive » de la Campagne).
+export function folderIdFrom(url) {
+  const m = String(url || '').match(/\/folders\/([A-Za-z0-9_-]{10,})/) || String(url || '').match(/[?&]id=([A-Za-z0-9_-]{10,})/);
+  return m ? m[1] : null;
+}
+
 export function isDriveSessionUrl(u) {
   try {
     const x = new URL(u);
