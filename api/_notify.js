@@ -1,7 +1,8 @@
 // Mails de l'onboarding, tous envoyés par l'application web Apps Script « 129 Onboarding Drive »
 // (action « mail », MailApp), déjà déployée pour Drive : pas de nouveau service ni de clé à gérer.
 //   - notifySubmission : « New submission » à Antoine et Sacha, à chaque formulaire clôturé.
-//   - notifyClient     : « Received » au client (Antoine et Sacha en copie), avec le lien /drop.
+//   - notifyClient     : « Received » au client (Antoine et Sacha en copie), avec son dossier Drive
+//                        (partagé avec lui) ou, à défaut, le lien /drop.
 //   - notifyDrop       : « New assets » à Antoine et Sacha, à chaque dépôt via /drop.
 //
 // Env vars Vercel :
@@ -167,7 +168,7 @@ ${sections.map(([title, rows]) => {
 
 // Mail de confirmation au client, Antoine et Sacha en copie (« répondre à tous » touche les trois).
 // Si l'Apps Script n'est pas encore à jour (copie ignorée), Antoine et Sacha reçoivent une copie à part.
-export async function notifyClient({ campaignId, to, firstName = '', clientName = '', uploaded = [], dropUrl }) {
+export async function notifyClient({ campaignId, to, firstName = '', clientName = '', uploaded = [], dropUrl, folderUrl = '' }) {
   try {
     if (!EMAIL.test(String(to || ''))) return { ok: false, error: 'email client absent ou invalide : confirmation non envoyée.' };
     const campaign = await get(T.campagnes, campaignId);
@@ -185,6 +186,8 @@ export async function notifyClient({ campaignId, to, firstName = '', clientName 
       siteUrl: SITE(),
       logoUrl: `${SITE()}/img/signature-129.png`,
       dropUrl,
+      folderUrl,
+      sharedWith: folderUrl ? to : '',
       files: uploaded,
     };
     const subject = clientMailSubject(d);

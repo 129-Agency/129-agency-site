@@ -33,7 +33,21 @@ function ctaText(ko) {
     : 'Extra cuts, more videos, updated artwork: anything you add to your campaign folder reaches the team directly. No need to send the form again.';
 }
 
-// d : { firstName, artist, title, releaseType, releaseDate, clientName, dateLabel, siteUrl, logoUrl, dropUrl, files:[{name, ok}] }
+// Bouton : dossier Drive partagé avec le client (folderUrl) ; sinon lien /drop (dropUrl), qui sert
+// aussi de repli sous le bouton (« Can’t open it? ») quand le client est connecté à un autre compte Google.
+function cta(d) {
+  if (d.folderUrl) {
+    return {
+      href: d.folderUrl, label: 'Open the folder',
+      note: `Google Drive · shared with ${esc(d.sharedWith)} only${d.dropUrl ? ` · <a href="${esc(d.dropUrl)}" style="color:${C.lilac};text-decoration:underline">Can’t open it? Upload here</a>` : ''}`,
+      text: `Your campaign folder (Google Drive, shared with ${d.sharedWith} only): ${d.folderUrl}${d.dropUrl ? `\nCan’t open it? Upload here: ${d.dropUrl}` : ''}`,
+    };
+  }
+  return { href: d.dropUrl, label: 'Add assets', note: 'No Google account needed · files go straight to your campaign folder', text: d.dropUrl };
+}
+
+// d : { firstName, artist, title, releaseType, releaseDate, clientName, dateLabel, siteUrl, logoUrl,
+//       folderUrl, sharedWith, dropUrl, files:[{name, ok}] }
 export function clientMailHtml(d) {
   const files = d.files || [];
   const { ko, label } = counts(files);
@@ -51,6 +65,7 @@ ${lbl(`Files · ${label}`, ko.length ? C.ink : C.mute, 6)}
 
   const meta = [d.clientName, d.dateLabel].filter(Boolean).map(esc).reverse().join(' · ');
   const release = [esc(d.releaseType || 'Release'), d.releaseDate ? `Out ${esc(dotDate(d.releaseDate))}` : ''].filter(Boolean).join(' · ');
+  const btn = cta(d);
 
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -103,9 +118,9 @@ ${lbl('Need to add assets?', C.lilac)}
 <p class="h2" style="margin:0;font-family:${DISPLAY};font-size:38px;line-height:35px;font-weight:700;text-transform:uppercase;color:${C.paper}">Drop them in your folder.</p>
 <p style="margin:14px 0 24px;font-family:${BODY};font-size:16px;line-height:24px;color:${C.paper}">${ctaText(ko)}</p>
 <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-<td style="background:${C.paper};border:1px solid ${C.paper}"><a href="${esc(d.dropUrl)}" style="display:inline-block;padding:17px 22px;font-family:${MONO};font-size:14px;line-height:16px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:${C.ink};text-decoration:none">Add assets&nbsp;&nbsp;&nbsp;&nbsp;→</a></td>
+<td style="background:${C.paper};border:1px solid ${C.paper}"><a href="${esc(btn.href)}" style="display:inline-block;padding:17px 22px;font-family:${MONO};font-size:14px;line-height:16px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:${C.ink};text-decoration:none">${btn.label}&nbsp;&nbsp;&nbsp;&nbsp;→</a></td>
 </tr></table>
-<p style="margin:14px 0 0;font-family:${MONO};font-size:11px;line-height:16px;letter-spacing:.04em;color:${C.lilac}">No Google account needed · files go straight to your campaign folder</p>
+<p style="margin:14px 0 0;font-family:${MONO};font-size:11px;line-height:17px;letter-spacing:.04em;color:${C.lilac}">${btn.note}</p>
 </td></tr>
 
 <tr><td class="px" style="background:${C.ink};padding:24px 32px 26px">
@@ -129,7 +144,7 @@ export function clientMailText(d) {
     '',
     'NEED TO ADD ASSETS?',
     ctaText(ko),
-    d.dropUrl,
+    cta(d).text,
     '',
     'Questions? Reply to this email: Antoine and Sacha are copied.',
     '129 Agency · Ads for records that last · 129agency.com',

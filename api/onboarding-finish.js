@@ -4,12 +4,16 @@
 // prévisualisation dans le generator), récapitulatif des fichiers reçus dans les notes.
 // Les fichiers maîtres restent sur Drive.
 // Envoie ensuite le mail interne « New submission » (Antoine + Sacha), puis la confirmation
-// au client (Antoine + Sacha en copie) avec son lien /drop pour ajouter des assets.
+// au client (Antoine + Sacha en copie). Avant la confirmation, le dossier Drive de la campagne
+// est partagé en écriture avec l'email du client, et lui seul (19/11/2026) : le bouton du mail
+// ouvre ce dossier. Si le partage échoue (adresse sans compte Google, partage externe bloqué),
+// le bouton pointe vers /drop, qui dépose dans le même dossier sans compte Google.
 // Un échec de mail ne bloque jamais le client : il est noté dans la Campagne.
 
 import { T, F, get, update, uploadAttachment } from './_airtable.js';
 import { readUpload, readJson, clean, signDrop } from './_onboarding.js';
 import { notifySubmission, notifyClient, SITE } from './_notify.js';
+import { folderIdFrom, shareWithUser } from './_google.js';
 
 const IMG = ['image/jpeg', 'image/png', 'image/webp'];
 
@@ -61,7 +65,17 @@ export default async function handler(req, res) {
     // Confirmation client. Les jetons émis avant le 19/11/2026 ne portent pas d'email : pas de mail.
     if (p.e) {
       const dropUrl = `${SITE()}/drop?t=${signDrop(campaign.id)}`;
-      const conf = await notifyClient({ campaignId: campaign.id, to: p.e, firstName: p.n, clientName: p.k, uploaded, dropUrl });
+      const folderUrl = campaign.fields[F.campagne.driveFolder] || '';
+      const folderId = folderIdFrom(folderUrl);
+      let shared = false;
+      if (folderId) {
+        const sh = await shareWithUser(folderId, p.e);
+        shared = sh.ok;
+        mailNotes.push(sh.ok
+          ? `Dossier Drive partagé en écriture avec ${p.e}.`
+          : `⚠ partage du dossier Drive impossible avec ${p.e} (${sh.error}) : le mail renvoie vers le lien de dépôt.`);
+      }
+      const conf = await notifyClient({ campaignId: campaign.id, to: p.e, firstName: p.n, clientName: p.k, uploaded, dropUrl, folderUrl: shared ? folderUrl : '' });
       if (!conf.ok) {
         console.error('[onboarding-finish] confirmation client', conf.error);
         mailNotes.push(`⚠ confirmation client non envoyée (${p.e}) : ${conf.error}`);

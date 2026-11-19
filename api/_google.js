@@ -162,6 +162,22 @@ export async function putChunk(sessionUrl, buf, contentRange) {
   throw new Error(`[Drive chunk ${r.status}] ${d?.error?.message || r.statusText}`);
 }
 
+// Partage un fichier ou dossier en écriture avec une seule adresse, sans mail de Google
+// (le client reçoit déjà la confirmation 129). Échoue notamment si l'adresse n'a pas de compte
+// Google ou si le partage externe est bloqué : l'appelant bascule alors sur le lien /drop.
+// Ne lève jamais : { ok } ou { ok:false, error }.
+export async function shareWithUser(fileId, email, role = 'writer') {
+  try {
+    await drive('POST', `files/${encodeURIComponent(fileId)}/permissions`, {
+      query: { sendNotificationEmail: 'false', fields: 'id' },
+      body: { type: 'user', role, emailAddress: email },
+    });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
 // ID d'un dossier à partir de son lien (champ « Dossier Drive » de la Campagne).
 export function folderIdFrom(url) {
   const m = String(url || '').match(/\/folders\/([A-Za-z0-9_-]{10,})/) || String(url || '').match(/[?&]id=([A-Za-z0-9_-]{10,})/);
