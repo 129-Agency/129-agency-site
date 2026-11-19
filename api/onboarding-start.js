@@ -3,11 +3,13 @@
 // 1. Identifie le client : jeton ?k= si présent, sinon email -> Contact -> Compte.
 //    Email inconnu : la campagne est créée sans Compte, marquée « à vérifier ».
 // 2. Crée le dossier Drive de la campagne (si Google est configuré) : un seul dossier à plat,
-//    directement dans le dossier racine, nommé « AAAA-MM-JJ - Artiste - Titre » (date de Paris).
+//    directement dans le dossier racine, nommé « (Client) Artiste - Titre » (19/11/2026, sans date).
 //    Ni dossier client, ni sous-dossiers : tous les fichiers y vont ensemble (décision du 16/11/2026).
+//    Le nom sert de clé : même client + même titre = même dossier (pas de doublon si le client renvoie).
 // 3. Crée (ou réutilise, à ISRC égal) la fiche Track, puis la fiche Campagne.
 // 4. Ouvre une session d'upload Drive par fichier et renvoie un jeton signé par fichier,
-//    plus un jeton de soumission pour /api/onboarding-finish.
+//    plus un jeton de soumission pour /api/onboarding-finish (qui porte aussi l'email, le prénom
+//    et le nom du client : le mail de confirmation client part à la clôture, uploads terminés).
 
 import { T, F, FN, find, create, update, q, slugify } from './_airtable.js';
 import { ensureFolder, rootFolderId, startResumable, putChunk, driveConfigured } from './_google.js';
@@ -91,10 +93,12 @@ export default async function handler(req, res) {
     const trackKey = `${clientSlug}/${slugify(`${artist} ${title}`)}`;
 
     // --- Drive ---------------------------------------------------------------
-    // Un dossier par campagne, à plat dans la racine : « AAAA-MM-JJ - Artiste - Titre ».
+    // Un dossier par campagne, à plat dans la racine : « (Client) Artiste - Titre ».
+    // Client = nom du Compte Airtable s'il est reconnu, sinon la société déclarée.
+    const clientName = clean(cf[F.compte.name], 120) || idCompany;
     let campaignFolder = null;
     if (drive) {
-      campaignFolder = await ensureFolder(`${parisDate()} - ${artist} - ${title}`, await rootFolderId());
+      campaignFolder = await ensureFolder(`(${clientName}) ${artist} - ${title}`, await rootFolderId());
     }
 
     // --- Track (réutilisée si même ISRC) ------------------------------------------
@@ -192,6 +196,7 @@ export default async function handler(req, res) {
     }
     if (submitter) cfields[F.campagne.submittedBy] = [submitter.id];
     const campaign = await create(T.campagnes, cfields);
+    const firstName = clean(submitter?.fields?.[F.contact.name] || idName, 120).split(/\s+/)[0] || '';
 
     // Pochette trouvée en ligne : copiée sur la Track (Airtable la télécharge) et sur Drive.
     const notesExtra = [];
@@ -227,7 +232,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       ok: true,
       campaignId: campaign.id,
-      submission: signUpload({ c: campaign.id, finish: true }, 24 * 3600),
+      submission: signUpload({ c: campaign.id, finish: true, e: idEmail, n: firstName, k: clientName }, 24 * 3600),
       drive,
       recognized: Boolean(compte),
       uploads,
@@ -236,11 +241,6 @@ export default async function handler(req, res) {
     console.error('[onboarding-start]', e);
     return res.status(500).json({ error: 'Server error. Try again in a few minutes; if it persists, let 129 know.', detail: e.message });
   }
-}
-
-// Date du jour à Paris, AAAA-MM-JJ : préfixe du dossier Drive (trié chronologiquement).
-function parisDate(d = new Date()) {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
 }
 
 // Applique fn à chaque élément, n à la fois, en conservant l'ordre des résultats.

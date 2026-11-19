@@ -29,6 +29,33 @@ export function readUpload(token) {
   return p;
 }
 
+// Lien de dépôt client (/drop?t=…), envoyé dans le mail de confirmation : l'ID campagne seul,
+// signé avec un préfixe distinct. Un jeton de dépôt ne vaut ni jeton d'upload ni jeton de
+// clôture (et inversement) : il ne fait qu'ouvrir la page de dépôt de SA campagne.
+const DROP_TTL = 180 * 24 * 3600;
+
+export function signDrop(campaignId, ttlSec = DROP_TTL) {
+  const body = b64u(JSON.stringify({ c: campaignId, exp: Math.floor(Date.now() / 1000) + ttlSec }));
+  const sig = crypto.createHmac('sha256', secret()).update(`drop.${body}`).digest('base64url');
+  return `${body}.${sig}`;
+}
+
+export function readDrop(token) {
+  const [body, sig] = String(token || '').split('.');
+  const bad = () => Object.assign(new Error('This link doesn’t work. Reply to your 129 confirmation email and we’ll send you a new one.'), { status: 403 });
+  if (!body || !sig) throw bad();
+  const expected = crypto.createHmac('sha256', secret()).update(`drop.${body}`).digest('base64url');
+  const a = Buffer.from(sig), b = Buffer.from(expected);
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) throw bad();
+  let p;
+  try { p = JSON.parse(unb64u(body)); } catch { throw bad(); }
+  if (!/^rec[A-Za-z0-9]{14}$/.test(String(p.c || ''))) throw bad();
+  if (p.exp < Math.floor(Date.now() / 1000)) {
+    throw Object.assign(new Error('This link has expired. Reply to your 129 confirmation email and we’ll send you a new one.'), { status: 410 });
+  }
+  return p;
+}
+
 // Le lien de formulaire d'un client porte son « Token dashboard » (UUID).
 export async function compteFromKey(k) {
   if (!/^[0-9a-f-]{20,64}$/i.test(String(k || ''))) return null;

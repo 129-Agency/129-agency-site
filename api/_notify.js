@@ -1,7 +1,9 @@
-// Mail interne « New submission » envoyé à Antoine et Sacha à chaque formulaire d'onboarding clôturé.
-//
-// Transport : l'application web Apps Script « 129 Onboarding Drive » (action « mail », MailApp),
-// déjà déployée pour Drive : pas de nouveau service ni de clé à gérer.
+// Mails de l'onboarding, tous envoyés par l'application web Apps Script « 129 Onboarding Drive »
+// (action « mail », MailApp), déjà déployée pour Drive : pas de nouveau service ni de clé à gérer.
+//   - notifySubmission : « New submission » à Antoine et Sacha, à chaque formulaire clôturé.
+//   - notifyClient     : « Received » au client (Antoine et Sacha en copie), avec son dossier Drive
+//                        (partagé avec lui) ou, à défaut, le lien /drop.
+//   - notifyDrop       : « New assets » à Antoine et Sacha, à chaque dépôt via /drop.
 //
 // Env vars Vercel :
 //   NOTIFY_EMAILS - optionnel, destinataires séparés par des virgules
@@ -12,9 +14,11 @@
 // réellement été enregistré, pas ce que le navigateur a envoyé.
 
 import { BASE_ID, T, F, get } from './_airtable.js';
+import { clientMailHtml, clientMailText, clientMailSubject, parisDotDate } from './_clientmail.js';
 
 const DEFAULT_TO = ['antoine@129agency.com', 'sacha@129agency.com'];
-const SITE = () => (process.env.PUBLIC_FORM_BASE || 'https://129agency.com/onboarding').replace(/\/onboarding\/?$/, '');
+export const SITE = () => (process.env.PUBLIC_FORM_BASE || 'https://129agency.com/onboarding').replace(/\/onboarding\/?$/, '');
+const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export function notifyConfigured() {
   return Boolean(process.env.GOOGLE_APPS_SCRIPT_URL && process.env.GOOGLE_APPS_SCRIPT_SECRET);
@@ -22,8 +26,30 @@ export function notifyConfigured() {
 
 function recipients() {
   const raw = process.env.NOTIFY_EMAILS;
-  const list = raw ? raw.split(/[\s,;]+/).map(s => s.trim()).filter(s => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(s)) : [];
+  const list = raw ? raw.split(/[\s,;]+/).map(s => s.trim()).filter(s => EMAIL.test(s)) : [];
   return list.length ? list : DEFAULT_TO;
+}
+
+// Transport commun. Ne lève jamais : { ok, cc } ou { ok:false, error }.
+// cc : true si l'Apps Script a confirmé la copie (une version antérieure au 19/11/2026 l'ignore).
+export async function sendMail({ to, cc = [], subject, html, text, replyTo = '', name = '129 Onboarding' }) {
+  try {
+    if (!notifyConfigured()) return { ok: false, error: 'GOOGLE_APPS_SCRIPT_URL / SECRET absents : mail non envoyé.' };
+    const r = await fetch(process.env.GOOGLE_APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ secret: process.env.GOOGLE_APPS_SCRIPT_SECRET, action: 'mail', to, cc, name, subject, html, text, replyTo }),
+      redirect: 'follow',
+      signal: AbortSignal.timeout(12000),
+    });
+    const body = await r.text();
+    let d;
+    try { d = JSON.parse(body); } catch { return { ok: false, error: '[Apps Script] réponse non JSON au mail' }; }
+    if (!d.sent) return { ok: false, error: `[Apps Script] ${d.error || 'mail non envoyé'}` };
+    return { ok: true, cc: Array.isArray(d.cc) };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
 }
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -134,18 +160,77 @@ ${sections.map(([title, rows]) => {
         return kept.length ? [`— ${title.toUpperCase()} —`, ...kept.map(([k, v]) => (k ? `${k} : ${v}` : v)), ''] : [];
       })].filter((l, i, a) => l !== '' || a[i - 1] !== '').join('\n');
 
-    const r = await fetch(process.env.GOOGLE_APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ secret: process.env.GOOGLE_APPS_SCRIPT_SECRET, action: 'mail', to: recipients(), subject, html, text, replyTo }),
-      redirect: 'follow',
-      signal: AbortSignal.timeout(12000),
-    });
-    const body = await r.text();
-    let d;
-    try { d = JSON.parse(body); } catch { return { ok: false, error: '[Apps Script] réponse non JSON au mail' }; }
-    if (!d.sent) return { ok: false, error: `[Apps Script] ${d.error || 'mail non envoyé'}` };
+    return sendMail({ to: recipients(), subject, html, text, replyTo });
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+// Mail de confirmation au client, Antoine et Sacha en copie (« répondre à tous » touche les trois).
+// Si l'Apps Script n'est pas encore à jour (copie ignorée), Antoine et Sacha reçoivent une copie à part.
+export async function notifyClient({ campaignId, to, firstName = '', clientName = '', uploaded = [], dropUrl, folderUrl = '' }) {
+  try {
+    if (!EMAIL.test(String(to || ''))) return { ok: false, error: 'email client absent ou invalide : confirmation non envoyée.' };
+    const campaign = await get(T.campagnes, campaignId);
+    const cf = campaign.fields || {};
+    const trackId = (cf[F.campagne.track] || [])[0];
+    const tf = trackId ? ((await get(T.tracks, trackId).catch(() => null))?.fields || {}) : {};
+    const d = {
+      firstName,
+      clientName,
+      artist: val(tf[F.track.artist]) || val(cf[F.campagne.artist]),
+      title: val(tf[F.track.title]) || val(cf[F.campagne.trackName]),
+      releaseType: val(tf[F.track.releaseType]),
+      releaseDate: val(cf[F.campagne.releaseDate]) || val(tf[F.track.releaseDate]),
+      dateLabel: parisDotDate(),
+      siteUrl: SITE(),
+      logoUrl: `${SITE()}/img/signature-129.png`,
+      dropUrl,
+      folderUrl,
+      sharedWith: folderUrl ? to : '',
+      files: uploaded,
+    };
+    const subject = clientMailSubject(d);
+    const html = clientMailHtml(d), text = clientMailText(d);
+    const cc = recipients().filter(a => a.toLowerCase() !== String(to).toLowerCase());
+    const sent = await sendMail({ to: [to], cc, subject, html, text, name: '129 Agency' });
+    if (!sent.ok) return sent;
+    if (cc.length && !sent.cc) {
+      const copy = await sendMail({ to: cc, subject: `[Copie client] ${subject}`, html, text, name: '129 Agency' });
+      return { ok: true, warning: `Apps Script pas à jour (copie ignorée) : copie séparée ${copy.ok ? 'envoyée' : 'en échec'} à Antoine / Sacha.` };
+    }
     return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+// Mail interne « New assets » : un client a déposé des fichiers via /drop.
+export async function notifyDrop({ campaignId, uploaded = [], note = '' }) {
+  try {
+    const campaign = await get(T.campagnes, campaignId);
+    const cf = campaign.fields || {};
+    const name = val(cf[F.campagne.name]) || `${val(cf[F.campagne.artist])} - ${val(cf[F.campagne.trackName])}`;
+    const folder = val(cf[F.campagne.driveFolder]);
+    const compteId = (cf[F.campagne.compte] || [])[0];
+    const compte = compteId ? await get(T.comptes, compteId).catch(() => null) : null;
+    const client = val(compte?.fields?.[F.compte.name]) || (val(cf[F.campagne.declaredIdentity]).split(' — ')[2] || '');
+    const okN = uploaded.filter(f => f.ok).length, failed = uploaded.length - okN;
+    const airtableUrl = `https://airtable.com/${BASE_ID}/${T.campagnes}/${campaign.id}`;
+    const subject = `New assets — ${name} (${okN} fichier${okN > 1 ? 's' : ''}${failed ? `, ${failed} en échec` : ''})`;
+    const list = uploaded.map(f => `<tr><td style="padding:4px 0;font-family:Menlo,Consolas,monospace;font-size:13px">${f.ok ? '✓' : '✕'}&nbsp; ${esc(f.name)}${f.ok ? '' : ' (ÉCHEC)'}</td></tr>`).join('');
+    const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#16181A;max-width:640px">
+<p style="margin:0 0 4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6B6E70">129 · Dépôt client</p>
+<h2 style="margin:0 0 6px;font-size:20px">New assets — ${esc(name)}</h2>
+${client ? `<p style="margin:0 0 16px;color:#6B6E70">${esc(client)}</p>` : ''}
+<p style="margin:0 0 16px">${folder ? `<a href="${esc(folder)}">Ouvrir le dossier Drive</a> · ` : ''}<a href="${airtableUrl}">Campagne dans Airtable</a></p>
+<table style="border-collapse:collapse">${list}</table>
+${note ? `<h3 style="margin:20px 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #16181A;padding-bottom:4px">Message du client</h3><p style="margin:0">${esc(note).replace(/\n/g, '<br>')}</p>` : ''}
+</div>`;
+    const text = [`New assets — ${name}`, client, folder && `Drive : ${folder}`, `Airtable : ${airtableUrl}`, '',
+      ...uploaded.map(f => `${f.ok ? '✓' : '✕'} ${f.name}${f.ok ? '' : ' (ÉCHEC)'}`), ...(note ? ['', 'Message du client :', note] : [])]
+      .filter(l => l !== false && l != null).join('\n');
+    return sendMail({ to: recipients(), subject, html, text });
   } catch (e) {
     return { ok: false, error: e.message };
   }

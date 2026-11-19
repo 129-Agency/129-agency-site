@@ -38,7 +38,7 @@
       ]
     },
     {
-      "source": "/(internal-tools|onboarding|client-report)(.*)",
+      "source": "/(internal-tools|onboarding|client-report|drop)(.*)",
       "headers": [
         {
           "key": "X-Robots-Tag",
@@ -51,6 +51,10 @@
     {
       "source": "/onboarding",
       "destination": "/internal-tools/onboarding"
+    },
+    {
+      "source": "/drop",
+      "destination": "/internal-tools/drop"
     }
   ]
 }

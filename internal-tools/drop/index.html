@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0000FA">
+<title>Add assets — 129 Agency</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Page de dépôt client, dans la ligne du site et du mail de confirmation : grille brutaliste,
+   coins carrés, filets de 1 px, bleu 129 + noir + papier. */
+:root{
+  --blue:#0000FA; --blue-2:#1F1FFF; --ink:#020416; --paper:#F7F7F5; --mute:#5B5F70; --soft:#E6E7EE; --lilac:#C9CAFF; --error:#C4161C;
+  --display:"Barlow Condensed","Arial Narrow",Impact,sans-serif;
+  --body:"Barlow",ui-sans-serif,system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --g:clamp(20px,4vw,48px);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100dvh;display:flex;flex-direction:column}
+[hidden]{display:none!important}
+button,textarea,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.lbl{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin:0}
+h1{margin:0;font-family:var(--display);font-weight:700;text-transform:uppercase;line-height:.9;letter-spacing:-.01em;font-size:clamp(52px,9vw,104px);text-wrap:balance}
+h1:focus{outline:none}
+p{margin:0}
+
+.hdr{background:var(--blue);color:var(--paper)}
+.hdr-in{max-width:880px;margin:0 auto;padding:0 var(--g);height:64px;display:flex;align-items:center;justify-content:space-between}
+.hdr svg{width:42px;height:34px;fill:currentColor;display:block}
+
+main{flex:1;width:100%;max-width:880px;margin:0 auto;padding:clamp(36px,6vw,72px) var(--g) 64px}
+.meta{color:var(--mute);margin-bottom:18px}
+.artist{font-size:20px;color:var(--mute);margin-top:10px}
+.lead{font-size:18px;max-width:52ch;margin-top:26px}
+
+.drop{margin-top:36px;display:grid;place-items:center;gap:8px;text-align:center;min-height:200px;padding:28px;border:1px solid var(--ink);background:#fff;cursor:pointer;transition:background .15s,color .15s}
+.drop:hover{background:var(--soft)}
+.drop.over{background:var(--blue);color:var(--paper);border-color:var(--blue)}
+.drop strong{font:700 clamp(28px,4vw,40px)/1 var(--display);text-transform:uppercase}
+.drop span{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.75}
+.drop.locked{pointer-events:none;opacity:.5}
+
+.files{list-style:none;margin:24px 0 0;padding:0;border-top:1px solid var(--ink)}
+.files:empty{display:none}
+.files li{display:grid;grid-template-columns:22px minmax(0,1fr) auto 36px;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--ink);font-family:var(--mono);font-size:13px}
+.files .st{color:var(--blue);font-weight:600}
+.files .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.files .size{color:var(--mute);font-variant-numeric:tabular-nums}
+.files li.fail .st,.files li.fail .size{color:var(--error)}
+.files button{all:unset;cursor:pointer;width:36px;height:36px;display:grid;place-items:center;font-size:18px;color:var(--mute)}
+.files button:hover{color:var(--ink);background:var(--soft)}
+.files button:focus-visible{outline:2px solid var(--blue)}
+
+.note{margin-top:28px}
+.note label{display:block;margin-bottom:8px;color:var(--mute)}
+.note textarea{width:100%;min-height:96px;resize:vertical;border:1px solid var(--ink);border-radius:0;background:#fff;padding:12px 14px;font-size:16px;line-height:1.45}
+.note textarea:focus{outline:2px solid var(--blue);outline-offset:-1px}
+
+.actions{margin-top:28px;display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.b{all:unset;box-sizing:border-box;cursor:pointer;display:inline-flex;align-items:center;justify-content:space-between;gap:36px;height:56px;padding-inline:22px;font:600 15px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--ink);background:var(--ink);color:var(--paper);transition:background .18s,border-color .18s}
+.b:hover{background:var(--blue);border-color:var(--blue)}
+.b:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+.b[disabled]{background:var(--soft);border-color:var(--soft);color:var(--mute);cursor:default}
+.b.line{background:transparent;color:var(--ink)}
+.b.line:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.hint{font-family:var(--mono);font-size:12px;color:var(--mute);letter-spacing:.04em}
+
+.meter{height:6px;background:var(--soft);margin-top:28px;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--blue);transition:width .3s linear}
+.meter-lbl{display:flex;justify-content:space-between;gap:16px;margin-top:10px;font-family:var(--mono);font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
+
+.err{color:var(--error);font-size:15px;margin-top:16px}
+.err:empty{display:none}
+.warn{margin-top:24px;padding:14px 16px;background:var(--soft);border-left:3px solid var(--error);font-size:15px}
+
+.ftr{background:var(--ink);color:#9A9DAD}
+.ftr-in{max-width:880px;margin:0 auto;padding:22px var(--g);display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.ftr a{color:inherit}
+
+@media (max-width:560px){
+  .files li{grid-template-columns:22px minmax(0,1fr) 36px}
+  .files .size{display:none}
+  .b{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="684 346 512 418">
+    <polygon points="689.39 562.26 689.39 664.65 778.22 664.65 778.22 429.2 689.39 562.26"/><polygon points="689.39 350.82 689.39 429.2 778.22 429.2 728.02 350.82 689.39 350.82"/><polygon points="984.16 586.26 984.16 664.64 828.42 664.64 778.23 586.26 778.21 586.26 829.77 507.59 932.74 507.59 880.23 586.26 984.16 586.26"/>
+    <path d="M1038.22,349.61l-28.62,42.87-.32.48h0s-24.69,36.99-24.69,36.99l-.41-.74-50.2-78.38h-.91s-154.83,0-154.83,0v78.38h104.64l49.88,78.39,25.13-37.64h0s-.21.31-.21.31l51.1,78.37h102.59l-77.36,115.87h104.04l54.03-80.96v-155.8h0v-78.14h-153.85ZM1111.38,548.59l-52.21-79.6h0s26.39-41.24,26.39-41.24h106.52l-80.68,120.85Z"/>
+    <path d="M694.28,709.93h-8.41v49.82h9.23v-12.86h.05l.03-8.61h-.08v-11.91h.12l22.89,33.39h11.17l-35-49.82Z"/><path d="M972.4,709.93h-8.41v49.82h9.23v-12.86h.05l.03-8.61h-.08v-11.91h.12l22.89,33.39h11.17l-35-49.82Z"/>
+    <path d="M801.12,734.36v8.63h16.25c-2.89,5.71-8.55,9.15-14.74,9.15-11.24,0-17.57-9.03-17.57-17.24,0-9.49,7.47-17.36,17.1-17.36,5.19,0,10.44,2.62,13.34,7h11.04c-3.58-9.76-14.61-15.61-24.18-15.61-14.46,0-26.51,11.71-26.51,25.91,0,15.29,12.92,25.91,26.78,25.91,6.52,0,13.2-2.41,18.45-7.34,5.31-4.97,7.94-11.57,7.94-18.24v-.81h-27.910Z"/>
+    <path d="M910.12,718.55v-8.63h-31.39v49.82h31.39v-8.63h-22.18v-11.77h21.44v-8.61h-21.44v-12.19h22.18Z"/>
+    <path d="M1084.8,752.14c-9.16,0-16.56-8.41-16.56-17.36s7.2-17.24,16.22-17.24c5.59,0,9.76,2.49,13.32,6.6h10.5c-4.1-9.5-13.6-15.21-23.48-15.21-14.2,0-25.79,11.85-25.79,25.71s12.13,26.11,25.990,26.11c9.69,0,19.19-5.91,23.02-14.87h-10.7c-4.11,4.57-7.89,6.26-12.52,6.26Z"/>
+    <rect x="998.04" y="709.93" width="9.35" height="49.82"/><rect x="1182.91" y="709.93" width="9.15" height="49.81"/><polygon points="1182.91 742.39 1173 742.39 1150.07 709.93 1159.98 709.93 1182.91 742.39"/>
+  </symbol>
+</svg>
+
+<header class="hdr">
+  <div class="hdr-in">
+    <a href="https://129agency.com" aria-label="129 Agency" style="color:inherit"><svg><use href="#logo"/></svg></a>
+    <p class="lbl">Add assets</p>
+  </div>
+</header>
+
+<main>
+  <!-- Chargement -->
+  <section id="v-loading" aria-busy="true"><p class="lbl meta">Opening your campaign…</p></section>
+
+  <!-- Lien invalide / expiré -->
+  <section id="v-bad" hidden>
+    <p class="lbl meta">Add assets</p>
+    <h1 tabindex="-1">This link doesn’t work.</h1>
+    <p class="lead" id="badMsg">Reply to your 129 confirmation email and we’ll send you a new one.</p>
+  </section>
+
+  <!-- Dépôt -->
+  <section id="v-form" hidden>
+    <p class="lbl meta" id="meta">Campaign folder</p>
+    <h1 id="title" tabindex="-1"></h1>
+    <p class="artist" id="artist"></p>
+    <p class="lead">Extra cuts, more videos, updated artwork: add them here. They go straight to your campaign folder and the 129 team is notified.</p>
+
+    <label class="drop" id="drop">
+      <strong>Drop files here</strong>
+      <span>or click to choose · up to 5 GB each</span>
+      <input type="file" id="pick" multiple hidden>
+    </label>
+    <ul class="files" id="files" aria-live="polite"></ul>
+
+    <div class="note">
+      <label class="lbl" for="note">Anything we should know? (optional)</label>
+      <textarea id="note" maxlength="2000" placeholder="e.g. use the 9:16 cut for the first ads"></textarea>
+    </div>
+
+    <div class="meter" id="meterWrap" hidden><i id="meter"></i></div>
+    <div class="meter-lbl" id="meterLbl" hidden><span id="meterTxt"></span><span id="meterVal"></span></div>
+    <p class="err" id="err" role="alert"></p>
+
+    <div class="actions">
+      <button class="b" type="button" id="send" disabled>Send to 129 <span aria-hidden="true">→</span></button>
+      <span class="hint" id="hint">Keep this tab open while your files upload.</span>
+    </div>
+  </section>
+
+  <!-- Terminé -->
+  <section id="v-done" hidden>
+    <p class="lbl meta" id="doneMeta">Received</p>
+    <h1 tabindex="-1">Received.</h1>
+    <p class="lead" id="doneMsg"></p>
+    <p class="warn" id="doneWarn" hidden></p>
+    <div class="actions"><button class="b line" type="button" id="more">Add more files <span aria-hidden="true">→</span></button></div>
+  </section>
+</main>
+
+<footer class="ftr">
+  <div class="ftr-in"><span>129 Agency · Ads for records that last</span><a href="https://129agency.com">129agency.com</a></div>
+</footer>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const CHUNK = 4 * 1024 * 1024;              // multiple de 256 Ko, sous la limite Vercel (4,5 Mo)
+const MAX_FILES = 20, MAX_FILE = 5 * 1024 ** 3;
+const T = new URLSearchParams(location.search).get('t') || '';
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+let files = [], busy = false, info = null;
+
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function fmtBytes(n) {
+  if (n < 1024 * 1024) return Math.max(1, Math.round(n / 1024)) + ' KB';
+  if (n < 1024 ** 3) return (n / 1024 / 1024).toFixed(n < 10 * 1024 * 1024 ? 1 : 0) + ' MB';
+  return (n / 1024 ** 3).toFixed(2) + ' GB';
+}
+function show(id) {
+  for (const v of ['v-loading', 'v-bad', 'v-form', 'v-done']) $('#' + v).hidden = v !== id;
+  const h = $('#' + id + ' h1'); if (h) h.focus({ preventScroll: true });
+}
+
+async function postJson(body) {
+  const r = await fetch('/api/drop', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || ('Error ' + r.status));
+  return d;
+}
+
+// Même relais que le formulaire d'onboarding : morceaux de 4 Mo vers /api/onboarding-chunk.
+async function uploadFile(file, token, onBytes) {
+  let start = 0, stalls = 0;
+  while (start < file.size) {
+    const end = Math.min(start + CHUNK, file.size);
+    let attempt = 0, out;
+    for (;;) {
+      try {
+        const r = await fetch('/api/onboarding-chunk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/octet-stream', 'X-Upload-Token': token, 'X-Chunk-Start': String(start), 'X-Total-Size': String(file.size) },
+          body: file.slice(start, end),
+        });
+        out = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(out.error || ('Error ' + r.status));
+        break;
+      } catch (e) {
+        if (++attempt > 4) throw e;
+        await sleep(1500 * attempt);
+      }
+    }
+    if (out.done) { onBytes(file.size); return true; }
+    const nextByte = Number.isFinite(out.next) ? out.next : end;
+    if (nextByte <= start) { if (++stalls > 3) throw new Error('Upload stalled'); } else stalls = 0;
+    start = nextByte;
+    onBytes(start);
+  }
+  throw new Error('Upload not confirmed');
+}
+
+function render() {
+  $('#files').innerHTML = files.map((f, i) => `<li class="${f.state === 'fail' ? 'fail' : ''}">
+    <span class="st" aria-hidden="true">${f.state === 'done' ? '✓' : f.state === 'fail' ? '✕' : f.state === 'up' ? '↑' : '·'}</span>
+    <span class="name" title="${esc(f.file.name)}">${esc(f.file.name)}</span>
+    <span class="size">${f.state === 'up' ? f.pct + '%' : f.state === 'fail' ? 'failed' : fmtBytes(f.file.size)}</span>
+    ${busy ? '<span></span>' : `<button type="button" data-rm="${i}" aria-label="Remove ${esc(f.file.name)}">×</button>`}
+  </li>`).join('');
+  $('#send').disabled = busy || !files.length;
+}
+
+function add(list) {
+  $('#err').textContent = '';
+  for (const file of list) {
+    if (files.length >= MAX_FILES) { $('#err').textContent = `${MAX_FILES} files at most per upload. Send the rest in a second round.`; break; }
+    if (file.size > MAX_FILE) { $('#err').textContent = `${file.name} is over 5 GB. Send it as a link in the note.`; continue; }
+    if (!file.size) continue;
+    if (files.some(f => f.file.name === file.name && f.file.size === file.size)) continue;
+    files.push({ file, state: 'ready', pct: 0 });
+  }
+  render();
+}
+
+const drop = $('#drop');
+$('#pick').addEventListener('change', (e) => { add([...e.target.files]); e.target.value = ''; });
+['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, (e) => { e.preventDefault(); if (!busy) drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(t => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', (e) => { if (!busy) add([...(e.dataTransfer?.files || [])]); });
+addEventListener('dragover', (e) => e.preventDefault());
+addEventListener('drop', (e) => e.preventDefault());
+$('#files').addEventListener('click', (e) => { const b = e.target.closest('[data-rm]'); if (b && !busy) { files.splice(Number(b.dataset.rm), 1); render(); } });
+
+const leaveGuard = (e) => { e.preventDefault(); e.returnValue = ''; };
+
+$('#send').addEventListener('click', async () => {
+  if (busy || !files.length) return;
+  busy = true; drop.classList.add('locked'); $('#note').disabled = true; $('#err').textContent = '';
+  const btn = $('#send'); btn.innerHTML = 'Sending…';
+  render();
+  addEventListener('beforeunload', leaveGuard);
+  try {
+    const start = await postJson({ action: 'start', t: T, files: files.map(f => ({ name: f.file.name, size: f.file.size, type: f.file.type })) });
+    $('#meterWrap').hidden = false; $('#meterLbl').hidden = false;
+    const total = files.reduce((s, f) => s + f.file.size, 0);
+    const sent = files.map(() => 0);
+    const uploaded = [];
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      f.state = 'up'; render();
+      $('#meterTxt').textContent = files.length > 1 ? `Uploading ${i + 1} of ${files.length}` : 'Uploading';
+      try {
+        await uploadFile(f.file, start.uploads[i].token, (bytes) => {
+          sent[i] = bytes; f.pct = Math.floor(100 * bytes / f.file.size);
+          const done = sent.reduce((a, b) => a + b, 0);
+          $('#meter').style.width = (100 * done / (total || 1)).toFixed(1) + '%';
+          $('#meterVal').textContent = `${fmtBytes(done)} of ${fmtBytes(total)}`;
+          render();
+        });
+        f.state = 'done'; uploaded.push({ name: f.file.name, ok: true });
+      } catch { f.state = 'fail'; uploaded.push({ name: f.file.name, ok: false }); }
+      render();
+    }
+    $('#meterTxt').textContent = 'Finishing up'; $('#meterVal').textContent = '';
+    try { await postJson({ action: 'finish', submission: start.submission, uploaded, note: $('#note').value.trim() }); } catch { /* fichiers déjà sur Drive : la page reste juste */ }
+    removeEventListener('beforeunload', leaveGuard);
+    const ok = uploaded.filter(u => u.ok).length, ko = uploaded.filter(u => !u.ok).map(u => u.name);
+    $('#doneMsg').textContent = ok
+      ? `${ok === 1 ? 'One file is' : ok + ' files are'} in your campaign folder for ${info.artist} – ${info.title}. The 129 team has been notified.`
+      : 'Nothing made it through. Check your connection and try again.';
+    $('#doneWarn').hidden = !ko.length;
+    $('#doneWarn').textContent = ko.length ? `${ko.length === 1 ? 'One file' : ko.length + ' files'} didn’t make it: ${ko.join(', ')}. Try again with “Add more files”.` : '';
+    show('v-done');
+  } catch (e) {
+    removeEventListener('beforeunload', leaveGuard);
+    $('#err').textContent = e.message || 'Something went wrong. Check your connection and try again.';
+    files.forEach(f => { if (f.state === 'up') f.state = 'ready'; });
+  } finally {
+    busy = false; drop.classList.remove('locked'); $('#note').disabled = false;
+    $('#send').innerHTML = 'Send to 129 <span aria-hidden="true">→</span>';
+    render();
+  }
+});
+
+$('#more').addEventListener('click', () => {
+  files = []; $('#note').value = ''; $('#meter').style.width = '0';
+  $('#meterWrap').hidden = true; $('#meterLbl').hidden = true;
+  render(); show('v-form');
+});
+
+(async function init() {
+  if (!T) { show('v-bad'); return; }
+  try {
+    const r = await fetch('/api/drop?t=' + encodeURIComponent(T));
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) { $('#badMsg').textContent = d.error || $('#badMsg').textContent; show('v-bad'); return; }
+    info = d;
+    $('#title').textContent = d.title || 'Your release';
+    $('#artist').textContent = d.artist || '';
+    $('#meta').textContent = [d.client, 'Campaign folder'].filter(Boolean).join(' · ');
+    $('#doneMeta').textContent = [d.client, d.artist && d.title ? `${d.artist} – ${d.title}` : ''].filter(Boolean).join(' · ') || 'Received';
+    document.title = `Add assets · ${d.artist} – ${d.title} — 129 Agency`;
+    show('v-form');
+  } catch {
+    $('#badMsg').textContent = 'We couldn’t reach 129. Check your connection and reload the page.';
+    show('v-bad');
+  }
+})();
+</script>
+</body>
+</html>
