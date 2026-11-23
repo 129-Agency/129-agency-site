@@ -25,7 +25,8 @@ const MAX_FILES = 40;
 const PAGE_ACCESS = {
   in_place: 'Déjà en place',
   done: 'Donné par le client',
-  request: 'Demande à envoyer par 129',
+  // « Demande à envoyer par 129 » retiré le 23/11/2026 : les demandes se perdent dans Meta,
+  // c'est l'artiste qui invite 129 (Business ID + tuto vidéo à l'étape 4).
   help: "Besoin d'aide",
 };
 const MAX_FILE_BYTES = 5 * 1024 ** 3;

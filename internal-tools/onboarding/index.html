@@ -190,6 +190,10 @@
   .bid{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px}
   .bid code{font-family:inherit; font-size:20px; font-weight:500; letter-spacing:.02em; font-variant-numeric:tabular-nums; color:var(--white)}
   .bid .btn{height:36px; padding:0 14px; font-size:14px; background:var(--white); color:var(--ink)}
+  .vid{position:relative; aspect-ratio:16/9; border-radius:var(--r-field); overflow:hidden; background:#000}
+  .vid iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
+  .vid-alt{margin:8px 0 20px; font-size:14px}
+  .guide .vid-alt a{color:var(--space)}
 
   /* ---------- Review ---------- */
   .review{display:grid; gap:12px; margin-top:32px}
@@ -543,14 +547,17 @@
             <span class="lbl" id="accLbl">Where are you at?</span>
             <div class="choices" role="radiogroup" aria-labelledby="accLbl" aria-describedby="err-pageAccess">
               <label class="choice" id="choiceInPlace" hidden><input type="radio" name="pageAccess" data-k="pageAccess" value="in_place"><span class="box"><span><span class="t">Already set up</span><span class="d">Same pages as before, nothing to do.</span></span></span></label>
-              <label class="choice"><input type="radio" name="pageAccess" data-k="pageAccess" value="done"><span class="box"><span><span class="t">I’ll share access now</span><span class="d">Two minutes in Meta’s settings. Steps below.</span></span></span></label>
-              <label class="choice"><input type="radio" name="pageAccess" data-k="pageAccess" value="request"><span class="box"><span><span class="t">Send me a request</span><span class="d">We send it to the Page admin, they approve it in one click.</span></span></span></label>
+              <label class="choice"><input type="radio" name="pageAccess" data-k="pageAccess" value="done"><span class="box"><span><span class="t">I’ll share access now</span><span class="d">Two minutes in Meta’s settings. Video and steps below.</span></span></span></label>
               <label class="choice"><input type="radio" name="pageAccess" data-k="pageAccess" value="help"><span class="box"><span><span class="t">I need a hand</span><span class="d">We’ll get in touch and set it up together.</span></span></span></label>
             </div>
             <p class="err" id="err-pageAccess" role="alert"></p>
           </div>
           <div class="guide" id="guide" hidden>
             <h2>How to give 129 access</h2>
+            <div class="vid">
+              <iframe src="https://www.youtube-nocookie.com/embed/8lq_ALJ2dck?rel=0" title="How to give 129 access in Meta business settings" loading="lazy" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            </div>
+            <p class="vid-alt"><a href="https://youtu.be/8lq_ALJ2dck" target="_blank" rel="noopener">Open the video on YouTube</a></p>
             <ol>
               <li><span>Open <a href="https://business.facebook.com/settings" target="_blank" rel="noopener">Meta business settings</a> with the account that manages the artist’s Page.</span></li>
               <li><span>Go to <b>Users</b>, then <b>Partners</b>. Click <b>Add</b> and choose <b>Give a partner access to your assets</b>.</span></li>
@@ -561,7 +568,6 @@
             </ol>
             <p class="muted">No business portfolio for the artist yet, or the Page sits on a personal profile? Pick “I need a hand” and we’ll sort it with you.</p>
           </div>
-          <p class="note" id="requestNote" hidden>We’ll send the request from <b>129 Agency</b>. The Page admin gets a notification in Meta Business Suite: one click on Approve and we’re in.</p>
         </div>
       </section>
 
@@ -647,7 +653,7 @@ const LANGS = [['en','English'],['fr','French'],['es','Spanish'],['pt','Portugue
 const ACTIONS = [['Radio','Radio'],['Pitch playlist éditorial','Editorial playlist pitch'],['Playlists tierces','Third-party playlists'],
   ['TikTok / UGC','TikTok / UGC'],['Influence','Influencers'],['Presse','Press'],['Autre agence ads','Another ads agency']];
 const PLATS = [['spotify','Spotify'],['apple','Apple Music'],['deezer','Deezer'],['amazon','Amazon'],['youtube','YouTube']];
-const ACCESS_LABEL = { in_place: 'Already set up', done: 'Shared by you', request: 'Request to send', help: 'We’ll help' };
+const ACCESS_LABEL = { in_place: 'Already set up', done: 'Shared by you', help: 'We’ll help' };
 const KIND_LABEL = { artwork: 'Cover', audio: 'Audio', video: 'Video', visual: 'Visual', other: 'File' };
 
 const STEPS = ['welcome','you','release','campaign','access','review','sending','done'];
@@ -1157,7 +1163,6 @@ function renderAudio() {
 /* ---------- Accès ---------- */
 function accessUi() {
   $('#guide').hidden = S.pageAccess !== 'done';
-  $('#requestNote').hidden = S.pageAccess !== 'request';
 }
 $('#bizId').textContent = CONFIG.businessId;
 $('#copyBiz').addEventListener('click', async () => {
@@ -1385,6 +1390,8 @@ document.addEventListener('change', (e) => { if (e.target.dataset?.k === 'curren
   const rememberedEmail = store.get(EMAIL_KEY) || '';
   if (draft && (draft.S.artist || draft.S.title || draft.S.email)) {
     S = { ...blank(), ...draft.S, links: { ...(draft.S.links || {}) } };
+    // Option « Send me a request » retirée le 23/11/2026 : un brouillon qui l'avait choisie redemande l'accès.
+    if (!ACCESS_LABEL[S.pageAccess]) S.pageAccess = '';
   } else if (rememberedEmail) {
     S.email = rememberedEmail;
   }
