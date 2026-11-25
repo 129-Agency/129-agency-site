@@ -11,7 +11,7 @@
 
 import { T, F, FN, find, create, update, q, slugify } from './_airtable.js';
 import { ensureFolder, rootFolderId, startResumable, putChunk, driveConfigured } from './_google.js';
-import { identify, signUpload, readJson, clean, cleanUrl, spotifyIdFrom, artworkUrlFrom } from './_onboarding.js';
+import { identify, signUpload, readJson, clean, cleanUrl, spotifyIdFrom, artworkUrlFrom, igPostUrl } from './_onboarding.js';
 
 const RELEASE_TYPES = ['Single', 'EP', 'Album', 'Compilation'];
 const GENRES = ['afro_house', 'afrobeat', 'dance', 'deep_house', 'downtempo', 'house', 'indie_dance',
@@ -30,6 +30,8 @@ const PAGE_ACCESS = {
   help: "Besoin d'aide",
 };
 const MAX_FILE_BYTES = 5 * 1024 ** 3;
+const IG_MAX = 10;
+const CREAS = { upload: 'Dark posts (vidéos envoyées)', instagram: 'Posts Instagram existants' };
 // Versions de 129agency.com/terms. Le formulaire envoie la version affichée sous le bouton d'envoi
 // (« By submitting this form, you agree to our terms ») : c'est la preuve d'acceptation.
 const TERMS = { v1: 'v1 · 26/10/2026', 'v1.1': 'v1.1 · 29/10/2026' };
@@ -75,8 +77,14 @@ export default async function handler(req, res) {
     if (!b.hasArtwork && !artworkUrl && !filesLink) errors.push('Artwork (or a link to your files)');
     // Audio requis pour chaque release : un fichier audio déposé, ou un lien vers les fichiers.
     if (!files.some(f => f.kind === 'audio') && !filesLink) errors.push('Audio (or a link to your files)');
-    // Au moins une vidéo déposée pour les ads (16/11/2026) : un lien peut la compléter, pas la remplacer.
-    if (drive && !files.some(f => f.kind === 'video')) errors.push('At least one video for the ads');
+    // Créas (25/11/2026) : soit le client envoie ses vidéos (dark posts), soit on fait tourner
+    // des posts déjà publiés sur l'Instagram de l'artiste — au moins un lien de post valide.
+    const igMode = c.adSource === 'instagram';
+    const igPosts = igMode && Array.isArray(c.igPosts)
+      ? [...new Set(c.igPosts.slice(0, 20).map(igPostUrl).filter(Boolean))].slice(0, IG_MAX) : [];
+    if (igMode && !igPosts.length) errors.push('At least one link to a post or Reel from the artist’s Instagram');
+    // Mode vidéos : au moins une vidéo déposée (16/11/2026), un lien peut la compléter, pas la remplacer.
+    if (drive && !igMode && !files.some(f => f.kind === 'video')) errors.push('At least one video for the ads');
     for (const f of files) {
       if (!KINDS.includes(f.kind) || !clean(f.name) || !(Number(f.size) > 0) || Number(f.size) > MAX_FILE_BYTES) {
         errors.push(`Invalid file: ${clean(f.name, 80) || '(no name)'}`);
@@ -168,6 +176,8 @@ export default async function handler(req, res) {
       [F.campagne.territories]: clean(c.territories, 1000),
       [F.campagne.pageIgFb]: pageIgFb,
       [F.campagne.pageAccess]: access,
+      [F.campagne.creas]: CREAS[igMode ? 'instagram' : 'upload'],
+      [F.campagne.igPosts]: igPosts.join('\n'),
       [F.campagne.artwork]: artworkUrl ? [{ url: artworkUrl, filename: `${slugify(`${artist} ${title}`)}-cover.jpg` }] : null,
       [F.campagne.notes]: (warn + clean(c.notes, 4000)).trim(),
       [F.campagne.startDate]: /^\d{4}-\d{2}-\d{2}$/.test(String(c.startDate || '')) ? c.startDate : null,

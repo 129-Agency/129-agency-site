@@ -309,10 +309,12 @@ async function openCampaign(id, btn){
     ['Client', c.compteName || 'Non reconnu — à rattacher dans Airtable'], ['Déclaré par', c.declaredIdentity || '—'], ['Budget demandé', c.budgetRequested != null ? `${c.budgetRequested} ${cur}` : '—'],
     ['Objectif', c.objective || '—'], ['Territoires', c.territories || '—'],
     ['Actions en parallèle', (c.parallelActions||[]).join(', ') || '—'], ['Page artiste', c.pageIgFb || '—'], ['Accès Page / IG', c.pageAccess || '—'],
+    ['Créas', c.creas || '—'],
     ['ISRC', t.isrc || '—'], ['Clé track', t.key || '—'],
   ].map(([k,v]) => `<div><div class="k">${esc(k)}</div>${esc(v)}</div>`).join('')
    + (c.driveFolder ? `<div><div class="k">Assets</div><a href="${esc(c.driveFolder)}" target="_blank" rel="noopener">Dossier Drive</a></div>` : '')
    + (c.clientFilesLink ? `<div><div class="k">Lien du client</div><a href="${esc(c.clientFilesLink)}" target="_blank" rel="noopener">Fichiers partagés</a></div>` : '')
+   + ((c.igPosts||[]).length ? `<div><div class="k">Posts Instagram à diffuser</div>${c.igPosts.map((u, i) => `<a href="${esc(u)}" target="_blank" rel="noopener">Post ${i + 1}</a>`).join(' · ')}</div>` : '')
    + (c.notes ? `<div class="notes">${esc(c.notes)}</div>` : '');
 
   for (const [k, v] of Object.entries({ artist:t.artist, featuring:t.featuring, title:t.title, releaseType:t.releaseType, releaseDate:t.releaseDate, genre:t.genre, language:t.language })) $(k).value = v || '';
