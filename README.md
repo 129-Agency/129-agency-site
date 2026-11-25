@@ -26,7 +26,9 @@ Mail « New submission » : à chaque formulaire d'onboarding clôturé, `/api/o
 
 Drive (onboarding) : un dossier par campagne, à plat dans le dossier racine (« Ad Campaigns Assets »), nommé « AAAA-MM-JJ - Artiste - Titre » (date de Paris). Tous les fichiers y vont ensemble, sans dossier client ni sous-dossiers ; la cover est préfixée `ARTWORK -`.
 
-Vidéos des ads (étape 3, 25/11/2026) : le client choisit entre « Send us videos » (dark posts : au moins une vidéo déposée, un lien peut la compléter, pas la remplacer) et « Use posts from the artist's Instagram » (au moins un lien de post ou Reel, 10 max, vidéos facultatives). Écrit dans Campagnes → `Créas` et `Posts Instagram à diffuser` (liens normalisés, un par ligne), repris dans le mail « New submission » et le Fanlink Generator.
+Vidéos des ads (étape 3, 25/11/2026) : le client choisit entre « Send us videos » (dark posts : au moins une vidéo déposée, un lien peut la compléter, pas la remplacer) et « Use posts from the artist's Instagram » (au moins un lien de post ou Reel, 10 max, vidéos facultatives). Écrit dans Campagnes → `Créas` et `Posts Instagram à diffuser` (liens normalisés, un par ligne), repris dans le mail « New submission » et le Fanlink Generator. Le client est prévenu qu'un post dont la musique vient de la bibliothèque Instagram (même le titre de l'artiste) ne peut pas tourner en ads : il faut le son « Original audio ».
+
+Vidéos déposées : 50 secondes max (pas de clips complets), durée lue dans le navigateur à l'ajout. Durée illisible (ProRes, codec non pris en charge) : acceptée jusqu'à 1 Go, refusée au-delà.
 
 Variables d'environnement : voir `.env.example`. Aucun secret dans le repo.
 Le mot de passe d'accès (`TOOLS_PASSWORD`) et la clé de signature sont volontairement séparés : un lien client signé ne permet pas de retrouver le mot de passe.

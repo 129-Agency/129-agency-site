@@ -335,7 +335,7 @@
         <p class="sub">Four short steps and everything lands with the 129 team: the track, your files, and access to run the ads.</p>
         <ul class="need">
           <li>Cover art and the audio file, MP3 or WAV</li>
-          <li>Videos for the ads, or links to the artist’s Instagram posts to run</li>
+          <li>Short videos for the ads, 50 seconds max, or links to the artist’s Instagram posts to run</li>
           <li>Release date, or a streaming link if it’s already out</li>
           <li>Access to the artist’s Facebook Page and Instagram, for ads only</li>
         </ul>
@@ -511,6 +511,7 @@
             <ul class="specs">
               <li><span><b>Paste the link of each post or Reel</b> to run, best performers first.</span></li>
               <li><span>They must be on the artist’s Instagram, the account you give us access to in the next step.</span></li>
+              <li><span><b>The sound must be part of the video,</b> shown as “Original audio” on Instagram. A post where the song was added from Instagram’s music library can’t run as an ad, even when it’s the artist’s own track.</span></li>
             </ul>
             <div class="ig-list" id="igList"></div>
             <button type="button" class="link" id="igAdd">Add another post</button>
@@ -518,14 +519,14 @@
           </div>
           <ul class="specs" id="upSpecs">
             <li><span><b>Vertical 9:16 first:</b> teasers, Reels, TikTok edits. It’s the main format our ads run in.</span></li>
-            <li><span><b>Your music video or visualizer</b>, in the best quality you have. Horizontal 16:9 works: in 4K, we can cut clean vertical versions from it.</span></li>
-            <li><span>MP4 or MOV, up to 5 GB per file. Clean versions if you have them: no burned-in subtitles or logos.</span></li>
-            <li><span><b>At least one video uploaded here.</b> A file over 5 GB? Upload a lighter cut here and share the full one with a link.</span></li>
+            <li><span><b>50 seconds max per video.</b> Short edits only: we don’t take full music videos.</span></li>
+            <li><span>MP4 or MOV. Clean versions if you have them: no burned-in subtitles or logos.</span></li>
+            <li><span><b>At least one video uploaded here.</b></span></li>
           </ul>
           <div id="dropWrap">
             <label class="drop" id="drop" tabindex="0" aria-describedby="err-videos">
               <strong id="dropTitle">Add videos</strong>
-              <span class="help">Drop them here, or click to browse. Artist photos are welcome too.</span>
+              <span class="help">50 seconds max each. Drop them here, or click to browse. Artist photos are welcome too.</span>
               <input type="file" id="dropInput" multiple class="sr">
             </label>
           </div>
@@ -1166,11 +1167,34 @@ $('#audioInput').addEventListener('change', (e) => { addFiles(Array.from(e.targe
 $('#audioPick').addEventListener('click', () => $('#audioInput').click());
 $('#drop').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#dropInput').click(); } });
 $('#audio').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#audioInput').click(); } });
+// Vidéos des ads : 50 secondes max (25/11/2026), pas de clips complets. Durée lue dans le navigateur
+// (métadonnées seules, rien n'est envoyé). Durée illisible (ProRes, codec non pris en charge) :
+// acceptée jusqu'à 1 Go, refusée au-delà, car un fichier aussi lourd est presque toujours le clip entier.
+const MAX_VIDEO_SEC = 50, UNREADABLE_MAX = 1024 ** 3;
+function videoDuration(f) {
+  return new Promise((resolve) => {
+    const v = document.createElement('video'), url = URL.createObjectURL(f);
+    let done = false;
+    const end = (d) => { if (done) return; done = true; URL.revokeObjectURL(url); v.removeAttribute('src'); v.load(); resolve(d); };
+    v.preload = 'metadata'; v.muted = true;
+    v.onloadedmetadata = () => end(Number.isFinite(v.duration) && v.duration > 0 ? v.duration : null);
+    v.onerror = () => end(null);
+    setTimeout(() => end(null), 8000);
+    v.src = url;
+  });
+}
+const fmtDur = (s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
 // Chaque fichier va dans sa liste selon son type, quelle que soit la zone où il est déposé.
-function addFiles(list) {
-  const msgs = [];
+async function addFiles(list) {
+  const msgs = [], vidMsgs = [];
   for (const f of list) {
     if (f.size > MAX_FILE) { msgs.push(`${f.name} is over 5 GB, share it with a link.`); continue; }
+    if (kindOf(f) === 'video') {
+      const d = await videoDuration(f);
+      if (d != null && d > MAX_VIDEO_SEC + 0.5) { vidMsgs.push(`${f.name} runs ${fmtDur(d)}. Videos are 50 seconds max: send a short edit, not the full music video.`); continue; }
+      if (d == null && f.size > UNREADABLE_MAX) { vidMsgs.push(`We couldn’t read the length of ${f.name}. Export it as an MP4 of 50 seconds max.`); continue; }
+      f.duration = d;
+    }
     if (files.audio.length + files.other.length + 1 > MAX_FILES - 1) { msgs.push(`Up to ${MAX_FILES - 1} files. Share the rest with a link.`); break; }
     const bucket = kindOf(f) === 'audio' ? files.audio : files.other;
     if (bucket.some(x => x.name === f.name && x.size === f.size)) continue;
@@ -1178,10 +1202,11 @@ function addFiles(list) {
   }
   if (files.audio.length) clearErr('audio');
   if (files.other.some(f => kindOf(f) === 'video')) clearErr('videos');
+  if (vidMsgs.length) setErr('videos', vidMsgs.join(' '));
   if (msgs.length) { linkOpen = true; filesUi(); setErr('filesLink', msgs.join(' ')); }
   renderAudio(); renderFiles(); renderCard('filesLink');
 }
-const fileRow = (f, i, list) => `<li><span class="kind">${KIND_LABEL[kindOf(f)]}</span><span class="name" title="${esc(f.name)}">${esc(f.name)}</span><span class="size">${fmtBytes(f.size)}</span><button type="button" data-rm="${i}" data-list="${list}" aria-label="Remove ${esc(f.name)}">×</button></li>`;
+const fileRow = (f, i, list) => `<li><span class="kind">${KIND_LABEL[kindOf(f)]}</span><span class="name" title="${esc(f.name)}">${esc(f.name)}</span><span class="size">${f.duration ? fmtDur(f.duration) + ' · ' : ''}${fmtBytes(f.size)}</span><button type="button" data-rm="${i}" data-list="${list}" aria-label="Remove ${esc(f.name)}">×</button></li>`;
 function renderFiles() {
   $('#fileList').innerHTML = files.other.map((f, i) => fileRow(f, i, 'other')).join('');
 }
