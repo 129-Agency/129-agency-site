@@ -133,6 +133,14 @@ export function cleanUrl(v) {
   catch { return null; }
 }
 
+// Lien de post / Reel Instagram (instagram.com/p/…, /reel/…, /tv/…, avec ou sans le pseudo dans l'URL).
+// Renvoie l'URL canonique sans paramètres (?igsh=…), ou null. Même règle que le formulaire.
+const IG_POST = /^(?:https?:\/\/)?(?:www\.|m\.)?instagram\.com\/(?:[A-Za-z0-9._]+\/)?(p|reels?|tv)\/([A-Za-z0-9_-]{8,})/i;
+export function igPostUrl(v) {
+  const m = clean(v, 600).match(IG_POST);
+  return m ? `https://www.instagram.com/${m[1].toLowerCase().replace('reels', 'reel')}/${m[2]}/` : null;
+}
+
 // Pochettes trouvées par /api/onboarding-lookup : seuls les CDN des plateformes sont acceptés.
 // Spotify sert ses pochettes depuis i.scdn.co ET image-cdn-*.spotifycdn.com (oEmbed).
 export const ARTWORK_HOSTS = /(^|\.)(scdn\.co|spotifycdn\.com|mzstatic\.com|dzcdn\.net|ytimg\.com|media-amazon\.com|ssl-images-amazon\.com)$/i;

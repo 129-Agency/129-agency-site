@@ -96,6 +96,8 @@ export async function notifySubmission({ campaignId, uploaded = [] }) {
           || '⚠ Non acceptées'],
       ]],
       ['Fichiers', [
+        ['Créas', val(cf[F.campagne.creas])],
+        ['Posts Instagram', val(cf[F.campagne.igPosts])],
         ['Dossier Drive', val(cf[F.campagne.driveFolder])],
         ['Lien fichiers client', val(cf[F.campagne.clientFilesLink])],
         ['Artwork Airtable', (cf[F.campagne.artwork] || []).length ? 'Oui' : 'Non'],
@@ -111,7 +113,11 @@ export async function notifySubmission({ campaignId, uploaded = [] }) {
     const subject = `New submission — ${name}${flags.length ? ` [${flags.join(', ')}]` : ''}`;
 
     const cell = (v) => esc(v).replace(/\n/g, '<br>');
-    const link = (v) => (isUrl(v) ? `<a href="${esc(v)}">${esc(v)}</a>` : cell(v));
+    // Une valeur faite uniquement de liens (un par ligne, ex. posts Instagram) : chaque ligne cliquable.
+    const link = (v) => {
+      const lines = String(v).split('\n').map(s => s.trim()).filter(Boolean);
+      return lines.length && lines.every(isUrl) ? lines.map(u => `<a href="${esc(u)}">${esc(u)}</a>`).join('<br>') : cell(v);
+    };
     const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#16181A;max-width:640px">
 <p style="margin:0 0 4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#6B6E70">129 · Onboarding</p>
 <h2 style="margin:0 0 16px;font-size:20px">New submission — ${esc(name)}</h2>

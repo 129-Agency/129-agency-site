@@ -86,6 +86,8 @@ export default async function handler(req, res) {
         driveFolder: cf[C.driveFolder] || '',
         clientFilesLink: cf[C.clientFilesLink] || '',
         pageAccess: cf[C.pageAccess] || '',
+        creas: cf[C.creas] || '',
+        igPosts: String(cf[C.igPosts] || '').split('\n').map(s => s.trim()).filter(Boolean),
         declaredIdentity: cf[C.declaredIdentity] || '',
         startDate: cf[C.startDate] || null,
         adAccountId: one(cf[C.adAccount]) || null,

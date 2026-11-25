@@ -165,6 +165,15 @@
   .specs li{display:grid; grid-template-columns:14px 1fr; gap:10px}
   .specs li::before{content:""; width:12px; height:2px; background:var(--blue); margin-top:10px; transform:rotate(-56.5deg)}
   .specs b{color:var(--ink); font-weight:500}
+  .choices.pair{grid-template-columns:1fr 1fr}
+  #igBlock{display:grid; gap:14px}
+  #igBlock[hidden]{display:none}
+  .ig-list{display:grid; gap:8px}
+  .ig-row{display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center}
+  .ig-row button{border:0; background:none; cursor:pointer; color:var(--graphite); width:32px; height:32px; border-radius:50%; font-size:18px; line-height:1}
+  .ig-row button:hover{background:var(--cloud); color:var(--ink)}
+  #igAdd{justify-self:start}
+  @media (max-width:560px){ .choices.pair{grid-template-columns:1fr} }
   .cover .art .fmt{font-size:20px; font-weight:500; letter-spacing:.02em}
   .cover .art.audio.has{background:var(--blue); color:var(--white)}
 
@@ -202,7 +211,7 @@
   .rv h2{font-size:15px; font-weight:500; margin:0}
   .rv dl{display:grid; grid-template-columns:150px 1fr; gap:6px 16px; margin:0; font-size:15px}
   .rv dt{color:var(--graphite)}
-  .rv dd{margin:0; overflow-wrap:anywhere}
+  .rv dd{margin:0; overflow-wrap:anywhere; white-space:pre-line}
 
   /* ---------- Sending / done ---------- */
   .meter{height:6px; border-radius:6px; background:var(--smoke); overflow:hidden; margin-top:32px}
@@ -326,7 +335,7 @@
         <p class="sub">Four short steps and everything lands with the 129 team: the track, your files, and access to run the ads.</p>
         <ul class="need">
           <li>Cover art and the audio file, MP3 or WAV</li>
-          <li>At least one video for the ads, vertical if you have it</li>
+          <li>Videos for the ads, or links to the artist’s Instagram posts to run</li>
           <li>Release date, or a streaming link if it’s already out</li>
           <li>Access to the artist’s Facebook Page and Instagram, for ads only</li>
         </ul>
@@ -494,7 +503,20 @@
           </div>
           <div class="group">
           <div class="group-head"><h2>Videos for the ads</h2><span class="tag">Required</span></div>
-          <ul class="specs">
+          <div class="choices pair" role="radiogroup" aria-label="Where the ads come from">
+            <label class="choice"><input type="radio" name="adSource" data-k="adSource" value="upload"><span class="box"><span><span class="t">Send us videos</span><span class="d">We run them as ads from the artist’s account, without posting them on the profile.</span></span></span></label>
+            <label class="choice"><input type="radio" name="adSource" data-k="adSource" value="instagram"><span class="box"><span><span class="t">Use posts from the artist’s Instagram</span><span class="d">Already posted? Send the links, we run those posts as ads.</span></span></span></label>
+          </div>
+          <div id="igBlock" hidden>
+            <ul class="specs">
+              <li><span><b>Paste the link of each post or Reel</b> to run, best performers first.</span></li>
+              <li><span>They must be on the artist’s Instagram, the account you give us access to in the next step.</span></li>
+            </ul>
+            <div class="ig-list" id="igList"></div>
+            <button type="button" class="link" id="igAdd">Add another post</button>
+            <p class="err" id="err-igPosts" role="alert"></p>
+          </div>
+          <ul class="specs" id="upSpecs">
             <li><span><b>Vertical 9:16 first:</b> teasers, Reels, TikTok edits. It’s the main format our ads run in.</span></li>
             <li><span><b>Your music video or visualizer</b>, in the best quality you have. Horizontal 16:9 works: in 4K, we can cut clean vertical versions from it.</span></li>
             <li><span>MP4 or MOV, up to 5 GB per file. Clean versions if you have them: no burned-in subtitles or logos.</span></li>
@@ -502,7 +524,7 @@
           </ul>
           <div id="dropWrap">
             <label class="drop" id="drop" tabindex="0" aria-describedby="err-videos">
-              <strong>Add videos</strong>
+              <strong id="dropTitle">Add videos</strong>
               <span class="help">Drop them here, or click to browse. Artist photos are welcome too.</span>
               <input type="file" id="dropInput" multiple class="sr">
             </label>
@@ -661,7 +683,7 @@ const COUNTED = ['you','release','campaign','access'];   // le récapitulatif vi
 
 let S = blank();
 function blank(keepIdentity) {
-  const base = { releaseType: 'Single', discoveryMode: 'nsp', currency: 'EUR', actions: [], links: {} };
+  const base = { releaseType: 'Single', discoveryMode: 'nsp', currency: 'EUR', actions: [], links: {}, adSource: 'upload', igPosts: [] };
   if (keepIdentity && S) for (const k of ['email','name','company']) base[k] = S[k];
   return base;
 }
@@ -686,6 +708,11 @@ const budgetNum = () => Number(String(S.budget || '').replace(/[\s,']/g, '').rep
 const isEmail = (v) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(v || '').trim());
 const isUrl = (v) => { try { const u = new URL(String(v).trim()); return /^https?:$/.test(u.protocol); } catch { return false; } };
 const withScheme = (v) => { const s = String(v || '').trim(); return s && !/^[a-z]+:/i.test(s) ? 'https://' + s : s; };
+// Lien de post / Reel Instagram, avec ou sans le pseudo dans l'URL ; normalisé sans paramètres (?igsh=…).
+// Même règle côté serveur (api/_onboarding.js, igPostUrl).
+const IG_POST = /^(?:https?:\/\/)?(?:www\.|m\.)?instagram\.com\/(?:[A-Za-z0-9._]+\/)?(p|reels?|tv)\/([A-Za-z0-9_-]{8,})/i;
+const igPostUrl = (v) => { const m = String(v || '').trim().match(IG_POST); return m ? `https://www.instagram.com/${m[1].toLowerCase().replace('reels', 'reel')}/${m[2]}/` : ''; };
+const igPosts = () => [...new Set((S.igPosts || []).map(igPostUrl).filter(Boolean))];
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -733,6 +760,7 @@ function onField(e) {
   if (key === 'releaseDate') dateHint();
   if (key === 'currency') $('#sym').textContent = { EUR: '€', USD: '$', GBP: '£' }[S.currency] || '';
   if (key === 'pageAccess') accessUi();
+  if (key === 'adSource') { clearErr('videos'); clearErr('igPosts'); adSourceUi(); }
   if (key === 'filesLink') clearErr('artwork');
   renderCard(key);
   saveDraft();
@@ -746,7 +774,7 @@ function fillInputs() {
     else el.value = v ?? '';
   });
   $('#sym').textContent = { EUR: '€', USD: '$', GBP: '£' }[S.currency] || '€';
-  dateHint(); accessUi();
+  dateHint(); accessUi(); adSourceUi();
 }
 
 /* ---------- Erreurs ---------- */
@@ -811,6 +839,8 @@ function renderCard(changed) {
   const parts = [];
   if (n) parts.push(`${n} file${n > 1 ? 's' : ''}, ${fmtBytes(size)}`);
   else if (S.artworkUrl) parts.push('Cover from ' + (found?.coverFrom || 'streaming'));
+  const nIg = S.adSource === 'instagram' ? igPosts().length : 0;
+  if (nIg) parts.push(`${nIg} Instagram post${nIg > 1 ? 's' : ''}`);
   if (isUrl(withScheme(S.filesLink))) parts.push('plus a shared link');
   $('#cFiles').textContent = parts.join(', '); showRow('files', parts.length > 0);
 
@@ -935,13 +965,21 @@ async function validate(id) {
     if (!(budgetNum() > 0)) errs.push(['budget', 'Enter the ad budget as a number, like 3000.']);
     if (S.filesLink && !isUrl(withScheme(S.filesLink))) errs.push(['filesLink', 'This link should start with https://']);
     if (!files.artwork && !S.artworkUrl && !S.filesLink) errs.push(['artwork', 'Add the cover art, or a link where we can find it.']);
+    // Posts Instagram existants (25/11/2026) : au moins un lien de post valide remplace la vidéo obligatoire.
+    const igMode = S.adSource === 'instagram';
+    if (igMode) {
+      const bad = $$('#igList [data-ig]').filter(el => el.value.trim() && !igPostUrl(el.value));
+      bad.forEach(el => el.setAttribute('aria-invalid', 'true'));
+      if (bad.length) errs.push(['igPosts', 'This doesn’t look like a link to an Instagram post or Reel. Open the post, tap Share, then Copy link.']);
+      else if (!igPosts().length) errs.push(['igPosts', 'Paste the link of at least one post or Reel from the artist’s Instagram.']);
+    }
     // L'audio est requis pour chaque release : fichier déposé, ou lien partagé.
     if (CONFIG.drive) {
       if (!files.audio.length && !S.filesLink) errs.push(['audio', 'Add the audio, MP3 or WAV, or share it with a link below.']);
       // Au moins une vidéo déposée (16/11/2026) : un lien peut compléter, pas remplacer.
-      if (!files.other.some(f => kindOf(f) === 'video')) errs.push(['videos', 'Add at least one video for the ads, MP4 or MOV. Vertical 9:16 if you have it.']);
+      if (!igMode && !files.other.some(f => kindOf(f) === 'video')) errs.push(['videos', 'Add at least one video for the ads, MP4 or MOV. Vertical 9:16 if you have it.']);
     } else if (!S.filesLink) {
-      errs.push(['filesLink', 'Add a link to the audio and your videos.']);
+      errs.push(['filesLink', igMode ? 'Add a link to the audio.' : 'Add a link to the audio and your videos.']);
     }
     if (files.artwork && !CONFIG.drive && files.artwork.size > CONFIG.maxArtworkInlineBytes)
       errs.push(['artwork', 'This cover is over 3 MB. Export a lighter JPG, or share it with a link below.']);
@@ -954,7 +992,8 @@ async function validate(id) {
   errs.forEach(([k, m]) => setErr(k, m));
   if (errs.length) {
     const firstKey = errs[0][0];
-    const el = $('#' + (firstKey === 'videos' ? 'drop' : firstKey)) || $(`[data-k="${firstKey}"]`) || $('#err-' + firstKey);
+    const el = (firstKey === 'igPosts' && ($('#igList [aria-invalid]') || $('#igList [data-ig]')))
+      || $('#' + (firstKey === 'videos' ? 'drop' : firstKey)) || $(`[data-k="${firstKey}"]`) || $('#err-' + firstKey);
     el && el.focus && el.focus({ preventScroll: false });
   }
   return !errs.length;
@@ -1160,6 +1199,38 @@ function renderAudio() {
   files[b.dataset.list].splice(Number(b.dataset.rm), 1); renderAudio(); renderFiles(); renderCard('filesLink');
 }));
 
+/* ---------- Vidéos des ads : fichiers envoyés (dark posts) ou posts Instagram existants ---------- */
+const IG_MAX = 10;
+function adSourceUi() {
+  const ig = S.adSource === 'instagram';
+  $('#igBlock').hidden = !ig;
+  $('#upSpecs').hidden = ig;
+  $('#dropTitle').textContent = ig ? 'Add videos too (optional)' : 'Add videos';
+  if (ig) renderIg();
+}
+function renderIg() {
+  if (!Array.isArray(S.igPosts) || !S.igPosts.length) S.igPosts = [''];
+  $('#igList').innerHTML = S.igPosts.map((v, i) => `<div class="ig-row"><input class="in" type="url" inputmode="url" autocomplete="off" data-ig="${i}"
+    value="${esc(v)}" placeholder="https://www.instagram.com/reel/…" aria-label="Instagram post ${i + 1}" aria-describedby="err-igPosts">${
+    S.igPosts.length > 1 ? `<button type="button" data-ig-rm="${i}" aria-label="Remove post ${i + 1}">×</button>` : ''}</div>`).join('');
+  $('#igAdd').hidden = S.igPosts.length >= IG_MAX;
+}
+$('#igList').addEventListener('input', (e) => {
+  const i = e.target.dataset?.ig; if (i == null) return;
+  S.igPosts[Number(i)] = e.target.value;
+  clearErr('igPosts'); e.target.removeAttribute('aria-invalid');
+  renderCard('igPosts'); saveDraft();
+});
+$('#igList').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-ig-rm]'); if (!b) return;
+  S.igPosts.splice(Number(b.dataset.igRm), 1); renderIg(); renderCard('igPosts'); saveDraft();
+});
+$('#igAdd').addEventListener('click', () => {
+  if (S.igPosts.length >= IG_MAX) return;
+  S.igPosts.push(''); renderIg(); saveDraft();
+  $(`[data-ig="${S.igPosts.length - 1}"]`).focus();
+});
+
 /* ---------- Accès ---------- */
 function accessUi() {
   $('#guide').hidden = S.pageAccess !== 'done';
@@ -1188,7 +1259,10 @@ function buildReview() {
       ['Platforms', plats.length ? plats.join(', ') : 'None yet, we’ll add them on release day'],
       ['ISRC', S.isrc], ['UPC', S.upc], ['Distributor', S.distributor], ['Discovery Mode', { oui: 'Yes', non: 'No', nsp: 'Not sure' }[S.discoveryMode]]]],
     ['Budget and assets', 'campaign', [['Ad budget', money(budgetNum(), S.currency)], ['Cover', cover],
-      ['Audio', files.audio.map(f => f.name).join(', ')], ['Videos', extrasLine], ['Link', S.filesLink],
+      ['Audio', files.audio.map(f => f.name).join(', ')],
+      ['Ads', S.adSource === 'instagram' ? 'Posts from the artist’s Instagram' : 'Videos you send'],
+      ['Instagram posts', S.adSource === 'instagram' ? igPosts().join('\n') : null],
+      ['Videos', extrasLine], ['Link', S.filesLink],
       ['Start', S.startDate ? dateLine(S.startDate).split(',').slice(0, 2).join(',') : null],
       ['Countries', S.territories], ['Alongside', (S.actions || []).map(v => ACTIONS.find(a => a[0] === v)?.[1] || v).join(', ')], ['Notes', S.notes]]],
     ['Access', 'access', [['Instagram', S.instagram], ['Facebook', S.facebook], ['Status', ACCESS_LABEL[S.pageAccess]]]],
@@ -1269,6 +1343,8 @@ async function send() {
       budget: budgetNum(), currency: S.currency, startDate: S.startDate, objective: 'Streams', territories: S.territories,
       parallelActions: S.actions || [], notes: S.notes, filesLink: withScheme(S.filesLink),
       instagram: ig, facebook: S.facebook, pageAccess: S.pageAccess,
+      adSource: S.adSource === 'instagram' ? 'instagram' : 'upload',
+      igPosts: S.adSource === 'instagram' ? igPosts() : [],
     },
     files: list.map(x => ({ kind: x.kind, name: x.file.name, size: x.file.size, type: x.file.type })),
   };
