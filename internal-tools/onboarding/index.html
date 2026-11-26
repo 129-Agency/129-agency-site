@@ -199,6 +199,9 @@
   .bid{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:10px}
   .bid code{font-family:inherit; font-size:20px; font-weight:500; letter-spacing:.02em; font-variant-numeric:tabular-nums; color:var(--white)}
   .bid .btn{height:36px; padding:0 14px; font-size:14px; background:var(--white); color:var(--ink)}
+  .sfa .bid{margin:4px 0 6px}
+  .sfa .bid code{color:var(--ink); font-size:18px; letter-spacing:0}
+  .sfa .bid .btn{background:var(--ink); color:var(--white)}
   .vid{position:relative; aspect-ratio:16/9; border-radius:var(--r-field); overflow:hidden; background:#000}
   .vid iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
   .vid-alt{margin:8px 0 20px; font-size:14px}
@@ -551,6 +554,12 @@
                 <div class="chips" role="group" aria-labelledby="actLbl" id="actChips"></div>
                 <p class="help">It helps us read the results: a spike from radio isn’t an ad result.</p>
               </div>
+              <div class="fld" id="thirdPartyFld" hidden>
+                <label for="thirdParty">Third-party playlists: what’s the plan?</label>
+                <textarea class="in" id="thirdParty" data-k="thirdParty" rows="3" aria-describedby="thirdPartyHelp err-thirdParty" placeholder="Which curators or services, which playlists, budget, start dates…"></textarea>
+                <p class="help" id="thirdPartyHelp">Tell us exactly what’s planned, and let us know before any push starts: paid playlist traffic changes how we read and optimise the ads.</p>
+                <p class="err" id="err-thirdParty" role="alert"></p>
+              </div>
               <div class="fld"><label for="notes">Anything we should know?</label><textarea class="in" id="notes" data-k="notes" rows="3" placeholder="Story behind the track, key dates, tone you’re after…"></textarea></div>
             </div>
           </details>
@@ -590,6 +599,17 @@
               <li><span>Save. That’s it, we see it on our side.</span></li>
             </ol>
             <p class="muted">No business portfolio for the artist yet, or the Page sits on a personal profile? Pick “I need a hand” and we’ll sort it with you.</p>
+          </div>
+          <div class="fld sfa">
+            <span class="lbl" id="sfaLbl">Add us on Spotify for Artists</span>
+            <p class="help">So we can follow streams and listeners while the ads run. In Spotify for Artists, go to <b>Team</b>, click <b>Invite</b> and add:</p>
+            <span class="bid"><code id="sfaEmail">hello@129agency.com</code><button type="button" class="btn" id="copySfa">Copy</button></span>
+            <div class="choices" role="radiogroup" aria-labelledby="sfaLbl" aria-describedby="err-sfa">
+              <label class="choice"><input type="radio" name="sfa" data-k="sfa" value="done"><span class="box"><span><span class="t">Done</span><span class="d">The invite is sent to hello@129agency.com.</span></span></span></label>
+              <label class="choice"><input type="radio" name="sfa" data-k="sfa" value="later"><span class="box"><span><span class="t">I’ll do it before launch</span><span class="d">We’ll check it’s there before the ads go live.</span></span></span></label>
+              <label class="choice"><input type="radio" name="sfa" data-k="sfa" value="help"><span class="box"><span><span class="t">I need a hand</span><span class="d">No access to Spotify for Artists, or not sure who has it.</span></span></span></label>
+            </div>
+            <p class="err" id="err-sfa" role="alert"></p>
           </div>
         </div>
       </section>
@@ -676,6 +696,8 @@ const LANGS = [['en','English'],['fr','French'],['es','Spanish'],['pt','Portugue
 const ACTIONS = [['Radio','Radio'],['Pitch playlist éditorial','Editorial playlist pitch'],['Playlists tierces','Third-party playlists'],
   ['TikTok / UGC','TikTok / UGC'],['Influence','Influencers'],['Presse','Press'],['Autre agence ads','Another ads agency']];
 const PLATS = [['spotify','Spotify'],['apple','Apple Music'],['deezer','Deezer'],['amazon','Amazon'],['youtube','YouTube']];
+const SFA_EMAIL = 'hello@129agency.com';
+const SFA_LABEL = { done: 'Invite sent', later: 'Before launch', help: 'We’ll help' };
 const ACCESS_LABEL = { in_place: 'Already set up', done: 'Shared by you', help: 'We’ll help' };
 const KIND_LABEL = { artwork: 'Cover', audio: 'Audio', video: 'Video', visual: 'Visual', other: 'File' };
 
@@ -763,6 +785,7 @@ function onField(e) {
   if (key === 'pageAccess') accessUi();
   if (key === 'adSource') { clearErr('videos'); clearErr('igPosts'); adSourceUi(); }
   if (key === 'filesLink') clearErr('artwork');
+  if (key === 'actions') thirdPartyUi();
   renderCard(key);
   saveDraft();
 }
@@ -775,7 +798,7 @@ function fillInputs() {
     else el.value = v ?? '';
   });
   $('#sym').textContent = { EUR: '€', USD: '$', GBP: '£' }[S.currency] || '€';
-  dateHint(); accessUi(); adSourceUi();
+  dateHint(); accessUi(); adSourceUi(); thirdPartyUi();
 }
 
 /* ---------- Erreurs ---------- */
@@ -963,6 +986,10 @@ async function validate(id) {
     if (bad.length) { $('#moreRelease').open = true; errs.push(['links', `Check the ${bad.join(' and ')} link: it should start with https://`]); }
   }
   if (id === 'campaign') {
+    if ((S.actions || []).includes('Playlists tierces') && !String(S.thirdParty || '').trim()) {
+      $('#moreCampaign').open = true;
+      errs.push(['thirdParty', 'Tell us which third-party playlists are planned, and when.']);
+    }
     if (!(budgetNum() > 0)) errs.push(['budget', 'Enter the ad budget as a number, like 3000.']);
     if (S.filesLink && !isUrl(withScheme(S.filesLink))) errs.push(['filesLink', 'This link should start with https://']);
     if (!files.artwork && !S.artworkUrl && !S.filesLink) errs.push(['artwork', 'Add the cover art, or a link where we can find it.']);
@@ -987,6 +1014,7 @@ async function validate(id) {
   }
   if (id === 'access') {
     if (!S.pageAccess) errs.push(['pageAccess', 'Pick where you’re at, even if it’s “I need a hand”.']);
+    if (!SFA_LABEL[S.sfa]) errs.push(['sfa', 'Tell us where you’re at with Spotify for Artists.']);
     if (!String(S.instagram || '').trim() && !String(S.facebook || '').trim())
       errs.push(['instagram', 'Add the artist’s Instagram or Facebook Page so we know which one to use.']);
   }
@@ -1256,11 +1284,22 @@ $('#igAdd').addEventListener('click', () => {
   $(`[data-ig="${S.igPosts.length - 1}"]`).focus();
 });
 
+function thirdPartyUi() {
+  const on = (S.actions || []).includes('Playlists tierces');
+  $('#thirdPartyFld').hidden = !on;
+  if (!on) clearErr('thirdParty');
+}
+
 /* ---------- Accès ---------- */
 function accessUi() {
   $('#guide').hidden = S.pageAccess !== 'done';
 }
 $('#bizId').textContent = CONFIG.businessId;
+$('#copySfa').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(SFA_EMAIL); }
+  catch { const r = document.createRange(); r.selectNodeContents($('#sfaEmail')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+  $('#copySfa').textContent = 'Copied'; setTimeout(() => $('#copySfa').textContent = 'Copy', 1800);
+});
 $('#copyBiz').addEventListener('click', async () => {
   const id = $('#bizId').textContent.trim();
   try { await navigator.clipboard.writeText(id); }
@@ -1289,8 +1328,9 @@ function buildReview() {
       ['Instagram posts', S.adSource === 'instagram' ? igPosts().join('\n') : null],
       ['Videos', extrasLine], ['Link', S.filesLink],
       ['Start', S.startDate ? dateLine(S.startDate).split(',').slice(0, 2).join(',') : null],
-      ['Countries', S.territories], ['Alongside', (S.actions || []).map(v => ACTIONS.find(a => a[0] === v)?.[1] || v).join(', ')], ['Notes', S.notes]]],
-    ['Access', 'access', [['Instagram', S.instagram], ['Facebook', S.facebook], ['Status', ACCESS_LABEL[S.pageAccess]]]],
+      ['Countries', S.territories], ['Alongside', (S.actions || []).map(v => ACTIONS.find(a => a[0] === v)?.[1] || v).join(', ')],
+      ['Third-party plan', (S.actions || []).includes('Playlists tierces') ? S.thirdParty : ''], ['Notes', S.notes]]],
+    ['Access', 'access', [['Instagram', S.instagram], ['Facebook', S.facebook], ['Status', ACCESS_LABEL[S.pageAccess]], ['Spotify for Artists', SFA_LABEL[S.sfa]]]],
   ];
   $('#review').innerHTML = blocks.map(([h, step, rows]) => `<section class="rv"><header><h2>${h}</h2><button type="button" class="link" data-edit="${step}">Edit</button></header><dl>${
     rows.filter(r => r[1]).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl></section>`).join('');
@@ -1367,7 +1407,8 @@ async function send() {
     campaign: {
       budget: budgetNum(), currency: S.currency, startDate: S.startDate, objective: 'Streams', territories: S.territories,
       parallelActions: S.actions || [], notes: S.notes, filesLink: withScheme(S.filesLink),
-      instagram: ig, facebook: S.facebook, pageAccess: S.pageAccess,
+      instagram: ig, facebook: S.facebook, pageAccess: S.pageAccess, sfa: S.sfa || '',
+      thirdPartyStrategy: (S.actions || []).includes('Playlists tierces') ? String(S.thirdParty || '').trim() : '',
       adSource: S.adSource === 'instagram' ? 'instagram' : 'upload',
       igPosts: S.adSource === 'instagram' ? igPosts() : [],
     },

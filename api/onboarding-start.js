@@ -151,6 +151,10 @@ export default async function handler(req, res) {
     const ig = clean(c.instagram, 120).replace(/^https?:\/\/(www\.)?instagram\.com\//i, '@').replace(/\/$/, '');
     const fb = clean(c.facebook, 300);
     const pageIgFb = [ig && `IG: ${ig.startsWith('@') ? ig : '@' + ig}`, fb && `FB: ${fb}`].filter(Boolean).join(' · ') || clean(c.pageIgFb, 300);
+    const SFA = { done: 'invitation envoyée', later: 'à faire avant le lancement', help: "besoin d'aide" };
+    const sfaNote = SFA[c.sfa] ? `Spotify for Artists (hello@129agency.com) : ${SFA[c.sfa]}.` : '';
+    const thirdParty = actions.includes('Playlists tierces') ? clean(c.thirdPartyStrategy, 2000) : '';
+    const thirdNote = thirdParty ? `Stratégie playlists tierces (à nous signaler avant chaque push) :\n${thirdParty}` : '';
     const cfields = {
       [F.campagne.name]: `${artist} - ${title}`,
       [F.campagne.track]: [trackRec.id],
@@ -179,7 +183,7 @@ export default async function handler(req, res) {
       [F.campagne.creas]: CREAS[igMode ? 'instagram' : 'upload'],
       [F.campagne.igPosts]: igPosts.join('\n'),
       [F.campagne.artwork]: artworkUrl ? [{ url: artworkUrl, filename: `${slugify(`${artist} ${title}`)}-cover.jpg` }] : null,
-      [F.campagne.notes]: (warn + clean(c.notes, 4000)).trim(),
+      [F.campagne.notes]: [warn.trim(), clean(c.notes, 4000), sfaNote, thirdNote].filter(Boolean).join('\n\n'),
       [F.campagne.startDate]: /^\d{4}-\d{2}-\d{2}$/.test(String(c.startDate || '')) ? c.startDate : null,
       [F.campagne.parallelActions]: actions.length ? actions : null,
     };
